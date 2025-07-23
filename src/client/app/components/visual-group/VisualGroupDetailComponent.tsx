@@ -4,7 +4,6 @@ import TooltipHelpComponent from '../TooltipHelpComponent';
 import * as React from 'react';
 import { CreateVisualUnitComponent } from '../visual-unit/CreateVisualUnitComponent'; //Replace with CreateGroupVisualComponent once made
 import TooltipMarkerComponent from '../TooltipMarkerComponent';
-import { selectCik } from '../../redux/api/conversionsApi';
 import { selectConversionsDetails } from '../../redux/api/conversionsApi';
 import { useAppSelector } from '../../redux/reduxHooks';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
@@ -12,7 +11,7 @@ import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 export default function VisualGroupDetailComponent(){
 
     const conversionData = useAppSelector(selectConversionsDetails);
-    const cikData = useAppSelector(selectCik);
+    
 
     const tooltipStyle = {
         ...tooltipBaseStyle,

@@ -14,7 +14,6 @@ import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
  * @returns Admin page element
  */
 export default function AdminComponent() {
-	console.log('In the admin settings page!');
 	return (
 		<div>
 			<TooltipHelpComponent page='admin' />
