@@ -12,7 +12,7 @@ import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 export default function VisualGroupDetailComponent(){
 
     const conversionData = useAppSelector(selectConversionsDetails);
-    const cikData = useAppSelector(selectCik);
+    
 
     const tooltipStyle = {
         ...tooltipBaseStyle,
