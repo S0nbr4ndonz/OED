@@ -2,15 +2,18 @@
 import { FormattedMessage } from 'react-intl';
 import TooltipHelpComponent from '../TooltipHelpComponent';
 import * as React from 'react';
-import { CreateVisualUnitComponent } from '../visual-unit/CreateVisualUnitComponent'; //Replace with CreateGroupVisualComponent once made
+import { CreateVisualGroupComponent } from '../visual-group/CreateVisualGroupComponent'; //Replace with CreateGroupVisualComponent once made
 import TooltipMarkerComponent from '../TooltipMarkerComponent';
-import { selectConversionsDetails } from '../../redux/api/conversionsApi';
+import { selectAllGroups } from '../../redux/api/groupsApi';
+import {selectAllMeters} from '../../redux/api/metersApi'
 import { useAppSelector } from '../../redux/reduxHooks';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
+//import {getDeepGroupsByID} from '../../../../server/models/Group';
 
 export default function VisualGroupDetailComponent(){
 
-    const conversionData = useAppSelector(selectConversionsDetails);
+    const groupData = useAppSelector(selectAllGroups);
+    const meterData = useAppSelector(selectAllMeters);
     
 
     const tooltipStyle = {
@@ -34,8 +37,12 @@ export default function VisualGroupDetailComponent(){
                 Group Visual Graph
             </h2>
 
+            <p>
+
+            </p>
+
             <div style={titleStyle}>
-                <CreateVisualUnitComponent conversions={conversionData}/>
+                <CreateVisualGroupComponent groups={groupData} meters={meterData}/>
              </div>
         </div>
     );
