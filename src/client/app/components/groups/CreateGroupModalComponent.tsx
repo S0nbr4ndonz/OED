@@ -128,8 +128,9 @@ export default function CreateGroupModalComponent() {
 			state.name !== '' &&
 			(state.area === 0 || (state.area > 0 && state.areaUnit !== AreaUnitType.none)) &&
 			(state.deepMeters.length > 0)
-		);
+			);
 	}, [state.area, state.areaUnit, state.name, state.deepMeters]);
+
 	/* End State */
 
 	// Sums the area of the group's deep meters. It will tell the admin if any meters are omitted from the calculation,
@@ -284,6 +285,7 @@ export default function CreateGroupModalComponent() {
 		tooltipCreateGroupView: 'help.admin.groupcreate'
 	};
 
+
 	return (
 		<>
 			{/* Show modal button */}
@@ -416,6 +418,7 @@ export default function CreateGroupModalComponent() {
 					</FormGroup>
 					{/* The child meters in this group */}
 					{
+						
 						<FormGroup>
 							<b><FormattedMessage id='child.meters' /></b>:
 							<MultiSelectComponent
@@ -423,6 +426,7 @@ export default function CreateGroupModalComponent() {
 								selectedOptions={metersToSelectOptions()}
 								placeholder={translate('select.meters')}
 								onValuesChange={(newSelectedMeterOptions: SelectOption[]) => {
+									
 									// The meters changed so update the current list of deep meters
 									// Get the currently included/selected meters as an array of the ids.
 									const updatedChildMeters = newSelectedMeterOptions.map(meter => { return meter.value; });
@@ -451,6 +455,7 @@ export default function CreateGroupModalComponent() {
 							/>
 						</FormGroup>
 					}
+					
 					{/* The child groups in this group */}
 					{<FormGroup>
 						<b><FormattedMessage id='child.groups' /></b>:

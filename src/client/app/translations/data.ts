@@ -314,6 +314,7 @@ const LocaleTranslationData = {
 		"last.four.weeks": "Last four weeks",
 		"last.week": "Last week",
 		"leave": "Leave",
+		"legend.graph.text.group": "Group",
 		"legend.graph.text.meter": "Meter",
 		"legend.graph.text.suffix": "Suffix Analyzed",
 		"legend.graph.text.suffix.input": "Suffix Input",
