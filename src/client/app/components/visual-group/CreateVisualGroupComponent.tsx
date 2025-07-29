@@ -89,19 +89,29 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     
     /*visuals start here */
     useEffect(()=>{
-
         /* View-box dimensions */
         const width = window.innerWidth;
         const height = 750;
-
-       
 
         /* Grab data */
         const nodes = data.nodes.map(d => ({...d}));
         const links = data.links.map(d => ({...d}));
 
-  
-
+        // Separate meter and group nodes
+        const meterNodes = nodes.filter(d => d.type === 'meter');
+        //const groupNodes = nodes.filter(d => d.type === 'group');
+        
+        // Position meter nodes in a column on the left
+        const meterColumnX = -width / 2 + 200; // 100px from left edge
+        const meterSpacing = 80; // Space between meters
+        const startY = -height / 2 + 100; // Start 100px from top
+        
+        meterNodes.forEach((node, index) => {
+            node.x = meterColumnX;
+            node.y = startY + (index * meterSpacing);
+            node.fx = node.x; // Fix position
+            node.fy = node.y;
+        });
 
         const simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links)
@@ -110,19 +120,22 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 /* For demo purposes, default link length is 90 */
                 .distance(90)
             )
-            .force('x', d3.forceX())
-            .force('y', d3.forceY());
+            .force('x', d3.forceX().strength(0.1)) // Weaker force for groups
+            .force('y', d3.forceY().strength(0.1)); // Weaker force for groups
 
         const svg = d3.select('#sample')
             .append('svg')
             .attr('width', width)
             .attr('height', height)
             .attr('viewBox', [-width / 2, -height / 2, width, height])
-            .attr('style', 'max-width:100%, height:auto')
-            .append('g');
+            .attr('display', 'block')
+
+        const g = svg
+            .append('g')
+            .attr('transform', `translate(${width/2},${height/2})`);            
         
         /* End arrow head */
-        svg.append('defs').append('marker')
+        g.append('defs').append('marker')
             .attr('id', 'arrow-end')
             .attr('viewBox', '0 -5 10 10')
             .attr('refX', 25)
@@ -134,27 +147,27 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('d', 'M0,-5L10,0L0,5');
 
         /* Link Style */
-        const link = svg.selectAll('line')
+        const link = g.selectAll('line')
             .data(links)
             .enter().append('line')
             .style('stroke', '#aaa')
             .attr('marker-end', 'url(#arrow-end)')
 
             /* Node Style */
-        const node = svg.selectAll('.node')
+        const node = g.selectAll('.node')
             .data(nodes)
             .enter().append('circle')
             .attr('r',20)
             .attr('fill', d=>colorSchema(d.type));
         
-            /* Drag behavior */
-        node.call(d3.drag()
+            /* Drag behavior - only for group nodes */
+        node.filter(d => d.type === 'group').call(d3.drag()
             .on('start', dragstart)
             .on('drag', dragged)
             .on('end', dragend));
 
         /* Node label style */
-        const label = svg.selectAll('.label')
+        const label = g.selectAll('.label')
             .data(nodes)
             .enter()
             .append('text')
@@ -179,6 +192,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			label
 				.attr('x', function(d){ return d.x; })
 				.attr('y', function (d) {return d.y - 25; });
+            
+            const bbox = g.node()!.getBBox();
+            svg
+                .attr('width',  bbox.width  + 20)  // add a bit of padding
+                .attr('height', bbox.height + 20)
+                .attr('viewBox', [0, 0, bbox.width + 20, bbox.height + 20]);
         })
 
         // eslint-disable-next-line jsdoc/require-jsdoc
@@ -202,7 +221,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		}
 
         /* Color Legend */
-		const legend = svg.append('g')
+		const legend = g.append('g')
 			.attr('transform', `translate(${-width / 2 + 20}, ${-height / 2 + 20})`);
 
 		colorSchema.domain().forEach((item, i) => {
@@ -236,7 +255,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
     return (
         <div>
-			<div id='sample' style={{ border: '1px solid black', height: '800px' }}></div>
+			<div id='sample' style={{ overflowY: 'auto', overflowX: 'auto', border: '1px solid black', height: '600px' }}></div>
 		</div>
     );
 
