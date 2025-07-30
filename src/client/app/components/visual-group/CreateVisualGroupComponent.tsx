@@ -114,6 +114,23 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             node.fy = node.y;
         });
 
+        // Calculate SVG dimensions immediately after positioning meter nodes
+        const calculateSvgDimensions = () => {
+            // Get the bounding box of all content
+            const bbox = g.node()!.getBBox();
+
+            // Add padding
+            const padding = 50;
+            const contentWidth = bbox.width + (padding * 2);
+            const contentHeight = bbox.height + (padding * 2);
+
+            // Update SVG dimensions
+            svg
+                .attr('width', contentWidth)
+                .attr('height', contentHeight)
+                .attr('viewBox', [bbox.x - padding, bbox.y - padding, contentWidth, contentHeight]);
+        };
+
         const simulation = d3.forceSimulation(nodes)
             .force('link', d3.forceLink(links)
                 /* Set all link ids (from data.links) */
@@ -129,11 +146,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('width', width)
             .attr('height', height)
             .attr('viewBox', [-width / 2, -height / 2, width, height])
-            .attr('display', 'block')
+            .attr('style', 'max-width: 100%; height: auto;');
 
         const g = svg
-            .append('g')
-            .attr('transform', `translate(${width / 2},${height / 2})`);
+            .append('g');
 
         /* End arrow head */
         g.append('defs').append('marker')
@@ -206,13 +222,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             label
                 .attr('x', function (d) { return d.x; })
                 .attr('y', function (d) { return d.y - 25; });
-
-            const bbox = g.node()!.getBBox();
-            svg
-                .attr('width', bbox.width + 20)  // add a bit of padding
-                .attr('height', bbox.height + 20)
-                .attr('viewBox', [0, 0, bbox.width + 20, bbox.height + 20]);
-        })
+        });
 
         // eslint-disable-next-line jsdoc/require-jsdoc
         function dragstart(event: any) {
@@ -259,11 +269,14 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 /* internationalizing color legend text */
                 .text(intl.formatMessage({ id: `legend.graph.text.${item}` }));
         });
+
+        // Calculate SVG dimensions after all elements are created
+        calculateSvgDimensions();
     }, []);
 
     return (
         <div>
-            <div id='sample' style={{ overflowY: 'auto', overflowX: 'auto', border: '1px solid black', height: '600px' }}></div>
+            <div id='sample' style={{ width: '100%', height: '100vh', overflowY: 'auto', overflowX: 'auto' }} />
         </div>
     );
 
