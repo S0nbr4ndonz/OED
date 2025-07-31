@@ -50,10 +50,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         links: []
     };
 
+    console.log("All Group Ids: " + allGroups.map(g => g.id));
+    console.log("All Meter Ids: " + groupedMeters.map(m => m.id));
+
     groupedMeters.map(value =>
         data.nodes.push({
             'name': value.name,
-            'id': value.id,
+            'id': `meter_${value.id}`,
             'meterType': value.meterType,
             'type': 'meter'
         })
@@ -62,7 +65,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     allGroups.map(value =>
         data.nodes.push({
             'name': value.name,
-            'id': value.id,
+            'id': `group_${value.id}`,
             'childGroups': value.childGroups,
             'childMeters': value.childMeters,
             'type': 'group'
@@ -72,17 +75,16 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     allGroups.forEach(group => {
         group.childGroups.forEach(childGroup => {
             data.links.push({
-                'source': group.id,
-                'target': childGroup,
+                'source': `group_${group.id}`,
+                'target': `group_${childGroup}`,
                 'type': 'Group-to-Group'
-
             })
         })
 
         group.childMeters.forEach(meter => {
             data.links.push({
-                'source': group.id,
-                'target': meter,
+                'source': `group_${group.id}`,
+                'target': `meter_${meter}`,
                 'type': 'group-to-meter'
             })
         })
