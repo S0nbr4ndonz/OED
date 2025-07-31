@@ -37,6 +37,53 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     );
 
     const groupedMeters: MeterData[] = allMeters.filter(meterData => groupedMeterIds.has(meterData.id));
+    
+    // Sort meters to minimize distance between meters that share groups
+    const sortMetersByGroupRelationships = (meters: MeterData[]): MeterData[] => {
+        if (meters.length <= 1) return meters;
+        
+        const sortedMeters: MeterData[] = [];
+        const usedMeterIds = new Set<number>();
+        
+        // Start with the first meter
+        sortedMeters.push(meters[0]);
+        usedMeterIds.add(meters[0].id);
+        
+        // Pick the meter that shares the most groups with the last placed meter
+        while (sortedMeters.length < meters.length) {
+            const lastMeter = sortedMeters[sortedMeters.length - 1];
+            let bestNextMeter: MeterData | null = null;
+            let maxSharedGroups = -1;
+            
+            // Find the meter that shares the most groups with the last placed meter
+            for (const meter of meters) {
+                if (usedMeterIds.has(meter.id)) continue;
+                
+                // Count shared groups between lastMeter and current meter
+                const sharedGroups = allGroups.filter(group => 
+                    group.deepMeters.includes(lastMeter.id) && 
+                    group.deepMeters.includes(meter.id)
+                ).length;
+                
+                if (sharedGroups > maxSharedGroups) {
+                    maxSharedGroups = sharedGroups;
+                    bestNextMeter = meter;
+                }
+            }
+            
+            // If no shared groups, pick the first unused meter
+            if (bestNextMeter === null) {
+                bestNextMeter = meters.find(m => !usedMeterIds.has(m.id))!;
+            }
+            
+            sortedMeters.push(bestNextMeter);
+            usedMeterIds.add(bestNextMeter.id);
+        }
+        
+        return sortedMeters;
+    };
+    
+    const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
     /*Create color schema for meter and group props*/
     const colors = ['#000000', '#b4331fff'];
@@ -50,10 +97,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         links: []
     };
 
-    groupedMeters.map(value =>
+    // console.log("All Group Ids: " + allGroups.map(g => g.id));
+    // console.log("All Meter Ids: " + sortedGroupedMeters.map(m => m.id));
+
+    sortedGroupedMeters.map(value =>
         data.nodes.push({
             'name': value.name,
-            'id': value.id,
+            'id': `meter_${value.id}`,
             'meterType': value.meterType,
             'type': 'meter'
         })
@@ -62,7 +112,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     allGroups.map(value =>
         data.nodes.push({
             'name': value.name,
-            'id': value.id,
+            'id': `group_${value.id}`,
             'childGroups': value.childGroups,
             'childMeters': value.childMeters,
             'type': 'group'
@@ -72,17 +122,16 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     allGroups.forEach(group => {
         group.childGroups.forEach(childGroup => {
             data.links.push({
-                'source': group.id,
-                'target': childGroup,
+                'source': `group_${group.id}`,
+                'target': `group_${childGroup}`,
                 'type': 'Group-to-Group'
-
             })
         })
 
         group.childMeters.forEach(meter => {
             data.links.push({
-                'source': group.id,
-                'target': meter,
+                'source': `group_${group.id}`,
+                'target': `meter_${meter}`,
                 'type': 'group-to-meter'
             })
         })
