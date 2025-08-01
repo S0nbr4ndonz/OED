@@ -24,7 +24,7 @@ export default function VisualGroupDetailComponent(){
     return(
         <div>
             <TooltipHelpComponent page='visual-group'/>
-            <div className-='container-fluid'>
+            <div className='container-fluid'>
                 <h1 style={titleStyle}>
                 <FormattedMessage id='visual.group'></FormattedMessage> 
                 <div style={tooltipStyle}>

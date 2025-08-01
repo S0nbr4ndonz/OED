@@ -49,7 +49,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         sortedMeters.push(meters[0]);
         usedMeterIds.add(meters[0].id);
         
-        // Pick the meter that shares the most groups with the last placed meter
+        // Greedy algorithm: always pick the meter that shares the most groups with the last placed meter
         while (sortedMeters.length < meters.length) {
             const lastMeter = sortedMeters[sortedMeters.length - 1];
             let bestNextMeter: MeterData | null = null;
@@ -96,9 +96,6 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         nodes: [],
         links: []
     };
-
-    // console.log("All Group Ids: " + allGroups.map(g => g.id));
-    // console.log("All Meter Ids: " + sortedGroupedMeters.map(m => m.id));
 
     sortedGroupedMeters.map(value =>
         data.nodes.push({
@@ -196,7 +193,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('height', height)
             .attr('viewBox', [-width / 2, -height / 2, width, height])
             .attr('style', 'max-width: 100%; height: auto;');
-
+        
         const g = svg
             .append('g');
 
@@ -321,7 +318,16 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
         // Calculate SVG dimensions after all elements are created
         calculateSvgDimensions();
-    }, []);
+        
+        // Cleanup function - runs when component unmounts or dependencies change
+        return () => {
+            console.log("Cleaning up D3 visualization");
+            const existingSvg = d3.select('#sample svg');
+            if (!existingSvg.empty()) {
+                existingSvg.remove();
+            }
+        };
+    }, [allGroups, allMeters]);
 
     return (
         <div>
