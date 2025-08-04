@@ -9,6 +9,8 @@ import { GroupData } from '../../../../client/app/types/redux/groups'
 import { MeterData } from '../../../../client/app/types/redux/meters'
 import { selectAllMeters } from '../../redux/api/metersApi';
 import { selectAllGroups } from '../../redux/api/groupsApi';
+import { eventManager } from 'react-toastify/dist/core';
+//import { CardColumns } from 'reactstrap';
 
 /**
  *   Visual graph component that shows the relationship between all groups and meters
@@ -134,6 +136,94 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         })
     });
 
+    const topSortAndPlaceGroups = (groups: GroupData[]): GroupData[][] => {
+        // Build adjacency list (child -> parents relationship)
+        const adjacencyList = new Map<number, number[]>();
+        const inDegree = new Map<number, number>();
+        
+        // Initialize
+        groups.forEach(group => {
+            adjacencyList.set(group.id, []);
+            inDegree.set(group.id, 0);
+        });
+        
+        // Build graph: for each group, add edges from child to parent
+        groups.forEach(group => {
+            group.childGroups.forEach(childGroupId => {
+                // Add edge from child to parent 
+                const childEdges = adjacencyList.get(childGroupId) || [];
+                childEdges.push(group.id);
+                adjacencyList.set(childGroupId, childEdges);
+                
+                // Increment in-degree of parent
+                inDegree.set(group.id, (inDegree.get(group.id) || 0) + 1);
+            });
+        });
+        
+        // Kahn's algorithm for topological sort
+        const queue: number[] = [];
+        const result: GroupData[] = [];
+        
+        // Add all groups with in-degree 0 (leaf nodes)
+        groups.forEach(group => {
+            if ((inDegree.get(group.id) || 0) === 0) {
+                queue.push(group.id);
+            }
+        });
+        
+        while (queue.length > 0) {
+            const currentId = queue.shift()!;
+            const currentGroup = groups.find(g => g.id === currentId);
+            if (currentGroup) {
+                result.push(currentGroup);
+            }
+            
+            // Process children of current group
+            const children = groups.filter(g => g.childGroups.includes(currentId));
+            children.forEach(child => {
+                inDegree.set(child.id, (inDegree.get(child.id) || 0) - 1);
+                if ((inDegree.get(child.id) || 0) === 0) {
+                    queue.push(child.id);
+                }
+            });
+        }
+        
+        // Check for cycles
+        if (result.length !== groups.length) {
+            throw new Error('Cycle detected in group hierarchy');
+        }
+        
+        // Now place in columns based on topological order
+        const columns: GroupData[][] = [];
+        const groupToColumn = new Map<number, number>();
+        
+        result.forEach(group => {
+            let maxParentColumn = -1;
+            
+            // Find the maximum column of any parent
+            group.childGroups.forEach(childGroupId => {
+                const parentColumn = groupToColumn.get(childGroupId) || 0;
+                maxParentColumn = Math.max(maxParentColumn, parentColumn);
+            });
+            
+            const columnIndex = maxParentColumn + 1;
+            
+            // Ensure we have enough columns
+            while (columns.length <= columnIndex) {
+                columns.push([]);
+            }
+            
+            columns[columnIndex].push(group);
+            groupToColumn.set(group.id, columnIndex);
+        });
+        
+        return columns;
+    };
+
+
+    const columns = topSortAndPlaceGroups(allGroups);
+
+
     /*visuals start here */
     useEffect(() => {
         /* View-box dimensions */
@@ -148,16 +238,46 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const meterNodeData = nodes.filter(d => d.type === 'meter');
         const groupNodeData = nodes.filter(d => d.type === 'group');
 
+        
+
+
         // Position meter nodes in a column on the left
         const meterColumnX = -width / 2 + 200; // 100px from left edge
         const meterSpacing = 80; // Space between meters
-        const startY = -height / 2 + 100; // Start 100px from top
+        const meterStartY = -height / 2 + 100; // Start 100px from top
 
         meterNodeData.forEach((node, index) => {
             node.x = meterColumnX;
-            node.y = startY + (index * meterSpacing);
+            node.y = meterStartY + (index * meterSpacing);
             node.fx = node.x; // Fix position
             node.fy = node.y;
+        });
+
+        // Position group nodes in columns
+        const groupColumnX = -width/2 + 400;
+        const groupSpacing = 80; // Space between groups in a column
+        const groupStartY = -height/2 + 100;
+        const columnSpacing = 200; // Space between columns
+
+        // Iterate through each column
+        columns.forEach((column, columnIndex) => {
+            // Iterate through each group in the current column
+            column.forEach((group, groupIndex) => {
+                // Find the corresponding node in groupNodeData
+                const node = groupNodeData.find(n => n.id === `group_${group.id}`);
+                if (node) {
+                    // Position the group in its column
+                    node.x = groupColumnX + (columnIndex * columnSpacing);
+                    node.y = groupStartY + (groupIndex * groupSpacing);
+                    node.fx = node.x; // Fix position
+                    node.fy = node.y;
+                }
+            });
+        });
+
+        groupNodeData.forEach( node => {
+            node.originalX = node.x;
+            node.originalY = node.y;
         });
 
         // Calculate SVG dimensions immediately after positioning meter nodes
@@ -223,6 +343,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('r', 20)
             .attr('fill', d => colorSchema(d.type));
 
+        
         const meterNodes = g.selectAll('.meter-node')
             .data(meterNodeData)
             .enter().append('rect')
@@ -235,6 +356,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr("stroke-dasharray", "5,5")
             .attr('x', d => d.x - 30)  // Center the rectangle
             .attr('y', d => d.y - 20); // Center the rectangle
+        
 
         /* Drag behavior - only for group nodes */
         groupNodes.call(d3.drag()
@@ -288,6 +410,26 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             if (!event.active) simulation.alphaTarget(0);
             event.subject.fx = null;
             event.subject.fy = null;
+
+            d3.select(event.subject)
+              .transition()
+              .duration(5000)
+              .ease(d3.easeElasticOut)
+              .tween('position', () => {
+                const startX = event.subject.x;
+                const startY = event.subject.y;
+                const endX = event.subject.originalX;
+                const endY = event.subject.originalY;
+
+                return (t: number) => {
+                    event.subject.x = startX + (endX - startX) * t;
+                    event.subject.y = startY + (endY - startY) * t
+                }
+              })
+              .on('end', ()=> {
+                event.subject.fx = event.subject.originalX;
+                event.subject.fy = event.subject.originalY;
+              } );
         }
 
         /* Color Legend */
