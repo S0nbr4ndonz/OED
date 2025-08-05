@@ -8,7 +8,7 @@ import { useAppSelector } from '../../redux/reduxHooks';
 import { GroupData } from '../../../../client/app/types/redux/groups'
 import { MeterData } from '../../../../client/app/types/redux/meters'
 import { selectAllMeters } from '../../redux/api/metersApi';
-import { selectAllGroups } from '../../redux/api/groupsApi';
+import { selectAllGroups, selectGroupDataById } from '../../redux/api/groupsApi';
 import { eventManager } from 'react-toastify/dist/core';
 //import { CardColumns } from 'reactstrap';
 
@@ -34,44 +34,56 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     const allGroups: GroupData[] = useAppSelector(selectAllGroups);
     const allMeters: MeterData[] = useAppSelector(selectAllMeters);
 
+
     const groupedMeterIds: Set<number> = new Set(
         allGroups.flatMap(group => group.deepMeters)
     );
 
+
     const groupedMeters: MeterData[] = allMeters.filter(meterData => groupedMeterIds.has(meterData.id));
-    
+
+
     // Sort meters to minimize distance between meters that share groups
     const sortMetersByGroupRelationships = (meters: MeterData[]): MeterData[] => {
         if (meters.length <= 1) return meters;
+
         
         const sortedMeters: MeterData[] = [];
         const usedMeterIds = new Set<number>();
+
         
         // Start with the first meter
         sortedMeters.push(meters[0]);
         usedMeterIds.add(meters[0].id);
+
+
         
         // Greedy algorithm: always pick the meter that shares the most groups with the last placed meter
         while (sortedMeters.length < meters.length) {
             const lastMeter = sortedMeters[sortedMeters.length - 1];
             let bestNextMeter: MeterData | null = null;
             let maxSharedGroups = -1;
+
             
             // Find the meter that shares the most groups with the last placed meter
             for (const meter of meters) {
                 if (usedMeterIds.has(meter.id)) continue;
+
                 
                 // Count shared groups between lastMeter and current meter
                 const sharedGroups = allGroups.filter(group => 
                     group.deepMeters.includes(lastMeter.id) && 
                     group.deepMeters.includes(meter.id)
                 ).length;
+
                 
                 if (sharedGroups > maxSharedGroups) {
                     maxSharedGroups = sharedGroups;
                     bestNextMeter = meter;
                 }
             }
+
+            
             
             // If no shared groups, pick the first unused meter
             if (bestNextMeter === null) {
@@ -222,7 +234,27 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 
     const columns = topSortAndPlaceGroups(allGroups);
+    /*
+    const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]) : GroupData[][] => {
 
+        const sortedGroups: GroupData[][] = [];
+        const 
+
+        if(columns.length == 0) return columns;
+
+        for(const column of  columns){
+            if(column.length <= 1) continue;
+
+            for(const group of column){
+                
+            }
+        }
+
+        
+
+        return sortedGroups;
+    };
+    */
 
     /*visuals start here */
     useEffect(() => {
@@ -413,8 +445,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
             d3.select(event.subject)
               .transition()
-              .duration(5000)
-              .ease(d3.easeElasticOut)
+              .duration(2000)
+              .ease(d3.easeLinear)
               .tween('position', () => {
                 const startX = event.subject.x;
                 const startY = event.subject.y;
