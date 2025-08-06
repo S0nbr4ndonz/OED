@@ -102,7 +102,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     /*Create color schema for meter and group props*/
     const colors = ['#000000', '#b4331fff'];
     const colorSchema = d3.scaleOrdinal<string, string>()
-        .domain(['meter', 'group'])
+        .domain(['meter', 'unselectedGroup'])
         .range(colors);
 
     /* Create data container to pass to D3 to force graph */
@@ -126,7 +126,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             'id': `group_${value.id}`,
             'childGroups': value.childGroups,
             'childMeters': value.childMeters,
-            'type': 'group'
+            'type': 'unselectedGroup'
         })
     );
 
@@ -343,7 +343,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
         // Separate meter and group nodes
         const meterNodeData = nodes.filter(d => d.type === 'meter');
-        const groupNodeData = nodes.filter(d => d.type === 'group');
+        const groupNodeData = nodes.filter(d => d.type === 'unselectedGroup');
 
         
 
@@ -562,7 +562,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 .attr('x', -5)  // Center the rectangle
                 .attr('y',0); // Center the rectangle
             }
-            else if(item== 'group'){
+            else if(item == 'unselectedGroup'){
                 legendEntry.append('circle')
                 .attr('r', 15)
                 .attr('cx', 15) // Center the circle horizontally
@@ -580,7 +580,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 .attr('x', 40) // Position the text to the right of the circle
                 .attr('y', 20) // Align the text vertically with the circle
                 .style('fill', '#000')
-                .style('font-size', '14px')
+                .style('font-size', '12px')
                 .style('alignment-middle', 'middle')
                 /* internationalizing color legend text */
                 .text(intl.formatMessage({ id: `legend.graph.text.${item}` }));
