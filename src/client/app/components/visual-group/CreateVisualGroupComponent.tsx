@@ -448,7 +448,11 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .data(groupNodeData)
             .enter().append('circle')
             .attr('r', 20)
-            .attr('fill', d => colorSchema(d.type));
+            .attr('fill', d => colorSchema(d.type))
+            .attr('stroke', 'black')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', ('5,5'))
+            .attr('fill-opacity', 0.5);
 
         
         const meterNodes = g.selectAll('.meter-node')
@@ -547,12 +551,29 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             const legendEntry = legend.append('g')
                 .attr('transform', `translate(0, ${i * 30})`);
 
-            // Rectangle color box
-            legendEntry.append('circle')
+            if(item == 'meter'){
+                legendEntry.append('rect')
+                .attr('width', 40)
+                .attr('height', 25)
+                .attr('fill-opacity', 0)
+                .attr('stroke', colorSchema(item))
+                .attr('stroke-width', 2)
+                .attr("stroke-dasharray", "5,5")
+                .attr('x', -5)  // Center the rectangle
+                .attr('y',0); // Center the rectangle
+            }
+            else if(item== 'group'){
+                legendEntry.append('circle')
                 .attr('r', 15)
                 .attr('cx', 15) // Center the circle horizontally
                 .attr('cy', 15) // Center the circle vertically
-                .attr('fill', colorSchema(item));
+                .attr('fill', colorSchema(item))
+                .attr('fill-opacity', 0.5)
+                .attr('stroke', 'black')
+                .attr('stroke-width', 1)
+                .attr('stroke-dasharray', ('5,5'));
+            }
+
 
             // Text label
             legendEntry.append('text')
