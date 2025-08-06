@@ -143,7 +143,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             data.links.push({
                 'target': `group_${group.id}`,
                 'source': `meter_${meter}`,
-                'type': 'group-to-meter'
+                'type': 'meter-to-group'
             })
         })
     });
@@ -252,9 +252,6 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             }
 
             const currentSortedColumn: GroupData[] = [];
-
-            
-            console.log(columnIndex);
 
             if(columnIndex < 1)
             {
@@ -428,10 +425,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         g.append('defs').append('marker')
             .attr('id', 'arrow-end')
             .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 25)
+            .attr('refX', 10)
             .attr('refY', 0)
-            .attr('markerWidth', 4)
-            .attr('markerHeight', 4)
+            .attr('markerWidth', 8)
+            .attr('markerHeight', 6)
             .attr('orient', 'auto')
             .append('svg:path')
             .attr('d', 'M0,-5L10,0L0,5');
@@ -489,19 +486,63 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         /* Update element positions when moved */
         simulation.on('tick', () => {
             link
-                .attr('x1', d => d.source.x)
+                .attr('x1', d => {
+                    /*translate where links begin to have them start at 
+                    the edge of an element instead of the center of one*/
+
+                    /*if link starts from a meter*/
+                    if(d.type == 'meter-to-group'){
+
+                        
+                        /*take half of the width of the meter's rectangle element*/
+                        const halfWidth = 30; 
+
+                        /*Translate the  beginning of the link 
+                        by the halfwidth, to have it start at the edge*/ 
+                        return d.source.x + halfWidth;
+                    }
+                    else{
+                    /* link starts from a group node*/ 
+
+                    /*radius for a group node is set to 20 for all nodes*/
+                        const radius = 20;
+
+                        /*translate link by the radius to have it start from the edge*/
+                        return d.source.x + radius;
+                    }                    
+                })
                 .attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x)
-                .attr('y2', d => d.target.y);
+                .attr('x2', d => {
+                    const dx= d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const length = Math.sqrt( dx * dx + dy * dy);
+                    const nodeRadius = 20;
+
+                    return d.target.x - (dx/length) * nodeRadius;
+
+                })
+                .attr('y2', d => {
+                    const dx= d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const length = Math.sqrt( dx * dx + dy * dy);
+                    const nodeRadius = 20;
+
+                    return d.target.y - (dy/length) * nodeRadius;
+                });
 
             groupNodes
-                .attr('cx', d => d.x)
-                .attr('cy', d => d.y);
-
+                .attr('cx', d => d.fx || d.x)  // Use fixed position if available
+                .attr('cy', d => d.fy || d.y);
+                
+            meterNodes
+                .attr('x', d => (d.fx || d.x) - 30)
+                .attr('y', d => (d.fy || d.y) - 20);
+                
             label
-                .attr('x', function (d) { return d.x; })
-                .attr('y', function (d) { return d.y - 25; });
+                .attr('x', d => d.fx || d.x)
+                .attr('y', d => (d.fy || d.y) - 25);
         });
+        
 
         // eslint-disable-next-line jsdoc/require-jsdoc
         function dragstart(event: any) {
