@@ -133,16 +133,16 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     allGroups.forEach(group => {
         group.childGroups.forEach(childGroup => {
             data.links.push({
-                'source': `group_${group.id}`,
-                'target': `group_${childGroup}`,
+                'target': `group_${group.id}`,
+                'source': `group_${childGroup}`,
                 'type': 'Group-to-Group'
             })
         })
 
         group.childMeters.forEach(meter => {
             data.links.push({
-                'source': `group_${group.id}`,
-                'target': `meter_${meter}`,
+                'target': `group_${group.id}`,
+                'source': `meter_${meter}`,
                 'type': 'group-to-meter'
             })
         })
