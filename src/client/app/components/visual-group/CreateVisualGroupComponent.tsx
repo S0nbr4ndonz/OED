@@ -234,27 +234,102 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 
     const columns = topSortAndPlaceGroups(allGroups);
-    /*
-    const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]) : GroupData[][] => {
+
+    
+    const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]) : GroupData[][] => 
+    {
 
         const sortedGroups: GroupData[][] = [];
-        const 
 
         if(columns.length == 0) return columns;
 
-        for(const column of  columns){
-            if(column.length <= 1) continue;
-
-            for(const group of column){
-                
+        columns.forEach((column, columnIndex) => 
+        {
+            if(column.length <= 1) 
+            {
+                sortedGroups.push(column);
+                return;
             }
-        }
 
-        
+            const currentSortedColumn: GroupData[] = [];
+
+            
+            console.log(columnIndex);
+
+            if(columnIndex < 1)
+            {
+                for(const meter of meters)
+                {
+                    const parentGroups = allGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
+
+                    /*Saving the length before pushing current parent group. 
+                    This ensures that a group with a single meter child is 
+                    placed closer to it's meter child*/
+                    const currentLength = currentSortedColumn.length;
+                    for(const parent of parentGroups)
+                    {
+                        if(currentSortedColumn.includes(parent)) continue;
+    
+                        /*If any parent group has the meter as their only child, then insert that parent 
+                        before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
+                        if(parent.childMeters.length == 1 && currentLength > 0){
+                            currentSortedColumn.splice(currentLength,0,parent);
+                            continue;
+                        }
+                            
+                        
+                        currentSortedColumn.push(parent);
+                    }
+                }
+            }
+            else
+            {
+
+                const previousColumn: GroupData[] = columns[columnIndex-1];
+                
+
+                for(const currentGroup of previousColumn)
+                {
+                    const parentGroups = allGroups.filter(group => group.childGroups.includes(currentGroup.id) && column.includes(group));
+                    
+
+                    if(parentGroups.length === 0) continue;
+    
+                    /*Saving the length before pushing current parent group. 
+                    This ensures that a group with a single meter child is 
+                    placed closer to it's meter child*/
+                    const currentLength = currentSortedColumn.length;
+                    for(const parent of parentGroups)
+                    {
+                        if(currentSortedColumn.includes(parent)) continue;
+    
+                        /*If any parent group has the meter as their only child, then insert that parent 
+                        before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
+                        if(parent.childGroups.length == 1 && currentLength > 0)
+                        {
+                            currentSortedColumn.splice(currentLength,0,parent);
+                            continue;
+                        }
+                            
+                        
+                        currentSortedColumn.push(parent);
+                    }
+
+                }
+
+            
+            
+            }
+
+            sortedGroups.push(currentSortedColumn);
+        });
 
         return sortedGroups;
     };
-    */
+
+    const sortedFinally = sortGroupsByChildren(columns, sortedGroupedMeters);
+
+    
 
     /*visuals start here */
     useEffect(() => {
@@ -292,7 +367,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const columnSpacing = 200; // Space between columns
 
         // Iterate through each column
-        columns.forEach((column, columnIndex) => {
+        sortedFinally.forEach((column, columnIndex) => {
             // Iterate through each group in the current column
             column.forEach((group, groupIndex) => {
                 // Find the corresponding node in groupNodeData
