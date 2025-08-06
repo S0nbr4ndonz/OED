@@ -23,17 +23,23 @@ interface CreateVisualGroupProps {
     meters: MeterData[];
 }
 
+type GroupNodeType = 'group' | 'selectedGroup' | 'childGroup' | 'deepGroup';
+type MeterNodeType = 'meter' | 'childMeter' | 'deepMeter';
+type AllNodeType = GroupNodeType | MeterNodeType;
+
 export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     groups,
     meters
 }) => {
-    const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+    const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
     const intl = useIntl();
 
     /*Get Group data and Meter data from redux*/
     const allGroups: GroupData[] = useAppSelector(selectAllGroups);
     const allMeters: MeterData[] = useAppSelector(selectAllMeters);
+
+    const selectedGroup: GroupData | undefined = allGroups.find(group => group.id === selectedGroupId);
 
     const groupedMeterIds: Set<number> = new Set(
         allGroups.flatMap(group => group.deepMeters)
@@ -98,9 +104,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
     /*Create color schema for meter and group props*/
-    const colors = ['#000000', '#b4331fff', '#FFF2CC'];
+    const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'group', 'selectedGroup', 'childGroup', 'deepGroup'];
+    const colors = ['#000000', '#DAE8FC', '#FFE6CC', '#b4331fff', '#FFF2CC', '#DAE8FC', '#DAE8FC'];
     const colorSchema = d3.scaleOrdinal<string, string>()
-        .domain(['meter', 'group', 'selectedGroup'])
+        .domain(allNodeTypes)
         .range(colors);
 
     /* Create data container to pass to D3 to force graph */
@@ -109,22 +116,36 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         links: []
     };
 
-    sortedGroupedMeters.map(value =>
+    sortedGroupedMeters.map(value => {
+        let nodeType: MeterNodeType = 'meter';
+        
+        if (selectedGroup) {
+            if (selectedGroup.childMeters.includes(value.id)) {
+                nodeType = 'childMeter';
+            } else if (selectedGroup.deepMeters.includes(value.id)) {
+                nodeType = 'deepMeter';
+            }
+        }
+
         data.nodes.push({
             'name': value.name,
             'id': `meter_${value.id}`,
             'meterType': value.meterType,
-            'type': 'meter'
+            'type': nodeType
         })
-    );
+    });
 
     allGroups.map(value => {
-        let nodeType = 'group';
+        let nodeType: GroupNodeType = 'group';
 
-        if (selectedGroupId === `group_${value.id}`) {
-            nodeType = 'selectedGroup';
+        if (selectedGroup) {
+            if (selectedGroupId === value.id) {
+                nodeType = 'selectedGroup';
+            } else if (selectedGroup.childGroups.includes(value.id)) {
+                nodeType = 'childGroup';
+            }
         }
-        
+
         data.nodes.push({
             'name': value.name,
             'id': `group_${value.id}`,
@@ -238,86 +259,76 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
     const columns = topSortAndPlaceGroups(allGroups);
 
-    const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]) : GroupData[][] => 
-    {
+    const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]): GroupData[][] => {
 
         const sortedGroups: GroupData[][] = [];
 
-        if(columns.length == 0) return columns;
+        if (columns.length == 0) return columns;
 
-        columns.forEach((column, columnIndex) => 
-        {
-            if(column.length <= 1) 
-            {
+        columns.forEach((column, columnIndex) => {
+            if (column.length <= 1) {
                 sortedGroups.push(column);
                 return;
             }
 
             const currentSortedColumn: GroupData[] = [];
 
-            if(columnIndex < 1)
-            {
-                for(const meter of meters)
-                {
+            if (columnIndex < 1) {
+                for (const meter of meters) {
                     const parentGroups = allGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
 
                     /*Saving the length before pushing current parent group. 
                     This ensures that a group with a single meter child is 
                     placed closer to it's meter child*/
                     const currentLength = currentSortedColumn.length;
-                    for(const parent of parentGroups)
-                    {
-                        if(currentSortedColumn.includes(parent)) continue;
-    
+                    for (const parent of parentGroups) {
+                        if (currentSortedColumn.includes(parent)) continue;
+
                         /*If any parent group has the meter as their only child, then insert that parent 
                         before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
-                        if(parent.childMeters.length == 1 && currentLength > 0){
-                            currentSortedColumn.splice(currentLength,0,parent);
+                        if (parent.childMeters.length == 1 && currentLength > 0) {
+                            currentSortedColumn.splice(currentLength, 0, parent);
                             continue;
                         }
-                            
-                        
+
+
                         currentSortedColumn.push(parent);
                     }
                 }
             }
-            else
-            {
+            else {
 
-                const previousColumn: GroupData[] = columns[columnIndex-1];
-                
+                const previousColumn: GroupData[] = columns[columnIndex - 1];
 
-                for(const currentGroup of previousColumn)
-                {
+
+                for (const currentGroup of previousColumn) {
                     const parentGroups = allGroups.filter(group => group.childGroups.includes(currentGroup.id) && column.includes(group));
-                    
 
-                    if(parentGroups.length === 0) continue;
-    
+
+                    if (parentGroups.length === 0) continue;
+
                     /*Saving the length before pushing current parent group. 
                     This ensures that a group with a single meter child is 
                     placed closer to it's meter child*/
                     const currentLength = currentSortedColumn.length;
-                    for(const parent of parentGroups)
-                    {
-                        if(currentSortedColumn.includes(parent)) continue;
-    
+                    for (const parent of parentGroups) {
+                        if (currentSortedColumn.includes(parent)) continue;
+
                         /*If any parent group has the meter as their only child, then insert that parent 
                         before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
-                        if(parent.childGroups.length == 1 && currentLength > 0)
-                        {
-                            currentSortedColumn.splice(currentLength,0,parent);
+                        if (parent.childGroups.length == 1 && currentLength > 0) {
+                            currentSortedColumn.splice(currentLength, 0, parent);
                             continue;
                         }
-                            
-                        
+
+
                         currentSortedColumn.push(parent);
                     }
 
                 }
 
-            
-            
+
+
             }
 
             sortedGroups.push(currentSortedColumn);
@@ -337,10 +348,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         /* Grab data via shallow copy */
         const nodes = data.nodes.map(d => ({ ...d }));
         const links = data.links.map(d => ({ ...d }));
+
+        const meterTypes: MeterNodeType[] = ['meter', 'childMeter', 'deepMeter'];
+        const groupTypes: GroupNodeType[] = ['group', 'selectedGroup', 'childGroup', 'deepGroup'];
         
         // Separate meter and group nodes
-        const meterNodeData = nodes.filter(d => d.type === 'meter');
-        const groupNodeData = nodes.filter(d => d.type === 'group' || d.type === 'selectedGroup');
+        const meterNodeData = nodes.filter(node => meterTypes.includes(node.type));
+        const groupNodeData = nodes.filter(node => groupTypes.includes(node.type));
 
         // Position meter nodes in a column on the left
         const meterColumnX = -width / 2 + 200; // 100px from left edge
@@ -445,9 +459,9 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('fill', d => colorSchema(d.type))
             .attr('data-id', d => d.id)
             .style('cursor', 'pointer')
-            .on('click', function(event, d) { 
-                console.log(data.nodes.find(node => node.id === d.id).type)   
-                console.log(data.nodes)    
+            .on('click', function (event, d) {
+                console.log(data.nodes.find(node => node.id === d.id).type)
+                console.log(data.nodes)
                 onGroupSelect(d.id);
                 console.log(data.nodes.find(node => node.id === d.id).type)
             })
@@ -462,7 +476,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('width', 60)
             .attr('height', 40)
             .attr('fill', d => colorSchema(d.type))
-            .attr('fill-opacity', 0)
+            .attr('fill-opacity', d => (d.type === 'childMeter' || d.type === 'deepMeter') ? 1 : 0)
             .attr('stroke', d => colorSchema(d.type))
             .attr('stroke-width', 2)
             .attr("stroke-dasharray", "5,5")
@@ -495,58 +509,58 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                     the edge of an element instead of the center of one*/
 
                     /*if link starts from a meter*/
-                    if(d.type == 'meter-to-group'){
+                    if (d.type == 'meter-to-group') {
 
-                        
+
                         /*take half of the width of the meter's rectangle element*/
-                        const halfWidth = 30; 
+                        const halfWidth = 30;
 
                         /*Translate the  beginning of the link 
-                        by the halfwidth, to have it start at the edge*/ 
+                        by the halfwidth, to have it start at the edge*/
                         return d.source.x + halfWidth;
                     }
-                    else{
-                    /* link starts from a group node*/ 
+                    else {
+                        /* link starts from a group node*/
 
-                    /*radius for a group node is set to 20 for all nodes*/
+                        /*radius for a group node is set to 20 for all nodes*/
                         const radius = 20;
 
                         /*translate link by the radius to have it start from the edge*/
                         return d.source.x + radius;
-                    }                    
+                    }
                 })
                 .attr('y1', d => d.source.y)
                 .attr('x2', d => {
-                    const dx= d.target.x - d.source.x;
+                    const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt( dx * dx + dy * dy);
+                    const length = Math.sqrt(dx * dx + dy * dy);
                     const nodeRadius = 20;
 
-                    return d.target.x - (dx/length) * nodeRadius;
+                    return d.target.x - (dx / length) * nodeRadius;
 
                 })
                 .attr('y2', d => {
-                    const dx= d.target.x - d.source.x;
+                    const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt( dx * dx + dy * dy);
+                    const length = Math.sqrt(dx * dx + dy * dy);
                     const nodeRadius = 20;
 
-                    return d.target.y - (dy/length) * nodeRadius;
+                    return d.target.y - (dy / length) * nodeRadius;
                 });
 
             groupNodes
                 .attr('cx', d => d.fx || d.x)  // Use fixed position if available
                 .attr('cy', d => d.fy || d.y);
-                
+
             meterNodes
                 .attr('x', d => (d.fx || d.x) - 30)
                 .attr('y', d => (d.fy || d.y) - 20);
-                
+
             label
                 .attr('x', d => d.fx || d.x)
                 .attr('y', d => (d.fy || d.y) - 25);
         });
-        
+
 
         // eslint-disable-next-line jsdoc/require-jsdoc
         function dragstart(event: any) {
@@ -596,27 +610,27 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             const legendEntry = legend.append('g')
                 .attr('transform', `translate(0, ${i * 30})`);
 
-            if(item == 'meter'){
+            if (item == 'meter') {
                 legendEntry.append('rect')
-                .attr('width', 40)
-                .attr('height', 25)
-                .attr('fill-opacity', 0)
-                .attr('stroke', colorSchema(item))
-                .attr('stroke-width', 2)
-                .attr("stroke-dasharray", "5,5")
-                .attr('x', -5)  // Center the rectangle
-                .attr('y',0); // Center the rectangle
+                    .attr('width', 40)
+                    .attr('height', 25)
+                    .attr('fill-opacity', 0)
+                    .attr('stroke', colorSchema(item))
+                    .attr('stroke-width', 2)
+                    .attr("stroke-dasharray", "5,5")
+                    .attr('x', -5)  // Center the rectangle
+                    .attr('y', 0); // Center the rectangle
             }
-            else if(item == 'unselectedGroup'){
+            else if (item == 'unselectedGroup') {
                 legendEntry.append('circle')
-                .attr('r', 15)
-                .attr('cx', 15) // Center the circle horizontally
-                .attr('cy', 15) // Center the circle vertically
-                .attr('fill', colorSchema(item))
-                .attr('fill-opacity', 0.5)
-                .attr('stroke', 'black')
-                .attr('stroke-width', 1)
-                .attr('stroke-dasharray', ('5,5'));
+                    .attr('r', 15)
+                    .attr('cx', 15) // Center the circle horizontally
+                    .attr('cy', 15) // Center the circle vertically
+                    .attr('fill', colorSchema(item))
+                    .attr('fill-opacity', 0.5)
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', ('5,5'));
             }
 
 
@@ -642,14 +656,16 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 existingSvg.remove();
             }
         };
-            }, [allGroups, allMeters, selectedGroupId]);
+    }, [allGroups, allMeters, selectedGroupId]);
 
     const onGroupSelect = (newSelectionId: string) => {
-        if (selectedGroupId === newSelectionId) {
+        // remove "group_" prefix from id
+        if (selectedGroupId === Number(newSelectionId.slice(6))) {
             setSelectedGroupId(null);
         } else {
-            setSelectedGroupId(newSelectionId);
-        }   
+            setSelectedGroupId(Number(newSelectionId.slice(6)));
+            console.log(selectedGroupId);
+        }
     }
 
     return (
