@@ -137,17 +137,17 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     allGroups.forEach(group => {
         group.childGroups.forEach(childGroup => {
             data.links.push({
-                'source': `group_${group.id}`,
-                'target': `group_${childGroup}`,
+                'target': `group_${group.id}`,
+                'source': `group_${childGroup}`,
                 'type': 'Group-to-Group'
             })
         })
 
         group.childMeters.forEach(meter => {
             data.links.push({
-                'source': `group_${group.id}`,
-                'target': `meter_${meter}`,
-                'type': 'group-to-meter'
+                'target': `group_${group.id}`,
+                'source': `meter_${meter}`,
+                'type': 'meter-to-group'
             })
         })
     });
@@ -238,6 +238,96 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
     const columns = topSortAndPlaceGroups(allGroups);
 
+    const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]) : GroupData[][] => 
+    {
+
+        const sortedGroups: GroupData[][] = [];
+
+        if(columns.length == 0) return columns;
+
+        columns.forEach((column, columnIndex) => 
+        {
+            if(column.length <= 1) 
+            {
+                sortedGroups.push(column);
+                return;
+            }
+
+            const currentSortedColumn: GroupData[] = [];
+
+            if(columnIndex < 1)
+            {
+                for(const meter of meters)
+                {
+                    const parentGroups = allGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
+
+                    /*Saving the length before pushing current parent group. 
+                    This ensures that a group with a single meter child is 
+                    placed closer to it's meter child*/
+                    const currentLength = currentSortedColumn.length;
+                    for(const parent of parentGroups)
+                    {
+                        if(currentSortedColumn.includes(parent)) continue;
+    
+                        /*If any parent group has the meter as their only child, then insert that parent 
+                        before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
+                        if(parent.childMeters.length == 1 && currentLength > 0){
+                            currentSortedColumn.splice(currentLength,0,parent);
+                            continue;
+                        }
+                            
+                        
+                        currentSortedColumn.push(parent);
+                    }
+                }
+            }
+            else
+            {
+
+                const previousColumn: GroupData[] = columns[columnIndex-1];
+                
+
+                for(const currentGroup of previousColumn)
+                {
+                    const parentGroups = allGroups.filter(group => group.childGroups.includes(currentGroup.id) && column.includes(group));
+                    
+
+                    if(parentGroups.length === 0) continue;
+    
+                    /*Saving the length before pushing current parent group. 
+                    This ensures that a group with a single meter child is 
+                    placed closer to it's meter child*/
+                    const currentLength = currentSortedColumn.length;
+                    for(const parent of parentGroups)
+                    {
+                        if(currentSortedColumn.includes(parent)) continue;
+    
+                        /*If any parent group has the meter as their only child, then insert that parent 
+                        before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
+                        if(parent.childGroups.length == 1 && currentLength > 0)
+                        {
+                            currentSortedColumn.splice(currentLength,0,parent);
+                            continue;
+                        }
+                            
+                        
+                        currentSortedColumn.push(parent);
+                    }
+
+                }
+
+            
+            
+            }
+
+            sortedGroups.push(currentSortedColumn);
+        });
+
+        return sortedGroups;
+    };
+
+    const sortedFinally = sortGroupsByChildren(columns, sortedGroupedMeters);
+
     /*visuals start here */
     useEffect(() => {
         /* View-box dimensions */
@@ -271,7 +361,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const columnSpacing = 200; // Space between columns
 
         // Iterate through each column
-        columns.forEach((column, columnIndex) => {
+        sortedFinally.forEach((column, columnIndex) => {
             // Iterate through each group in the current column
             column.forEach((group, groupIndex) => {
                 // Find the corresponding node in groupNodeData
@@ -332,10 +422,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         g.append('defs').append('marker')
             .attr('id', 'arrow-end')
             .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 25)
+            .attr('refX', 10)
             .attr('refY', 0)
-            .attr('markerWidth', 4)
-            .attr('markerHeight', 4)
+            .attr('markerWidth', 8)
+            .attr('markerHeight', 6)
             .attr('orient', 'auto')
             .append('svg:path')
             .attr('d', 'M0,-5L10,0L0,5');
@@ -360,8 +450,11 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 console.log(data.nodes)    
                 onGroupSelect(d.id);
                 console.log(data.nodes.find(node => node.id === d.id).type)
-            });
-
+            })
+            .attr('stroke', 'black')
+            .attr('stroke-width', 1)
+            .attr('stroke-dasharray', ('5,5'))
+            .attr('fill-opacity', 0.5);
 
         const meterNodes = g.selectAll('.meter-node')
             .data(meterNodeData)
@@ -397,19 +490,63 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         /* Update element positions when moved */
         simulation.on('tick', () => {
             link
-                .attr('x1', d => d.source.x)
+                .attr('x1', d => {
+                    /*translate where links begin to have them start at 
+                    the edge of an element instead of the center of one*/
+
+                    /*if link starts from a meter*/
+                    if(d.type == 'meter-to-group'){
+
+                        
+                        /*take half of the width of the meter's rectangle element*/
+                        const halfWidth = 30; 
+
+                        /*Translate the  beginning of the link 
+                        by the halfwidth, to have it start at the edge*/ 
+                        return d.source.x + halfWidth;
+                    }
+                    else{
+                    /* link starts from a group node*/ 
+
+                    /*radius for a group node is set to 20 for all nodes*/
+                        const radius = 20;
+
+                        /*translate link by the radius to have it start from the edge*/
+                        return d.source.x + radius;
+                    }                    
+                })
                 .attr('y1', d => d.source.y)
-                .attr('x2', d => d.target.x)
-                .attr('y2', d => d.target.y);
+                .attr('x2', d => {
+                    const dx= d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const length = Math.sqrt( dx * dx + dy * dy);
+                    const nodeRadius = 20;
+
+                    return d.target.x - (dx/length) * nodeRadius;
+
+                })
+                .attr('y2', d => {
+                    const dx= d.target.x - d.source.x;
+                    const dy = d.target.y - d.source.y;
+                    const length = Math.sqrt( dx * dx + dy * dy);
+                    const nodeRadius = 20;
+
+                    return d.target.y - (dy/length) * nodeRadius;
+                });
 
             groupNodes
-                .attr('cx', d => d.x)
-                .attr('cy', d => d.y);
-
+                .attr('cx', d => d.fx || d.x)  // Use fixed position if available
+                .attr('cy', d => d.fy || d.y);
+                
+            meterNodes
+                .attr('x', d => (d.fx || d.x) - 30)
+                .attr('y', d => (d.fy || d.y) - 20);
+                
             label
-                .attr('x', function (d) { return d.x; })
-                .attr('y', function (d) { return d.y - 25; });
+                .attr('x', d => d.fx || d.x)
+                .attr('y', d => (d.fy || d.y) - 25);
         });
+        
 
         // eslint-disable-next-line jsdoc/require-jsdoc
         function dragstart(event: any) {
@@ -459,19 +596,36 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             const legendEntry = legend.append('g')
                 .attr('transform', `translate(0, ${i * 30})`);
 
-            // Rectangle color box
-            legendEntry.append('circle')
+            if(item == 'meter'){
+                legendEntry.append('rect')
+                .attr('width', 40)
+                .attr('height', 25)
+                .attr('fill-opacity', 0)
+                .attr('stroke', colorSchema(item))
+                .attr('stroke-width', 2)
+                .attr("stroke-dasharray", "5,5")
+                .attr('x', -5)  // Center the rectangle
+                .attr('y',0); // Center the rectangle
+            }
+            else if(item == 'unselectedGroup'){
+                legendEntry.append('circle')
                 .attr('r', 15)
                 .attr('cx', 15) // Center the circle horizontally
                 .attr('cy', 15) // Center the circle vertically
-                .attr('fill', colorSchema(item));
+                .attr('fill', colorSchema(item))
+                .attr('fill-opacity', 0.5)
+                .attr('stroke', 'black')
+                .attr('stroke-width', 1)
+                .attr('stroke-dasharray', ('5,5'));
+            }
+
 
             // Text label
             legendEntry.append('text')
                 .attr('x', 40) // Position the text to the right of the circle
                 .attr('y', 20) // Align the text vertically with the circle
                 .style('fill', '#000')
-                .style('font-size', '14px')
+                .style('font-size', '12px')
                 .style('alignment-middle', 'middle')
                 /* internationalizing color legend text */
                 .text(intl.formatMessage({ id: `legend.graph.text.${item}` }));
