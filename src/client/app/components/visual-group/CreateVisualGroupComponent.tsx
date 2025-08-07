@@ -23,7 +23,7 @@ interface CreateVisualGroupProps {
     meters: MeterData[];
 }
 
-type GroupNodeType = 'group' | 'selectedGroup' | 'childGroup' | 'deepGroup';
+type GroupNodeType = 'unselectedGroup' | 'selectedGroup' | 'childGroup' | 'deepGroup';
 type MeterNodeType = 'meter' | 'childMeter' | 'deepMeter';
 type AllNodeType = GroupNodeType | MeterNodeType;
 
@@ -104,7 +104,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
     /*Create color schema for meter and group props*/
-    const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'group', 'selectedGroup', 'childGroup', 'deepGroup'];
+    const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
     const colors = ['#000000', '#DAE8FC', '#FFE6CC', '#b4331fff', '#FFF2CC', '#DAE8FC', '#DAE8FC'];
     const colorSchema = d3.scaleOrdinal<string, string>()
         .domain(allNodeTypes)
@@ -136,7 +136,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     });
 
     allGroups.map(value => {
-        let nodeType: GroupNodeType = 'group';
+        let nodeType: GroupNodeType = 'unselectedGroup';
 
         if (selectedGroup) {
             if (selectedGroupId === value.id) {
@@ -350,7 +350,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const links = data.links.map(d => ({ ...d }));
 
         const meterTypes: MeterNodeType[] = ['meter', 'childMeter', 'deepMeter'];
-        const groupTypes: GroupNodeType[] = ['group', 'selectedGroup', 'childGroup', 'deepGroup'];
+        const groupTypes: GroupNodeType[] = ['unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
         
         // Separate meter and group nodes
         const meterNodeData = nodes.filter(node => meterTypes.includes(node.type));
@@ -448,7 +448,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const link = g.selectAll('line')
             .data(links)
             .enter().append('line')
-            .style('stroke', '#aaa')
+            .style('stroke', 'black')
+            .attr('stroke-dasharray', ('5,5'))
             .attr('marker-end', 'url(#arrow-end)')
 
         /* Node Style */
@@ -622,6 +623,17 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                     .attr('y', 0); // Center the rectangle
             }
             else if (item == 'unselectedGroup') {
+                legendEntry.append('circle')
+                    .attr('r', 15)
+                    .attr('cx', 15) // Center the circle horizontally
+                    .attr('cy', 15) // Center the circle vertically
+                    .attr('fill', colorSchema(item))
+                    .attr('fill-opacity', 0.5)
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 1)
+                    .attr('stroke-dasharray', ('5,5'));
+            }
+            else if (item == 'selectedGroup') {
                 legendEntry.append('circle')
                     .attr('r', 15)
                     .attr('cx', 15) // Center the circle horizontally
