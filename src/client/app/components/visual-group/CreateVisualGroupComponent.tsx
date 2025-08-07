@@ -105,7 +105,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
     /*Create color schema for meter and group props*/
     const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
-    const colors = ['#000000', '#DAE8FC', '#FFE6CC', '#b4331fff', '#FFF2CC', '#DAE8FC', '#DAE8FC'];
+    const colors = ['#000000', '#DAE8FC', '#FFE6CC', '#b4331fff', '#FFF2CC', '#DAE8FC', '#FFE6CC'];
     const colorSchema = d3.scaleOrdinal<string, string>()
         .domain(allNodeTypes)
         .range(colors);
@@ -622,6 +622,26 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                     .attr('x', -5)  // Center the rectangle
                     .attr('y', 0); // Center the rectangle
             }
+            else if (item == 'childMeter') {
+                legendEntry.append('rect')
+                    .attr('width', 40)
+                    .attr('height', 25)
+                    .attr('fill', colorSchema(item))
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 2)
+                    .attr('x', -5)  // Center the rectangle
+                    .attr('y', 0); // Center the rectangle
+            }
+            else if (item == 'deepMeter') {
+                legendEntry.append('rect')
+                    .attr('width', 40)
+                    .attr('height', 25)
+                    .attr('fill', colorSchema(item))
+                    .attr('stroke', 'black')                    
+                    .attr('stroke-width', 2)
+                    .attr('x', -5)  // Center the rectangle
+                    .attr('y', 0); // Center the rectangle
+            }
             else if (item == 'unselectedGroup') {
                 legendEntry.append('circle')
                     .attr('r', 15)
@@ -641,9 +661,28 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                     .attr('fill', colorSchema(item))
                     .attr('fill-opacity', 0.5)
                     .attr('stroke', 'black')
-                    .attr('stroke-width', 1)
-                    .attr('stroke-dasharray', ('5,5'));
+                    .attr('stroke-width', 1);
             }
+            else if (item == 'childGroup') {
+                legendEntry.append('circle')
+                    .attr('r', 15)
+                    .attr('cx', 15) // Center the circle horizontally
+                    .attr('cy', 15) // Center the circle vertically
+                    .attr('fill', colorSchema(item))
+                    .attr('fill-opacity', 0.5)
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 1)            }
+            else if (item == 'deepGroup') {
+                legendEntry.append('circle')
+                    .attr('r', 15)
+                    .attr('cx', 15) // Center the circle horizontally
+                    .attr('cy', 15) // Center the circle vertically
+                    .attr('fill', colorSchema(item))
+                    .attr('fill-opacity', 0.5)
+                    .attr('stroke', 'black')
+                    .attr('stroke-width', 1)            
+                }
+
 
 
             // Text label
