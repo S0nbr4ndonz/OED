@@ -104,11 +104,38 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
     /*Create color schema for meter and group props*/
+<<<<<<< HEAD
     const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
     const colors = ['#000000', '#DAE8FC', '#FFE6CC', '#b4331fff', '#FFF2CC', '#DAE8FC', '#FFE6CC'];
+=======
+    const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'group', 'selectedGroup', 'childGroup', 'deepGroup'];
+    const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#b4331fff', '#FFF2CC', '#DAE8FC', '#DAE8FC'];
+>>>>>>> 3bd7c39f8d709745029995460e94f236432c8f2d
     const colorSchema = d3.scaleOrdinal<string, string>()
         .domain(allNodeTypes)
         .range(colors);
+
+    /*Create stroke schema for meter and group props*/
+    interface StrokeStyle {
+        color: string;
+        width: number;
+        dasharray: string;
+        opacity: number;
+    }
+    
+    const strokeStyles: StrokeStyle[] = [
+        { color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5 },      // meter
+        { color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0 },     // childMeter
+        { color: '#82B366', width: 3, dasharray: 'none', opacity: 1.0 },     // deepMeter
+        { color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5 },      // group
+        { color: '#D6B656', width: 3, dasharray: 'none', opacity: 1.0 },   // selectedGroup
+        { color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0 },     // childGroup
+        { color: '#DAE8FC', width: 3, dasharray: 'none', opacity: 1.0 }      // deepGroup
+    ];
+    
+    const strokeSchema = d3.scaleOrdinal<string, StrokeStyle>()
+        .domain(allNodeTypes)
+        .range(strokeStyles);
 
     /* Create data container to pass to D3 to force graph */
     const data: { nodes: any[], links: any[] } = {
@@ -156,11 +183,25 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     });
 
     allGroups.forEach(group => {
+        let childGroupType: GroupNodeType = 'group'; // node type of child groups of the current group
+        let childMeterType: MeterNodeType = 'meter'; // node type of child meters of the current group
+
+        if (selectedGroup) {
+            if (selectedGroupId === group.id) { // current group is the selected group
+                childGroupType = 'childGroup';
+                childMeterType = 'childMeter';
+            } else if (selectedGroup.childGroups.includes(group.id)) { // current group is a child group of the selected group
+                childGroupType = 'deepGroup';
+                childMeterType = 'deepMeter';
+            }
+        }
+
         group.childGroups.forEach(childGroup => {
             data.links.push({
                 'target': `group_${group.id}`,
                 'source': `group_${childGroup}`,
-                'type': 'Group-to-Group'
+                'type': 'Group-to-Group',
+                'sourceType': childGroupType
             })
         })
 
@@ -168,7 +209,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             data.links.push({
                 'target': `group_${group.id}`,
                 'source': `meter_${meter}`,
-                'type': 'meter-to-group'
+                'type': 'meter-to-group',
+                'sourceType': childMeterType
             })
         })
     });
@@ -432,25 +474,43 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const g = svg
             .append('g');
 
-        /* End arrow head */
-        g.append('defs').append('marker')
-            .attr('id', 'arrow-end')
-            .attr('viewBox', '0 -5 10 10')
-            .attr('refX', 10)
-            .attr('refY', 0)
-            .attr('markerWidth', 8)
-            .attr('markerHeight', 6)
-            .attr('orient', 'auto')
-            .append('svg:path')
-            .attr('d', 'M0,-5L10,0L0,5');
+        /* End arrow heads - create separate markers for each node type */
+        const defs = g.append('defs');
+        
+        allNodeTypes.forEach(nodeType => {
+            const strokeStyle = strokeSchema(nodeType);
+            const markerId = `arrow-end-${nodeType}`;
+            
+            defs.append('marker')
+                .attr('id', markerId)
+                .attr('viewBox', '0 -5 10 10')
+                .attr('refX', 10)
+                .attr('refY', 0)
+                .attr('markerWidth', 8)
+                .attr('markerHeight', 6)
+                .attr('markerUnits', 'userSpaceOnUse') // Fixed size regardless of stroke width
+                .attr('orient', 'auto')
+                .append('svg:path')
+                .attr('d', 'M0,-5L10,0L0,5')
+                .attr('fill', strokeStyle.color)
+                .attr('stroke', strokeStyle.color)
+        });
 
         /* Link Style */
         const link = g.selectAll('line')
             .data(links)
             .enter().append('line')
+<<<<<<< HEAD
             .style('stroke', 'black')
             .attr('stroke-dasharray', ('5,5'))
             .attr('marker-end', 'url(#arrow-end)')
+=======
+            .attr('stroke', d => strokeSchema(d.sourceType).color)
+            .attr('stroke-width', d => strokeSchema(d.sourceType).width)
+            .attr('stroke-dasharray', d => strokeSchema(d.sourceType).dasharray)
+            .attr('stroke-opacity', d => strokeSchema(d.sourceType).opacity)
+            .attr('marker-end', d => `url(#arrow-end-${d.sourceType})`)
+>>>>>>> 3bd7c39f8d709745029995460e94f236432c8f2d
 
         /* Node Style */
         const groupNodes = g.selectAll('.group-node')
@@ -460,15 +520,11 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('fill', d => colorSchema(d.type))
             .attr('data-id', d => d.id)
             .style('cursor', 'pointer')
-            .on('click', function (event, d) {
-                console.log(data.nodes.find(node => node.id === d.id).type)
-                console.log(data.nodes)
-                onGroupSelect(d.id);
-                console.log(data.nodes.find(node => node.id === d.id).type)
-            })
-            .attr('stroke', 'black')
-            .attr('stroke-width', 1)
-            .attr('stroke-dasharray', ('5,5'))
+            .on('click', (event, d) => onGroupSelect(d.id))
+            .attr('stroke', d => strokeSchema(d.type).color)
+            .attr('stroke-width', d => strokeSchema(d.type).width)
+            .attr('stroke-dasharray', d => strokeSchema(d.type).dasharray)
+            .attr('stroke-opacity', d => strokeSchema(d.type).opacity)
             .attr('fill-opacity', 0.5);
 
         const meterNodes = g.selectAll('.meter-node')
@@ -478,9 +534,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('height', 40)
             .attr('fill', d => colorSchema(d.type))
             .attr('fill-opacity', d => (d.type === 'childMeter' || d.type === 'deepMeter') ? 1 : 0)
-            .attr('stroke', d => colorSchema(d.type))
-            .attr('stroke-width', 2)
-            .attr("stroke-dasharray", "5,5")
+            .attr('stroke', d => strokeSchema(d.type).color)
+            .attr('stroke-width', d => strokeSchema(d.type).width)
+            .attr("stroke-dasharray", d => strokeSchema(d.type).dasharray)
+            .attr('stroke-opacity', d => strokeSchema(d.type).opacity)
             .attr('x', d => d.x - 30)  // Center the rectangle
             .attr('y', d => d.y - 20); // Center the rectangle
 
