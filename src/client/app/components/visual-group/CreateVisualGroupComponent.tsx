@@ -104,13 +104,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
     /*Create color schema for meter and group props*/
-<<<<<<< HEAD
     const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
-    const colors = ['#000000', '#DAE8FC', '#FFE6CC', '#b4331fff', '#FFF2CC', '#DAE8FC', '#FFE6CC'];
-=======
-    const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'group', 'selectedGroup', 'childGroup', 'deepGroup'];
-    const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#b4331fff', '#FFF2CC', '#DAE8FC', '#DAE8FC'];
->>>>>>> 3bd7c39f8d709745029995460e94f236432c8f2d
+    const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#b4331fff', '#FFF2CC', '#DAE8FC', '#D5E8D4'];
     const colorSchema = d3.scaleOrdinal<string, string>()
         .domain(allNodeTypes)
         .range(colors);
@@ -183,7 +178,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     });
 
     allGroups.forEach(group => {
-        let childGroupType: GroupNodeType = 'group'; // node type of child groups of the current group
+        let childGroupType: GroupNodeType = 'unselectedGroup'; // node type of child groups of the current group
         let childMeterType: MeterNodeType = 'meter'; // node type of child meters of the current group
 
         if (selectedGroup) {
@@ -500,17 +495,9 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const link = g.selectAll('line')
             .data(links)
             .enter().append('line')
-<<<<<<< HEAD
             .style('stroke', 'black')
             .attr('stroke-dasharray', ('5,5'))
             .attr('marker-end', 'url(#arrow-end)')
-=======
-            .attr('stroke', d => strokeSchema(d.sourceType).color)
-            .attr('stroke-width', d => strokeSchema(d.sourceType).width)
-            .attr('stroke-dasharray', d => strokeSchema(d.sourceType).dasharray)
-            .attr('stroke-opacity', d => strokeSchema(d.sourceType).opacity)
-            .attr('marker-end', d => `url(#arrow-end-${d.sourceType})`)
->>>>>>> 3bd7c39f8d709745029995460e94f236432c8f2d
 
         /* Node Style */
         const groupNodes = g.selectAll('.group-node')
