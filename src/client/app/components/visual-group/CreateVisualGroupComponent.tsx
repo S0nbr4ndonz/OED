@@ -495,9 +495,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const link = g.selectAll('line')
             .data(links)
             .enter().append('line')
-            .style('stroke', 'black')
-            .attr('stroke-dasharray', ('5,5'))
-            .attr('marker-end', 'url(#arrow-end)')
+            .attr('stroke', d => strokeSchema(d.sourceType).color)
+            .attr('stroke-width', d => strokeSchema(d.sourceType).width)
+            .attr('stroke-dasharray', d => strokeSchema(d.sourceType).dasharray)
+            .attr('marker-end', d => `url(#arrow-end-${d.sourceType})`)
 
         /* Node Style */
         const groupNodes = g.selectAll('.group-node')
@@ -541,10 +542,10 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .enter()
             .append('text')
             .text(function (d) { return d.name })
-            .style('text-anchor', 'middle')
-            .style('fill', '#000')
-            .style('font-family', 'Arial')
-            .style('font-size', 14);
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#000')
+            .attr('font-family', 'Arial')
+            .attr('font-size', 10);
 
         /* Update element positions when moved */
         simulation.on('tick', () => {
@@ -649,7 +650,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
         /* Color Legend */
         const legend = g.append('g')
-            .attr('transform', `translate(${-width / 2 + 20}, ${-height / 2 + 20})`);
+            .attr('transform', `translate(${-width / 2}, ${-height / 2 + 20})`);
 
         colorSchema.domain().forEach((item, i) => {
             const legendEntry = legend.append('g')
