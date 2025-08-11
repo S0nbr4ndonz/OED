@@ -42,12 +42,14 @@ router.post('/edit', async (req, res) => {
 			sourceId: {
 				type: 'integer',
 				// Do not allow negatives for now
-				minimum: 1 
+				minimum: 1,
+				maximum: Number.MAX_SAFE_INTEGER
 			},
 			destinationId: {
 				type: 'integer',
 				// Do not allow negatives for now
-				minimum: 1
+				minimum: 1,
+				maximum: Number.MAX_SAFE_INTEGER
 			},
 			bidirectional: {
 				type: 'boolean'
@@ -73,6 +75,7 @@ router.post('/edit', async (req, res) => {
 	if (!validatorResult.valid) {
 		log.warn(`Got request to edit conversions with invalid conversion data, errors: ${validatorResult.errors}`);
 		failure(res, 400, `Got request to edit conversions with invalid conversion data, errors: ${validatorResult.errors}`);
+		return;
 	} else {
 		const conn = getConnection();
 		try {
@@ -93,30 +96,35 @@ router.post('/edit', async (req, res) => {
 router.post('/addConversion', async (req, res) => {
 	const validConversion = {
 		type: 'object',
+		maxProperties: 6, // Prevent parameter injection attacks
 		required: ['sourceId', 'destinationId', 'bidirectional', 'slope', 'intercept'],
 		properties: {
 			sourceId: {
-				type: 'number',
+				type: 'integer',
 				// Do not allow negatives for now
-				minimum: 0
+				minimum: 1,
+				maximum: Number.MAX_SAFE_INTEGER
 			},
 			destinationId: {
-				type: 'number',
+				type: 'integer',
 				// Do not allow negatives for now
-				minimum: 0
+				minimum: 1,
+				maximum: Number.MAX_SAFE_INTEGER
 			},
 			bidirectional: {
 				type: 'boolean'
 			},
 			slope: {
-				type: 'float'
+				type: 'number'
 			},
 			intercept: {
-				type: 'float'
+				type: 'number'
 			},
 			note: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string',
+						maxLength: 1000
+					 },
 					{ type: 'null' }
 				]
 			}
@@ -155,17 +163,20 @@ router.post('/delete', async (req, res) => {
 	// Only require a source and destination id
 	const validConversion = {
 		type: 'object',
+		maxProperties: 2, // Prevent parameter injection attacks
 		required: ['sourceId', 'destinationId'],
 		properties: {
 			sourceId: {
-				type: 'number',
+				type: 'integer',
 				// Do not allow negatives for now
-				minimum: 0
+				minimum: 1,
+				maximum: Number.MAX_SAFE_INTEGER
 			},
 			destinationId: {
-				type: 'number',
+				type: 'integer',
 				// Do not allow negatives for now
-				minimum: 0
+				minimum: 1,
+				maximum: Number.MAX_SAFE_INTEGER
 			}
 		}
 	};
