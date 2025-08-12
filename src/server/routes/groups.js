@@ -30,7 +30,7 @@ function formatGroupForResponse(item) {
 	return {
 		id: item.id, name: item.name, gps: item.gps, displayable: item.displayable,
 		note: item.note, area: item.area, defaultGraphicUnit: item.defaultGraphicUnit,
-		deepMeters: item.children, areaUnit: item.areaUnit
+		deepMeters: item.deepMeters, deepGroups: item.deepGroups, areaUnit: item.areaUnit
 	};
 }
 
@@ -51,10 +51,13 @@ router.get('/', optionalAuthMiddleware, async (req, res) => {
 	const conn = getConnection();
 	try {
 		const rows = await Group.getAll(conn);
-		deepChildren = [];
+		deepMeters = [];
 		promises = await rows.map(async (row) => {
-			const deepChildren = await Group.getDeepMetersByGroupID(row.id, conn);
-			return { ...row, children: deepChildren };
+			const [deepMeters, deepGroups] = await Promise.all([
+				Group.getDeepMetersByGroupID(row.id, conn),
+				Group.getDeepGroupsByGroupID(row.id, conn)
+			]);
+			return { ...row, deepMeters: deepMeters, deepGroups: deepGroups }		
 		})
 		Promise.all(promises).then(function (values) {
 			res.json(values.map(formatGroupForResponse));
