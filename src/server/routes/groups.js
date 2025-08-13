@@ -51,7 +51,6 @@ router.get('/', optionalAuthMiddleware, async (req, res) => {
 	const conn = getConnection();
 	try {
 		const rows = await Group.getAll(conn);
-		deepMeters = [];
 		promises = await rows.map(async (row) => {
 			const [deepMeters, deepGroups] = await Promise.all([
 				Group.getDeepMetersByGroupID(row.id, conn),

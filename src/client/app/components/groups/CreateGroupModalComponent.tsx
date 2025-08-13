@@ -42,6 +42,8 @@ import { isEqual } from 'lodash';
  * Defines the create group modal form
  * @returns Group create element
  */
+
+
 export default function CreateGroupModalComponent() {
 	const translate = useTranslate();
 
@@ -85,6 +87,7 @@ export default function CreateGroupModalComponent() {
 		childMeters: [] as number[],
 		childGroups: [] as number[],
 		deepMeters: [] as number[],
+		deepGroups: [] as number[],
 		gps: null,
 		displayable: false,
 		note: '',
@@ -627,4 +630,5 @@ export default function CreateGroupModalComponent() {
 		// Sort for display.
 		return listedDeepMeters.sort();
 	}
+
 }
