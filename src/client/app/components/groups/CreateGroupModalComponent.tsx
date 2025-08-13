@@ -628,5 +628,4 @@ export default function CreateGroupModalComponent() {
 		// Sort for display.
 		return listedDeepMeters.sort();
 	}
-
 }
