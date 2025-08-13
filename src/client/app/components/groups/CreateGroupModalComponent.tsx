@@ -42,8 +42,6 @@ import { isEqual } from 'lodash';
  * Defines the create group modal form
  * @returns Group create element
  */
-
-
 export default function CreateGroupModalComponent() {
 	const translate = useTranslate();
 
