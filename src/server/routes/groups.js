@@ -52,11 +52,11 @@ router.get('/', optionalAuthMiddleware, async (req, res) => {
 	try {
 		const rows = await Group.getAll(conn);
 		const promises = await rows.map(async (row) => {
-			const [deepMeters, deepGroups] = await Promise.all([
-				Group.getDeepMetersByGroupID(row.id, conn),
-				Group.getDeepGroupsByGroupID(row.id, conn)
+		const [deepMeters, deepGroups] = await Promise.all([
+			Group.getDeepMetersByGroupID(row.id, conn),
+			Group.getDeepGroupsByGroupID(row.id, conn)
 			]);
-			return { ...row, deepMeters: deepMeters, deepGroups: deepGroups }		
+		return { ...row, deepMeters: deepMeters, deepGroups: deepGroups }		
 		})
 		Promise.all(promises).then(function (values) {
 			res.json(values.map(formatGroupForResponse));
