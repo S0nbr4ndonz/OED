@@ -59,6 +59,7 @@ router.get('/:map_id', async (req, res) => {
 		properties: {
 			map_id: {
 				type: 'string',
+				maxLength: 20,
 				pattern: '^\\d+$'
 			}
 		}
@@ -80,60 +81,74 @@ router.get('/:map_id', async (req, res) => {
 router.post('/create', adminAuthenticator('create maps'), async (req, res) => {
 	const validMap = {
 		type: 'object',
+		additionalProperties: false,
 		required: ['name', 'modifiedDate', 'filename', 'mapSource'],
 		properties: {
 			name: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: 100
 			},
 			filename: {
-				type: 'string'
+				type: 'string',
+				maxLength: 500
 			},
 			modifiedDate: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: 100
 			},
 			mapSource: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: 1000
 			},
 			note: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: 1000 },
 					{ type: 'null' }
 				]
 			},
 			displayable: {
-				type: 'bool'
+				type: 'boolean'
 			},
-			if: {
-				properties: {
-					origin: {
+			northAngle: {
+				type: 'number',
+				minimum: 0,
+				maximum: 360
+			},
+			circleSize: {
+				type: 'number',
+				minimum: 1,
+				maximum: 1000
+			},
+			origin: {
+				oneOf: [
+					{
 						type: 'object',
+						additionalProperties: false,
 						required: ['latitude', 'longitude'],
 						properties: {
-							latitude: { type: 'number', minimum: '-90', maximum: '90' },
-							longitude: { type: 'number', minimum: '-180', maximum: '180' }
+							latitude: { type: 'number', minimum: -90, maximum: 90 },
+							longitude: { type: 'number', minimum: -180, maximum: 180 }
 						}
-					}
-				}
+					},
+					{ type: 'null' }
+				]
 			},
-			then: {
-				properties: {
-					opposite: {
+			opposite: {
+				oneOf: [
+					{
 						type: 'object',
+						additionalProperties: false,
 						required: ['latitude', 'longitude'],
 						properties: {
-							latitude: { type: 'number', minimum: '-90', maximum: '90' },
-							longitude: { type: 'number', minimum: '-180', maximum: '180' }
+							latitude: { type: 'number', minimum: -90, maximum: 90 },
+							longitude: { type: 'number', minimum: -180, maximum: 180 }
 						}
-					}
-				}
-			},
-			else: {
-				properties: {
-					opposite: { type: 'null' }
-				}
+					},
+					{ type: 'null' }
+				]
 			}
 		}
 	};
@@ -179,64 +194,79 @@ router.post('/create', adminAuthenticator('create maps'), async (req, res) => {
 router.post('/edit', adminAuthenticator('edit maps'), async (req, res) => {
 	const validMap = {
 		type: 'object',
+		additionalProperties: false,
 		required: ['id', 'name', 'modifiedDate', 'filename', 'mapSource', 'displayable', 'note', 'origin', 'opposite'],
 		properties: {
 			id: {
 				type: 'integer',
-				minimum: 1
+				minimum: 1,
+				maximum: 2147483647
 			},
 			name: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: 100
 			},
 			filename: {
-				type: 'string'
+				type: 'string',
+				maxLength: 500
 			},
 			modifiedDate: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: 100
 			},
 			mapSource: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: 1000
 			},
 			note: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: 1000 },
 					{ type: 'null' }
 				]
 			},
 			displayable: {
-				type: 'bool'
+				type: 'boolean'
 			},
-			if: {
-				properties: {
-					origin: {
+			northAngle: {
+				type: 'number',
+				minimum: 0,
+				maximum: 360
+			},
+			circleSize: {
+				type: 'number',
+				minimum: 1,
+				maximum: 1000
+			},
+			origin: {
+				oneOf: [
+					{
 						type: 'object',
+						additionalProperties: false,
 						required: ['latitude', 'longitude'],
 						properties: {
-							latitude: { type: 'number', minimum: '-90', maximum: '90' },
-							longitude: { type: 'number', minimum: '-180', maximum: '180' }
+							latitude: { type: 'number', minimum: -90, maximum: 90 },
+							longitude: { type: 'number', minimum: -180, maximum: 180 }
 						}
-					}
-				}
+					},
+					{ type: 'null' }
+				]
 			},
-			then: {
-				properties: {
-					opposite: {
+			opposite: {
+				oneOf: [
+					{
 						type: 'object',
+						additionalProperties: false,
 						required: ['latitude', 'longitude'],
 						properties: {
-							latitude: { type: 'number', minimum: '-90', maximum: '90' },
-							longitude: { type: 'number', minimum: '-180', maximum: '180' }
+							latitude: { type: 'number', minimum: -90, maximum: 90 },
+							longitude: { type: 'number', minimum: -180, maximum: 180 }
 						}
-					}
-				}
-			},
-			else: {
-				properties: {
-					opposite: { type: 'null' }
-				}
+					},
+					{ type: 'null' }
+				]
 			}
 		}
 	};
@@ -285,7 +315,11 @@ router.post('/delete', adminAuthenticator('delete maps'), async (req, res) => {
 		maxProperties: 1,
 		required: ['id'],
 		properties: {
-			id: { type: 'integer' }
+			id: { 
+				type: 'integer',
+				minimum: 1,
+				maximum: 2147483647
+			}
 		}
 	};
 	if (!validate(req.body, validParams).valid) {
