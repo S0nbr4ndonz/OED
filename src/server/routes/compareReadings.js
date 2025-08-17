@@ -19,6 +19,7 @@ function validateMeterCompareReadingsParams(params) {
 		properties: {
 			meter_ids: {
 				type: 'string',
+				maxLength: 1000,
 				pattern: '^\\d+(?:,\\d+)*$' // Matches 1 or 1,2 or 1,2,34 (for example)
 			}
 		}
@@ -35,6 +36,7 @@ function validateGroupCompareReadingsParams(params) {
 		properties: {
 			group_ids: {
 				type: 'string',
+				maxLength: 1000,
 				pattern: '^\\d+(?:,\\d+)*$' // Matches 1 or 1,2 or 1,2,34 (for example)
 			}
 		}
@@ -50,16 +52,20 @@ function validateQueryParams(queryParams) {
 		required: ['curr_start', 'curr_end', 'shift', 'graphicUnitId'],
 		properties: {
 			curr_start: {
-				type: 'string' // iso 8601
+				type: 'string', // iso 8601
+				maxLength: 100
 			},
 			curr_end: {
-				type: 'string' // iso 8601
+				type: 'string', // iso 8601
+				maxLength: 100
 			},
 			shift: {
-				type: 'string' // iso 8601 duration
+				type: 'string', // iso 8601 duration
+				maxLength: 100
 			},
 			graphicUnitId: {
 				type: 'string',
+				maxLength: 20,
 				pattern: '^\\d+$'
 			}
 		}
