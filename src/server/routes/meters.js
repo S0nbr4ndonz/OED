@@ -128,12 +128,13 @@ router.get('/', async (req, res) => {
 router.get('/:meter_id', async (req, res) => {
 	const validParams = {
 		type: 'object',
-		maxProperties: 1,
+		additionalProperties: false,
 		required: ['meter_id'],
 		properties: {
 			meter_id: {
 				type: 'string',
-				pattern: '^\\d+$'
+				pattern: '^\\d+$',
+				maxLength: 20
 			}
 		}
 	};
@@ -162,27 +163,28 @@ router.get('/:meter_id', async (req, res) => {
 function validateMeterParams(params) {
 	const validParams = {
 		type: 'object',
-		maxProperties: 34,
+		additionalProperties: false,
 		// We can get rid of some of these if we defaulted more values in the meter model.
 		required: ['name', 'url', 'enabled', 'displayable', 'meterType', 'timeZone', 'note', 'area'],
 		properties: {
-			id: { type: 'integer' },
-			name: { type: 'string' },
+			id: { type: 'integer', minimum: 1 },
+			name: { type: 'string', maxLength: 100 },
 			url: {
 				oneOf: [
 					{ type: 'string' },
 					{ type: 'null' }
 				]
 			},
-			enabled: { type: 'bool' },
-			displayable: { type: 'bool' },
+			enabled: { type: 'boolean' },
+			displayable: { type: 'boolean' },
 			meterType: {
 				type: 'string',
-				enum: Object.values(Meter.type)
+				enum: Object.values(Meter.type),
+				maxLength: 50
 			},
 			timeZone: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: 100 },
 					{ type: 'null' }
 				]
 			},
@@ -201,35 +203,36 @@ function validateMeterParams(params) {
 			},
 			identifier: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: 100 },
 					{ type: 'null' }
 				]
 			},
 			note: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: 1000 },
 					{ type: 'null' }
 				]
 			},
 			area: { type: 'number', minimum: 0 },
-			cumulative: { type: 'bool' },
-			cumulativeReset: { type: 'bool' },
-			cumulativeResetStart: { type: 'string' },
-			cumulativeResetEnd: { type: 'string' },
+			cumulative: { type: 'boolean' },
+			cumulativeReset: { type: 'boolean' },
+			cumulativeResetStart: { type: 'string', maxLength: 100 },
+			cumulativeResetEnd: { type: 'string', maxLength: 100 },
 			readingGap: { type: 'number' },
 			readingVariation: { type: 'number' },
 			readingDuplication: { type: 'integer', minimum: '1', maximum: '9' },
 			timeSort: {
 				type: 'string',
-				enum: Object.values(MeterTimeSortTypesJS)
+				enum: Object.values(MeterTimeSortTypesJS),
+				maxLength: 20
 			},
-			endOnlyTime: { type: 'bool' },
+			endOnlyTime: { type: 'boolean' },
 			reading: { type: 'number' },
-			startTimestamp: { type: 'string' },
-			endTimestamp: { type: 'string' },
+			startTimestamp: { type: 'string', maxLength: 100 },
+			endTimestamp: { type: 'string', maxLength: 100 },
 			previousEnd: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: 100 },
 					{ type: 'null' }
 				]
 			},
@@ -238,17 +241,19 @@ function validateMeterParams(params) {
 			areaUnit: {
 				type: 'string',
 				minLength: 1,
+				maxLength: 50,
 				enum: Object.values(Unit.areaUnitType)
 			},
-			readingFrequency: { type: 'string' },
+			readingFrequency: { type: 'string', maxLength: 100 },
 			minVal: { type: 'number' },
 			maxVal: { type: 'number' },
-			minDate: { type: 'string' },
-			maxDate: { type: 'string' },
+			minDate: { type: 'string', maxLength: 100 },
+			maxDate: { type: 'string', maxLength: 100 },
 			maxError: { type: 'integer' },
 			disableChecks: {
 				type: 'string',
 				minLength: 1,
+				maxLength: 50,
 				enum: Object.values(Unit.disableChecksType)
 			}
 		}
