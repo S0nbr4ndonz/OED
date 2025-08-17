@@ -34,7 +34,8 @@ router.get('/', adminAuthMiddleware('get all users'), async (req, res) => {
 router.get('/token', async (req, res) => {
 	const token = req.headers.token || req.body.token || req.query.token;
 	const validParams = {
-		type: 'string'
+		type: 'string',
+		maxLength: 2000
 	};
 	if (!validate(token, validParams).valid) {
 		res.status(403).json({ message: 'No token provided or JSON was invalid.' });
@@ -68,12 +69,13 @@ router.get('/token', async (req, res) => {
 router.get('/:user_id', adminAuthMiddleware('get one user'), async (req, res) => {
 	const validParams = {
 		type: 'object',
-		maxProperties: 1,
+		additionalProperties: false,
 		required: ['user_id'],
 		properties: {
 			user_id: {
 				type: 'string',
-				pattern: '^\\d+$'
+				pattern: '^\\d+$',
+				maxLength: 20
 			}
 		}
 	};
@@ -94,20 +96,26 @@ router.get('/:user_id', adminAuthMiddleware('get one user'), async (req, res) =>
 router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) => {
 	const validParams = {
 		type: 'object',
+		additionalProperties: false,
 		required: ['username', 'password', 'role', 'note'],
 		properties: {
 			username: {
-				type: 'string'
+				type: 'string',
+				minLength: 5,
+				maxLength: 254
 			},
 			password: {
-				type: 'string'
+				type: 'string',
+				minLength: 8,
+				maxLength: 1000
 			},
 			role: {
 				type: 'string',
 				enum: Object.values(User.role)
 			},
 			note: {
-				type: 'string'
+				type: 'string',
+				maxLength: 1000
 			}
 		}
 	};
@@ -141,32 +149,35 @@ router.post('/edit', adminAuthMiddleware('update a user role'), async (req, res)
 	
 	const validParams = {
 		type: 'object',
+		additionalProperties: false,
 		required: ['user'],
 		properties: {
 			user: {
 				type: 'object',
+				additionalProperties: false,
 				required: ['id', 'username', 'role', 'note'],
 				properties: {
 					id: {
-						type: 'integer'
+						type: 'integer',
+						minimum: 1
 					},
 					username: {
 						type: 'string',
-						minLength: 3,
+						minLength: 5,
 						maxLength: 254
-							},
+					},
 					role: {
 						type: 'string',
 						enum: Object.values(User.role)
 					},
 					password: {
 						type: 'string',
-						// TODO Do not have minLength: 8 because this is optional. Nice if could check if present.
-						maxLength: 128
-		
+						// TODO: Optional field - if present, should be 8-1000 chars
+						maxLength: 1000
 					},
 					note: {
-						type: 'string'
+						type: 'string',
+						maxLength: 1000
 					}
 				}
 			}
@@ -230,10 +241,13 @@ router.post('/edit', adminAuthMiddleware('update a user role'), async (req, res)
 router.post('/delete', adminAuthMiddleware('delete a user'), async (req, res) => {
 	const validParams = {
 		type: 'object',
+		additionalProperties: false,
 		required: ['username'],
 		properties: {
 			username: {
-				type: 'string'
+				type: 'string',
+				minLength: 5,
+				maxLength: 254
 			}
 		}
 	};
