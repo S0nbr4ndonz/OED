@@ -53,7 +53,7 @@ router.get('/', optionalAuthMiddleware, async (req, res) => {
 		const rows = await Group.getAll(conn);
 		const promises = await rows.map(async (row) => {
 			const deepMeters = await Group.getDeepMetersByGroupID(row.id, conn);
-			return { ...row, deepMeters: deepMeters, deepGroups: [] };
+			return { ...row, deepMeters: deepMeters};
 		});
 		Promise.all(promises).then(function (values) {
 			res.json(values.map(formatGroupForResponse));
@@ -80,7 +80,7 @@ router.get('/idname', optionalAuthMiddleware, async (req, res) => {
  * Will return an array where every entry is a group with deep groups property
  * @param item group
 */
-router.get('/deep/groups', adminAuthMiddleware('view deep groups'), async ( req, res) =>{
+router.get('/deep/groups', adminAuthMiddleware('view deep groups'), async (req, res) => {
 	const conn = getConnection();
 	try{
 		const rows = await Group.getAll(conn);
