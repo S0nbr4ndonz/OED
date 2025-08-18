@@ -62,12 +62,12 @@ export const groupsApi = baseApi.injectEndpoints({
 			query: groupData => ({
 				url: 'api/groups/create',
 				method: 'POST',
-				// omit the 'id' property of the groupData or api errors/fails
-				body: omit(groupData, 'id')
+				// omit properties not accepted by the server schema
+				body: omit(groupData, ['id', 'deepMeters', 'deepGroups'])
 			}),
 			invalidatesTags: ['GroupData', 'GroupChildrenData']
 		}),
-		editGroup: builder.mutation<void, Omit<GroupData, 'deepMeters'>>({
+		editGroup: builder.mutation<void, Omit<GroupData, 'deepMeters' | 'deepGroups'>>({
 			query: group => ({
 				url: 'api/groups/edit',
 				method: 'PUT',
