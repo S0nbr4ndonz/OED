@@ -8,9 +8,7 @@ import { useAppSelector } from '../../redux/reduxHooks';
 import { GroupData } from '../../../../client/app/types/redux/groups'
 import { MeterData } from '../../../../client/app/types/redux/meters'
 import { selectAllMeters } from '../../redux/api/metersApi';
-import { selectAllGroups, selectGroupDataById } from '../../redux/api/groupsApi';
-import { eventManager } from 'react-toastify/dist/core';
-//import { CardColumns } from 'reactstrap';
+import { selectAllGroups, groupsApi } from '../../redux/api/groupsApi';
 
 /**
  *   Visual graph component that shows the relationship between all groups and meters
@@ -23,6 +21,7 @@ interface CreateVisualGroupProps {
     meters: MeterData[];
 }
 
+//Declare node types for groups and meters, will determine every node's design schema on the graphic
 type GroupNodeType = 'unselectedGroup' | 'selectedGroup' | 'childGroup' | 'deepGroup';
 type MeterNodeType = 'meter' | 'childMeter' | 'deepMeter';
 type AllNodeType = GroupNodeType | MeterNodeType;
@@ -35,14 +34,27 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
     const intl = useIntl();
 
-    /*Get Group data and Meter data from redux*/
-    const allGroups: GroupData[] = useAppSelector(selectAllGroups);
+    /*Get Meter data from redux*/
     const allMeters: MeterData[] = useAppSelector(selectAllMeters);
+    
+    // Fetch deep groups data and all groups data
+    const { data: deepGroupsData = [], isLoading: deepGroupsLoading } = groupsApi.useGetAllGroupsDeepGroupsQuery();
+    const allGroups: GroupData[] = useAppSelector(selectAllGroups);
+    
+    // Merge deepGroups data with allGroups
+    const mergedGroups: GroupData[] = allGroups.map(group => {
+        const deepGroupData = deepGroupsData.find(dg => dg.id === group.id);
+        return {
+            ...group,
+            deepGroups: deepGroupData?.deepGroups || []
+        };
+    });
 
-    const selectedGroup: GroupData | undefined = allGroups.find(group => group.id === selectedGroupId);
+
+    const selectedGroup: GroupData | undefined = mergedGroups.find(group => group.id === selectedGroupId);
 
     const groupedMeterIds: Set<number> = new Set(
-        allGroups.flatMap(group => group.deepMeters)
+        mergedGroups.flatMap(group => group.deepMeters)
     );
 
     const groupedMeters: MeterData[] = allMeters.filter(meterData => groupedMeterIds.has(meterData.id));
@@ -75,7 +87,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 
                 // Count shared groups between lastMeter and current meter
-                const sharedGroups = allGroups.filter(group =>
+                const sharedGroups = mergedGroups.filter(group =>
                     group.deepMeters.includes(lastMeter.id) &&
                     group.deepMeters.includes(meter.id)
                 ).length;
@@ -125,7 +137,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         { color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5 },      // group
         { color: '#D6B656', width: 3, dasharray: 'none', opacity: 1.0 },   // selectedGroup
         { color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0 },     // childGroup
-        { color: '#DAE8FC', width: 3, dasharray: 'none', opacity: 1.0 }      // deepGroup
+        { color: '#82B366', width: 3, dasharray: 'none', opacity: 1.0 }      // deepGroup
     ];
     
     const strokeSchema = d3.scaleOrdinal<string, StrokeStyle>()
@@ -138,6 +150,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         links: []
     };
 
+    //Add meters to data container
     sortedGroupedMeters.map(value => {
         let nodeType: MeterNodeType = 'meter';
         
@@ -157,7 +170,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         })
     });
 
-    allGroups.map(value => {
+    //Add groups to data container
+    mergedGroups.map(value => {
         let nodeType: GroupNodeType = 'unselectedGroup';
 
         if (selectedGroup) {
@@ -165,6 +179,9 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 nodeType = 'selectedGroup';
             } else if (selectedGroup.childGroups.includes(value.id)) {
                 nodeType = 'childGroup';
+            }
+            else if( selectedGroup.deepGroups.includes(value.id)){
+                nodeType = 'deepGroup';
             }
         }
 
@@ -177,7 +194,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         });
     });
 
-    allGroups.forEach(group => {
+    mergedGroups.forEach(group => {
         let childGroupType: GroupNodeType = 'unselectedGroup'; // node type of child groups of the current group
         let childMeterType: MeterNodeType = 'meter'; // node type of child meters of the current group
 
@@ -185,7 +202,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             if (selectedGroupId === group.id) { // current group is the selected group
                 childGroupType = 'childGroup';
                 childMeterType = 'childMeter';
-            } else if (selectedGroup.childGroups.includes(group.id)) { // current group is a child group of the selected group
+            } else if (selectedGroup.childGroups.includes(group.id) || selectedGroup.deepGroups.includes(group.id)) { // current group is a child/deep group of the selected group
+                console.log('made it to else if!')
                 childGroupType = 'deepGroup';
                 childMeterType = 'deepMeter';
             }
@@ -210,6 +228,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         })
     });
 
+    /* Uses Topological Sorting to sort groups into columns based on their depth*/
     const topSortAndPlaceGroups = (groups: GroupData[]): GroupData[][] => {
         // Build adjacency list (child -> parents relationship)
         const adjacencyList = new Map<number, number[]>();
@@ -238,7 +257,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         const queue: number[] = [];
         const result: GroupData[] = [];
 
-        // Add all groups with in-degree 0 (leaf nodes)
+        // Add all groups with in-degree 0 (those who only have meters as children)
         groups.forEach(group => {
             if ((inDegree.get(group.id) || 0) === 0) {
                 queue.push(group.id);
@@ -294,8 +313,9 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         return columns;
     };
 
-    const columns = topSortAndPlaceGroups(allGroups);
+    const columns = topSortAndPlaceGroups(mergedGroups);
 
+    /* Sort each column to ensure that groups are closer to their children, minimizes intersecting edges/links */
     const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]): GroupData[][] => {
 
         const sortedGroups: GroupData[][] = [];
@@ -312,7 +332,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
             if (columnIndex < 1) {
                 for (const meter of meters) {
-                    const parentGroups = allGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
+                    const parentGroups = mergedGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
 
                     /*Saving the length before pushing current parent group. 
                     This ensures that a group with a single meter child is 
@@ -339,7 +359,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 
                 for (const currentGroup of previousColumn) {
-                    const parentGroups = allGroups.filter(group => group.childGroups.includes(currentGroup.id) && column.includes(group));
+                    const parentGroups = mergedGroups.filter(group => group.childGroups.includes(currentGroup.id) && column.includes(group));
 
 
                     if (parentGroups.length === 0) continue;
@@ -401,8 +421,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         meterNodeData.forEach((node, index) => {
             node.x = meterColumnX;
             node.y = meterStartY + (index * meterSpacing);
-            node.fx = node.x; // Fix position
-            node.fy = node.y;
+            node.fx = node.x; // Fixed x-position
+            node.fy = node.y; //Fixed y-position
         });
 
         // Position group nodes in columns
@@ -434,8 +454,11 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
         // Calculate SVG dimensions immediately after positioning meter nodes
         const calculateSvgDimensions = () => {
+            const node = g.node();
+            if (!node) return; // Exit if node doesn't exist yet
+            
             // Get the bounding box of all content
-            const bbox = g.node()!.getBBox();
+            const bbox = node.getBBox();
 
             // Add padding
             const padding = 50;
@@ -453,8 +476,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .force('link', d3.forceLink(links)
                 /* Set all link ids (from data.links) */
                 .id((d: any) => d.id)
-                /* For demo purposes, default link length is 90 */
-                .distance(90)
+                .distance(90) //link length is 90
             )
             .force('x', d3.forceX().strength(0.1)) // Weaker force for groups
             .force('y', d3.forceY().strength(0.1)); // Weaker force for groups
@@ -500,7 +522,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('stroke-dasharray', d => strokeSchema(d.sourceType).dasharray)
             .attr('marker-end', d => `url(#arrow-end-${d.sourceType})`)
 
-        /* Node Style */
+        /* Unselected/Default Group Node Style */
         const groupNodes = g.selectAll('.group-node')
             .data(groupNodeData)
             .enter().append('circle')
@@ -515,6 +537,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .attr('stroke-opacity', d => strokeSchema(d.type).opacity)
             .attr('fill-opacity', 0.5);
 
+        /* Meter Node Style */
         const meterNodes = g.selectAll('.meter-node')
             .data(meterNodeData)
             .enter().append('rect')
@@ -742,7 +765,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         });
 
         // Calculate SVG dimensions after all elements are created
-        calculateSvgDimensions();
+        setTimeout(() => calculateSvgDimensions(), 0);
 
         // Cleanup function - runs when component unmounts or dependencies change
         return () => {
@@ -752,7 +775,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 existingSvg.remove();
             }
         };
-    }, [allGroups, allMeters, selectedGroupId]);
+    }, [mergedGroups, allMeters, selectedGroupId]);
 
     const onGroupSelect = (newSelectionId: string) => {
         // remove "group_" prefix from id
@@ -760,8 +783,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             setSelectedGroupId(null);
         } else {
             setSelectedGroupId(Number(newSelectionId.slice(6)));
-            console.log(selectedGroupId);
         }
+    }
+
+    // Don't render until deep groups data is loaded
+    if (deepGroupsLoading) {
+        return <div>Loading...</div>;
     }
 
     return (

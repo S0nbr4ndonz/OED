@@ -1,4 +1,3 @@
-
 import { FormattedMessage } from 'react-intl';
 import TooltipHelpComponent from '../TooltipHelpComponent';
 import * as React from 'react';
@@ -8,16 +7,22 @@ import { selectAllGroups } from '../../redux/api/groupsApi';
 import {selectAllMeters} from '../../redux/api/metersApi'
 import { useAppSelector } from '../../redux/reduxHooks';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
-//import {getDeepGroupsByID} from '../../../../server/models/Group';
 
+
+/**
+ * Defines the meters and groups relationships graphics view
+ * @returns Groups visual page element
+ */
 export default function VisualGroupDetailComponent(){
 
+    /*Get Group and Meter data from Redux */
     const groupData = useAppSelector(selectAllGroups);
     const meterData = useAppSelector(selectAllMeters);
     
 
     const tooltipStyle = {
         ...tooltipBaseStyle,
+        //Only an admin is permitted access to the group visuals page
         tooltipVisualGroupView: 'help.admin.groupvisuals'
     }
 

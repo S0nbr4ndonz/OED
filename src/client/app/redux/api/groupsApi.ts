@@ -85,6 +85,10 @@ export const groupsApi = baseApi.injectEndpoints({
 		}),
 		getParentIDs: builder.query<number[], number>({
 			query: groupId => `api/groups/parents/${groupId}`
+		}),
+		getAllGroupsDeepGroups: builder.query<GroupData[], void>({
+			query: () => 'api/groups/deep/groups',
+			providesTags: ['GroupData']
 		})
 	})
 });
