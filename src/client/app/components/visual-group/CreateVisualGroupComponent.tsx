@@ -159,9 +159,9 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         let nodeType: MeterNodeType = 'meter';
         
         if (selectedGroup) {
-            if (selectedGroup.childMeters.includes(value.id)) {
+            if (selectedGroup.childMeters.includes(value.id)) { //The current meter is a child meter
                 nodeType = 'childMeter';
-            } else if (selectedGroup.deepMeters.includes(value.id)) {
+            } else if (selectedGroup.deepMeters.includes(value.id)) { //The current meter is a deep meter
                 nodeType = 'deepMeter';
             }
         }
@@ -179,12 +179,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
         let nodeType: GroupNodeType = 'unselectedGroup';
 
         if (selectedGroup) {
-            if (selectedGroupId === value.id) {
+            if (selectedGroupId === value.id) { //The current group is the selected group
                 nodeType = 'selectedGroup';
-            } else if (selectedGroup.childGroups.includes(value.id)) {
+            } else if (selectedGroup.childGroups.includes(value.id)) {//The current group is a direct child of the selected group
                 nodeType = 'childGroup';
             }
-            else if( selectedGroup.deepGroups.includes(value.id)){
+            else if( selectedGroup.deepGroups.includes(value.id)){// The current group is a deep child of the selected group
                 nodeType = 'deepGroup';
             }
         }
@@ -244,7 +244,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             inDegree.set(group.id, 0);
         });
 
-        // Build graph: for each group, add edges from child to parent
+        //For each group, add edges from child to parent
         groups.forEach(group => {
             group.childGroups.forEach(childGroupId => {
                 // Add edge from child to parent 
@@ -257,11 +257,11 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             });
         });
 
-        // Kahn's algorithm for topological sort
+        // Utilizing Kahn's algorithm
         const queue: number[] = [];
         const result: GroupData[] = [];
 
-        // Add all groups with in-degree 0 (those who only have meters as children)
+        // Add all groups who only have meters as children( with in-degree of 0)
         groups.forEach(group => {
             if ((inDegree.get(group.id) || 0) === 0) {
                 queue.push(group.id);
@@ -285,19 +285,19 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             });
         }
 
-        // Check for cycles
+        // Error check for cycles
         if (result.length !== groups.length) {
             throw new Error('Cycle detected in group hierarchy');
         }
 
-        // Now place in columns based on topological order
+        //Place in columns based on topological order
         const columns: GroupData[][] = [];
         const groupToColumn = new Map<number, number>();
 
         result.forEach(group => {
             let maxParentColumn = -1;
 
-            // Find the maximum column of any parent
+            // Find the maximum column for every group
             group.childGroups.forEach(childGroupId => {
                 const parentColumn = groupToColumn.get(childGroupId) || 0;
                 maxParentColumn = Math.max(maxParentColumn, parentColumn);
@@ -588,7 +588,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                         /*take half of the width of the meter's rectangle element*/
                         const halfWidth = 30;
 
-                        /*Translate the  beginning of the link 
+                        /*Translate the beginning of the link 
                         by the halfwidth, to have it start at the edge*/
                         return d.source.x + halfWidth;
                     }
@@ -604,11 +604,15 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 })
                 .attr('y1', d => d.source.y)
                 .attr('x2', d => {
+                    /*Get the x-distance and the y-distance from source to target*/
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
+
+                    /*Calculate the hypotenuse/length the link should be*/
                     const length = Math.sqrt(dx * dx + dy * dy);
                     const nodeRadius = 20;
 
+                    /*translate the link from the center of the node by the
                     return d.target.x - (dx / length) * nodeRadius;
 
                 })
@@ -622,7 +626,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                 });
 
             groupNodes
-                .attr('cx', d => d.fx || d.x)  // Use fixed position if available
+                .attr('cx', d => d.fx || d.x)  
                 .attr('cy', d => d.fy || d.y);
 
             meterNodes
