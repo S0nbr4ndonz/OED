@@ -15,7 +15,6 @@ import { selectAllGroups, groupsApi } from '../../redux/api/groupsApi';
  * entered by an admin
  * @returns D3 force graph visual
  */
-
 interface CreateVisualGroupProps {
     groups: GroupData[];
     meters: MeterData[];
@@ -30,6 +29,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     groups,
     meters
 }) => {
+
     const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
     const intl = useIntl();
@@ -37,11 +37,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     /*Get Meter data from redux*/
     const allMeters: MeterData[] = useAppSelector(selectAllMeters);
     
-    // Fetch deep groups data and all groups data
+    /* Fetch deep groups data from API */
     const { data: deepGroupsData = [], isLoading: deepGroupsLoading } = groupsApi.useGetAllGroupsDeepGroupsQuery();
+
+    /* Get all Group data from Redux */
     const allGroups: GroupData[] = useAppSelector(selectAllGroups);
     
-    // Merge deepGroups data with allGroups
+    /* Merge deepGroups data with allGroups */
     const mergedGroups: GroupData[] = allGroups.map(group => {
         const deepGroupData = deepGroupsData.find(dg => dg.id === group.id);
         return {
@@ -53,10 +55,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
     const selectedGroup: GroupData | undefined = mergedGroups.find(group => group.id === selectedGroupId);
 
+    /*Get all meters who are in any way a children of a group */
     const groupedMeterIds: Set<number> = new Set(
         mergedGroups.flatMap(group => group.deepMeters)
     );
 
+    /*Only keep meters who have a relationship with a group */
     const groupedMeters: MeterData[] = allMeters.filter(meterData => groupedMeterIds.has(meterData.id));
 
     // Sort meters to minimize distance between meters that share groups
