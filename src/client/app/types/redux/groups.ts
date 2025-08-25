@@ -18,7 +18,6 @@ export interface GroupData {
 	childMeters: number[];
 	childGroups: number[];
 	deepMeters: number[];
-	deepGroups: number[];
 	gps: GPSPoint | null;
 	displayable: boolean;
 	note?: string;
