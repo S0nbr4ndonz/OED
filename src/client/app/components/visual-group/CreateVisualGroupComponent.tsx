@@ -485,6 +485,11 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
             .force('x', d3.forceX().strength(0.1)) // Weaker force for groups
             .force('y', d3.forceY().strength(0.1)); // Weaker force for groups
 
+        const zoom = d3.zoom()
+            .scaleExtent([0.5, 32])
+            .on("zoom", zoomed);
+                
+
         const svg = d3.select('#sample')
             .append('svg')
             .attr('width', width)
@@ -494,6 +499,24 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
         const g = svg
             .append('g');
+
+        svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+
+        // Zoom in
+        d3.select("#zoom-in").on("click", () => {
+    svg.transition().call(zoom.scaleBy, 1.2);
+}       );
+
+        // Zoom out
+        d3.select("#zoom-out").on("click", () => {
+            svg.transition().call(zoom.scaleBy, 0.8);
+        });
+
+        // Reset
+        d3.select("#reset").on("click", () => {
+            svg.transition().call(zoom.transform, d3.zoomIdentity);
+        });
+
 
         /* End arrow heads - create separate markers for each node type */
         const defs = g.append('defs');
@@ -612,16 +635,20 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                     const length = Math.sqrt(dx * dx + dy * dy);
                     const nodeRadius = 20;
 
-                    /*translate the link from the center of the node by the
+                    /* Translate link endpoint from node center to node edge by scaling the direction vector by node radius */
                     return d.target.x - (dx / length) * nodeRadius;
 
                 })
                 .attr('y2', d => {
+                    /*Get the x-distance and the y-distance from source to target*/
                     const dx = d.target.x - d.source.x;
                     const dy = d.target.y - d.source.y;
+
+                    /*Calculate the hypotenuse/length the link should be*/
                     const length = Math.sqrt(dx * dx + dy * dy);
                     const nodeRadius = 20;
 
+                    /* Translate link endpoint from node center to node edge by scaling the direction vector by node radius */
                     return d.target.y - (dy / length) * nodeRadius;
                 });
 
@@ -678,6 +705,14 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
                     event.subject.fy = event.subject.originalY;
                 });
         }
+
+        
+        function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
+            g.attr("transform", event.transform.toString());
+        }
+        
+           
+
 
         /* Color Legend */
         const legend = g.append('g')
@@ -802,7 +837,14 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
     return (
         <div>
             <div id='sample' style={{ width: '100%', height: '100vh', overflowY: 'auto', overflowX: 'auto' }} />
+                <div>
+                    <button id="zoom-in">+</button>
+                    <button id="zoom-out">-</button>
+                    <button id="reset">Reset</button>
+                <div id="sample" style={{ width: '100%', height: '100vh', overflow: 'auto' }} />
+            </div>
         </div>
+        
     );
 
 
