@@ -11,7 +11,6 @@ import { ConversionData } from 'types/redux/conversions';
 import { CikData } from 'types/redux/ciks';
 import { selectAllUnits } from '../../redux/api/unitsApi';
 
-
 /**
  * Visual graph component that shows the relationship between units and conversions
  * entered by an admin.
