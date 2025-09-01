@@ -9,6 +9,9 @@ import { GroupData } from '../../../../client/app/types/redux/groups'
 import { MeterData } from '../../../../client/app/types/redux/meters'
 import { selectAllMeters } from '../../redux/api/metersApi';
 import { selectAllGroups, groupsApi } from '../../redux/api/groupsApi';
+import TooltipMarkerComponent from '../TooltipMarkerComponent';
+import { FormattedMessage } from 'react-intl';
+import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 
 /**
  *   Visual graph component that shows the relationship between all groups and meters
@@ -51,7 +54,6 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			deepGroups: deepGroupData?.deepGroups || []
 		};
 	});
-
 
 	const selectedGroup: GroupData | undefined = mergedGroups.find(group => group.id === selectedGroupId);
 
@@ -864,8 +866,22 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		return <div>Loading...</div>;
 	}
 
+	const tooltipStyle = {
+		...tooltipBaseStyle,
+		//Only an admin is permitted access to the group visuals page
+		tooltipVisualGroupView: 'help.admin.groupvisuals'
+	}
+
 	return (
 		<div>
+			<div className='container-fluid'>
+				<h1 style={titleStyle}>
+					<FormattedMessage id='group.visual.page.title'></FormattedMessage>
+					<div style={tooltipStyle}>
+						<TooltipMarkerComponent page='visual-group' helpTextId={tooltipStyle.tooltipVisualGroupView} />
+					</div>
+				</h1>
+			</div>
 			<div id='sample' style={{ width: '100%', height: '100vh', overflowY: 'auto', overflowX: 'auto' }} />
 				<div>
 					<button id="zoom-in">+</button>
