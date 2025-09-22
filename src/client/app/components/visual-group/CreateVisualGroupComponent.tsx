@@ -24,9 +24,20 @@ interface CreateVisualGroupProps {
 }
 
 //Declare node types for groups and meters, will determine every node's design schema on the graphic
-type GroupNodeType = 'unselectedGroup' | 'selectedGroup' | 'childGroup' | 'deepGroup';
-type MeterNodeType = 'meter' | 'childMeter' | 'deepMeter';
+enum GroupNodeType{
+	unselectedGroup = 'unselectedGroup',
+	selectedGroup = 'selectedGroup',
+	childGroup = 'childGroup',
+	deepGroup ='deepGroup'
+};
+enum MeterNodeType {
+	meter = 'meter',
+	childMeter = 'childMeter',
+	deepMeter = 'deepMeter',
+};
+
 type AllNodeType = GroupNodeType | MeterNodeType;
+
 
 export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 	groups,
@@ -122,7 +133,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 	const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
 	/*Create color schema for meter and group props*/
-	const allNodeTypes: AllNodeType[] = ['meter', 'childMeter', 'deepMeter', 'unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
+	const allNodeTypes: AllNodeType[] = [...Object.values(MeterNodeType), ...Object.values(GroupNodeType)];
 	const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#b4331fff', '#FFF2CC', '#DAE8FC', '#D5E8D4'];
 	const colorSchema = d3.scaleOrdinal<string, string>()
 		.domain(allNodeTypes)
@@ -158,15 +169,15 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	//Add meters to data container
 	sortedGroupedMeters.map(value => {
-		let nodeType: MeterNodeType = 'meter';
+		let nodeType: MeterNodeType = MeterNodeType.meter
 		
 		if (selectedGroup) { 
 			if (selectedGroup.childMeters.includes(value.id)) {
                 //The current meter is a child meter 
-				nodeType = 'childMeter';
+				nodeType = MeterNodeType.childMeter;
 			} else if (selectedGroup.deepMeters.includes(value.id)) { 
                 //The current meter is a deep meter
-				nodeType = 'deepMeter';
+				nodeType = MeterNodeType.deepMeter;
 			}
 		}
 
@@ -180,19 +191,19 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	//Add groups to data container
 	mergedGroups.map(value => {
-		let nodeType: GroupNodeType = 'unselectedGroup';
+		let nodeType: GroupNodeType = GroupNodeType.unselectedGroup;
 
 		if (selectedGroup) {
 			if (selectedGroupId === value.id) { 
                 //The current group is the selected group
-				nodeType = 'selectedGroup';
+				nodeType = GroupNodeType.selectedGroup;
 			} else if (selectedGroup.childGroups.includes(value.id)) {
                 //The current group is a direct child of the selected group
-				nodeType = 'childGroup';
+				nodeType = GroupNodeType.childGroup;
 			}
 			else if( selectedGroup.deepGroups.includes(value.id)){
                 // The current group is a deep child of the selected group
-				nodeType = 'deepGroup';
+				nodeType = GroupNodeType.deepGroup;
 			}
 		}
 
@@ -207,20 +218,21 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	mergedGroups.forEach(group => {
         // node type of child groups of the current group
-		let childGroupType: GroupNodeType = 'unselectedGroup'; 
+		let childGroupType: GroupNodeType = GroupNodeType.unselectedGroup; 
 
         // node type of child meters of the current group
-		let childMeterType: MeterNodeType = 'meter'; 
+
+		let childMeterType: MeterNodeType = MeterNodeType.meter; 
 
 		if (selectedGroup) {
 			if (selectedGroupId === group.id) { 
                 // current group is the selected group
-				childGroupType = 'childGroup';
-				childMeterType = 'childMeter';
+				childGroupType = GroupNodeType.childGroup;
+				childMeterType = MeterNodeType.childMeter;
 			} else if (selectedGroup.childGroups.includes(group.id) || selectedGroup.deepGroups.includes(group.id)) { 
                 // current group is a child/deep group of the selected group
-				childGroupType = 'deepGroup';
-				childMeterType = 'deepMeter';
+				childGroupType = GroupNodeType.deepGroup;
+				childMeterType = MeterNodeType.deepMeter;
 			}
 		}
 
@@ -421,8 +433,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		const nodes = data.nodes.map(d => ({ ...d }));
 		const links = data.links.map(d => ({ ...d }));
 
-		const meterTypes: MeterNodeType[] = ['meter', 'childMeter', 'deepMeter'];
-		const groupTypes: GroupNodeType[] = ['unselectedGroup', 'selectedGroup', 'childGroup', 'deepGroup'];
+		const meterTypes: MeterNodeType[] = [...Object.values(MeterNodeType)];
+		const groupTypes: GroupNodeType[] = [...Object.values(GroupNodeType)];
 		
 		// Separate meter and group nodes
 		const meterNodeData = nodes.filter(node => meterTypes.includes(node.type));
@@ -592,7 +604,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('width', 60)
 			.attr('height', 40)
 			.attr('fill', d => colorSchema(d.type))
-			.attr('fill-opacity', d => (d.type === 'childMeter' || d.type === 'deepMeter') ? 1 : 0)
+			.attr('fill-opacity', d => (d.type === MeterNodeType.childMeter || d.type === MeterNodeType.deepMeter) ? 1 : 0)
 			.attr('stroke', d => strokeSchema(d.type).color)
 			.attr('stroke-width', d => strokeSchema(d.type).width)
 			.attr("stroke-dasharray", d => strokeSchema(d.type).dasharray)
@@ -744,7 +756,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			const legendEntry = legend.append('g')
 				.attr('transform', `translate(0, ${i * 30})`);
 
-			if (item == 'meter') {
+			if (item == MeterNodeType.meter) {
 				legendEntry.append('rect')
 					.attr('width', 40)
 					.attr('height', 25)
@@ -756,7 +768,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					.attr('x', -5)  
 					.attr('y', 0); 
 			}
-			else if (item == 'childMeter') {
+			else if (item == MeterNodeType.childMeter) {
 				legendEntry.append('rect')
 					.attr('width', 40)
 					.attr('height', 25)
@@ -767,7 +779,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					.attr('x', -5)  
 					.attr('y', 0); 
 			}
-			else if (item == 'deepMeter') {
+			else if (item == MeterNodeType.deepMeter) {
 				legendEntry.append('rect')
 					.attr('width', 40)
 					.attr('height', 25)
@@ -778,7 +790,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					.attr('x', -5)  
 					.attr('y', 0); 
 			}
-			else if (item == 'unselectedGroup') {
+			else if (item == GroupNodeType.unselectedGroup) {
 				legendEntry.append('circle')
 					.attr('r', 15)
                     // Center the circle horizontally
@@ -791,7 +803,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					.attr('stroke-width', 1)
 					.attr('stroke-dasharray', ('5,5'));
 			}
-			else if (item == 'selectedGroup') {
+			else if (item == GroupNodeType.selectedGroup) {
 				legendEntry.append('circle')
 					.attr('r', 15)
 					// Center the circle horizontally
@@ -802,7 +814,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					.attr('stroke', 'black')
 					.attr('stroke-width', 1);
 			}
-			else if (item == 'childGroup') {
+			else if (item == GroupNodeType.childGroup) {
 				legendEntry.append('circle')
 					.attr('r', 15)
 					// Center the circle horizontally
@@ -812,7 +824,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					.attr('fill-opacity', 0.5)
 					.attr('stroke', 'black')
 					.attr('stroke-width', 1)            }
-			else if (item == 'deepGroup') {
+			else if (item == GroupNodeType.deepGroup) {
 				legendEntry.append('circle')
 					.attr('r', 15)
 					// Center the circle horizontally

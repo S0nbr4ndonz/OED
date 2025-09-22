@@ -23,7 +23,7 @@ export default function VisualGroupDetailComponent() {
 		...tooltipBaseStyle,
 		//Only an admin is permitted access to the group visuals page
 		tooltipVisualGroupView: 'help.admin.groupvisuals'
-	}
+	};
 
 	return (
 		<div>
