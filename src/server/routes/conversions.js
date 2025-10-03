@@ -8,7 +8,10 @@ const { getConnection } = require('../db');
 const Conversion = require('../models/Conversion');
 const { success, failure } = require('./response');
 const validate = require('jsonschema').validate;
+
+const { simulateDeleteConversion } = require('../services/conversionSimulation');
 const { adminAuthMiddleware, optionalAuthMiddleware } = require('./authenticator');
+
 
 const router = express.Router();
 
@@ -157,42 +160,85 @@ router.post('/addConversion', adminAuthMiddleware('add conversions'), async (req
  * Route for POST, delete conversion.
  */
 router.post('/delete', adminAuthMiddleware('delete conversions'), async (req, res) => {
-	// Only require a source and destination id
+	// Accept sourceId, destinationId, meterIds, groupIds
 	const validConversion = {
 		type: 'object',
-		maxProperties: 2,
-		required: ['sourceId', 'destinationId'],
+		required: ['sourceId', 'destinationId', 'meterIds', 'groupIds'],
 		properties: {
 			sourceId: {
 				type: 'integer',
-				minimum: 1,
-				maximum: Number.MAX_SAFE_INTEGER
+				minimum: 0
 			},
 			destinationId: {
 				type: 'integer',
-				minimum: 1,
-				maximum: Number.MAX_SAFE_INTEGER
+				minimum: 0
+			},
+			meterIds: {
+				type: 'array',
+				items: { type: 'integer', minimum: 0 },
+				uniqueItems: true,
+				maxItems: 1000
+			},
+			groupIds: {
+				type: 'array',
+				items: { type: 'integer', minimum: 0 },
+				uniqueItems: true,
+				maxItems: 1000
 			}
-		}
+		},
+		additionalProperties: false
 	};
 
-	// Ensure conversion object is valid
 	const validatorResult = validate(req.body, validConversion);
 	if (!validatorResult.valid) {
-		log.warn(`Got request to delete conversions with invalid conversion data, errors: ${validatorResult.errors}`);
+		log.error(`Got request to delete conversions with invalid conversion data, errors: ${validatorResult.errors}`);
 		failure(res, 400, `Got request to delete conversions with invalid conversion data. Error(s): ${validatorResult.errors}`);
 	} else {
+		const { sourceId, destinationId, meterIds = [], groupIds = [] } = req.body;
 		const conn = getConnection();
 		try {
-			// Don't worry about checking if the conversion already exists
-			// Just try to delete it to save the extra database call, since the database will return an error anyway if the row does not exist
-			await Conversion.delete(req.body.sourceId, req.body.destinationId, conn);
+			await conn.tx(async t => {
+				// Update meters if any
+				for (const meterId of meterIds) {
+					await t.none(`UPDATE meters SET default_graphic_unit = NULL WHERE id = ${meterId}`);
+				}
+				// Update groups if any
+				for (const groupId of groupIds) {
+					await t.none(`UPDATE groups SET default_graphic_unit = NULL WHERE id = ${groupId}`);
+				}
+				// Delete conversion
+				await Conversion.delete(sourceId, destinationId, t);
+			});
+			success(res, 'Successfully deleted conversion and updated meters/groups');
 		} catch (err) {
-			log.error(`Error while deleting conversion with error(s): ${err}`);
-			failure(res, 500, `Error while deleting conversion with errors(s): ${err}`);
+			log.error(`Error while deleting conversion and updating meters/groups: ${err}`);
+			failure(res, 500, `Error while deleting conversion and updating meters/groups: ${err}`);
 		}
-		success(res, 'Successfully deleted conversion');
 	}
 });
-
+router.post('/simulate-delete', adminAuthMiddleware('simulate deleting conversions'), async (req, res) => {
+	const validConversion = {
+		type: 'object',
+		required: ['sourceId', 'destinationId'],
+		properties: {
+			sourceId: { type: 'number', minimum: 0 },
+			destinationId: { type: 'number', minimum: 0 }
+		},
+		additionalProperties: false
+	};
+	const validatorResult = validate(req.body, validConversion);
+	if (!validatorResult.valid) {
+		log.warn(`Got request to simulate deletion of conversions with invalid conversion data, errors: ${validatorResult.errors}`);
+		failure(res, 400, `Got request to delete conversions with invalid conversion data. Error(s): ${validatorResult.errors}`);
+	} else {
+		try {
+			const conn = getConnection();
+			const result = await simulateDeleteConversion(req.body, conn);
+			return res.json(result);
+		} catch (err) {
+			log.error(`Error while simulating deletion of conversion with error(s): ${err}`);
+			failure(res, 500, `Error while simulating deletion of conversion with errors(s): ${err}`);
+		}
+	}
+});
 module.exports = router;
