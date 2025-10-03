@@ -14,43 +14,15 @@ const router = express.Router();
 /**
  * Route for redoing Cik and/or refreshing reading views.
  */
-router.post('/refresh', adminAuthMiddleware('refresh conversion arrays'), async (req, res) => {
-	const validParams = {
-		type: 'object',
-		additionalProperties: false,
-		properties: {
-			redoCik: {
-				type: 'boolean'
-			},
-			refreshReadingViews: {
-				type: 'boolean'
-			}
-		}
-	};
-	
-	if (!validate(req.body, validParams).valid) {
-		res.sendStatus(400);
-		return;
+router.post('/refresh', adminAuthMiddleware('conversion refresh system data'), async (req, res) => {
+	if (req.body.redoCik) {
+		const conn = getConnection();
+		await redoCik(conn);
 	}
-	
-	// At least one operation must be requested
-	if (!req.body.redoCik && !req.body.refreshReadingViews) {
-		res.sendStatus(400);
-		return;
+	if (req.body.refreshReadingViews) {
+		await refreshAllReadingViews();
 	}
-	
-	try {
-		if (req.body.redoCik) {
-			const conn = getConnection();
-			await redoCik(conn);
-		}
-		if (req.body.refreshReadingViews) {
-			await refreshAllReadingViews();
-		}
-		res.sendStatus(200);
-	} catch (err) {
-		res.sendStatus(500);
-	}
+	res.sendStatus(200);
 });
 
 module.exports = router;

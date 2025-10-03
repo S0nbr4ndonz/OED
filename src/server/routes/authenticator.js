@@ -15,6 +15,7 @@ const escapeHtml = require('escape-html');
 /**
  * Middleware function to force a route to require authentication
  * Verifies the request's token against the server's secret token
+ * It is used within this file but not by other parts of OED.
  */
 authMiddleware = (req, res, next) => {
 	const token = req.headers.token || req.body.token || req.query.token;
@@ -56,7 +57,7 @@ function credentialsRequestValidationMiddleware(req, res, next) {
 		properties: {
 			username: {
 				type: 'string',
-				minLength: 5,
+				minLength: 3,
 				maxLength: 254
 			},
 			password: {
@@ -143,6 +144,7 @@ function csvAuthMiddleware(action) {
  * @param {string} action - is a phrase or word that can be prefixed by 'to' for the proper response and warning messages.
  */
 function obviusUsernameAndPasswordAuthMiddleware(action) {
+	// TODO This should probably be merged with roleTokenAuthMiddleware.
 	return function (req, res, next) {
 		credentialsRequestValidationMiddleware(req, res, async () => {
 			try {
@@ -209,10 +211,10 @@ optionalAuthMiddleware = (req, res, next) => {
 
 module.exports = {
 	adminAuthMiddleware,
-	authMiddleware,
 	csvAuthMiddleware,
 	exportAuthMiddleware,
 	obviusUsernameAndPasswordAuthMiddleware,
 	optionalAuthMiddleware,
-	verifyCredentials
+	verifyCredentials,
+	credentialsRequestValidationMiddleware
 };

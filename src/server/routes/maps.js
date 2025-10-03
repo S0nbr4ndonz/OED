@@ -14,7 +14,6 @@ const User = require('../models/User');
 const { DEFAULT_CIRCLE_SIZE } = require('../models/Map');
 
 const router = express.Router();
-router.use(optionalAuthMiddleware);
 
 function formatMapForResponse(map) {
 	const formattedMap = {
@@ -33,7 +32,7 @@ function formatMapForResponse(map) {
 	return formattedMap;
 }
 
-router.get('/', async (req, res) => {
+router.get('/', optionalAuthMiddleware, async (req, res) => { 
 	try {
 		const conn = getConnection();
 		let query;
@@ -50,7 +49,7 @@ router.get('/', async (req, res) => {
 	}
 });
 
-router.get('/:map_id', async (req, res) => {
+router.get('/:map_id', optionalAuthMiddleware, async (req, res) => {
 	const validParams = {
 		type: 'object',
 		maxProperties: 1,
