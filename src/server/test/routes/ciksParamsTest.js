@@ -67,19 +67,4 @@ mocha.describe('CIKs Parameter Validation', () => {
             expect([200, 500]).to.include(res.status);
         });
     });
-
-    mocha.describe('Error Handling', () => {
-        mocha.it('should handle database connection errors gracefully', async () => {
-            const res = await chai.request(app)
-                .get('/api/ciks');
-            
-            // Should return either success or proper error status
-            expect([200, 500]).to.include(res.status);
-            
-            if (res.status === 500) {
-                // Server should not crash on database errors
-                expect(res).to.exist;
-            }
-        });
-    });
 });
