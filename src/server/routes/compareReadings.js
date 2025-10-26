@@ -11,6 +11,15 @@ const { getConnection } = require('../db');
 
 const Reading = require('../models/Reading');
 const { GENERAL_STRING_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
+const ISO_DURATION_REGEX = /^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$/;
+
+function isValidIsoDateTime(value) {
+	return typeof value === 'string' && moment.parseZone(value, moment.ISO_8601, true).isValid();
+}
+
+function isValidIsoDuration(value) {
+	return typeof value === 'string' && ISO_DURATION_REGEX.test(value);
+}
 
 function validateMeterCompareReadingsParams(params) {
 	const validParams = {
@@ -113,10 +122,19 @@ function createRouter() {
 		}
 		const meterIDs = req.params.meter_ids.split(',').map(id => parseInt(id));
 		const graphicUnitID = req.query.graphicUnitId;
+		const currStartRaw = req.query.curr_start;
+		const currEndRaw = req.query.curr_end;
+		const shiftRaw = req.query.shift;
+
+		if (!isValidIsoDateTime(currStartRaw) || !isValidIsoDateTime(currEndRaw) || !isValidIsoDuration(shiftRaw)) {
+			res.sendStatus(400);
+			return;
+		}
+
 		// The string sent should set the timezone to UTC so honor that as OED uses UTC.
-		const currStart = moment.parseZone(req.query.curr_start, undefined, true);
-		const currEnd = moment.parseZone(req.query.curr_end, undefined, true);
-		const shift = moment.duration(req.query.shift);
+		const currStart = moment.parseZone(currStartRaw, moment.ISO_8601, true);
+		const currEnd = moment.parseZone(currEndRaw, moment.ISO_8601, true);
+		const shift = moment.duration(shiftRaw);
 		res.json(await meterCompareReadings(meterIDs, graphicUnitID, currStart, currEnd, shift));
 	});
 
@@ -125,13 +143,21 @@ function createRouter() {
 			res.sendStatus(400);
 			return;
 		}
-		const conn = getConnection();
 		const groupIDs = req.params.group_ids.split(',').map(id => parseInt(id));
 		const graphicUnitID = req.query.graphicUnitId;
+		const currStartRaw = req.query.curr_start;
+		const currEndRaw = req.query.curr_end;
+		const shiftRaw = req.query.shift;
+
+		if (!isValidIsoDateTime(currStartRaw) || !isValidIsoDateTime(currEndRaw) || !isValidIsoDuration(shiftRaw)) {
+			res.sendStatus(400);
+			return;
+		}
+
 		// The string sent should set the timezone to UTC so honor that as OED uses UTC.
-		const currStart = moment.parseZone(req.query.curr_start, undefined, true);
-		const currEnd = moment.parseZone(req.query.curr_end, undefined, true);
-		const shift = moment.duration(req.query.shift);
+		const currStart = moment.parseZone(currStartRaw, moment.ISO_8601, true);
+		const currEnd = moment.parseZone(currEndRaw, moment.ISO_8601, true);
+		const shift = moment.duration(shiftRaw);
 		res.json(await groupCompareReadings(groupIDs, graphicUnitID, currStart, currEnd, shift));
 	});
 
