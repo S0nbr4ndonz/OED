@@ -24,7 +24,7 @@ chai.use(chaiHttp);
  * @param basePayload the base valid payload object to clone and modify
  * @param expectedStatus the expected HTTP status code (default 400 for validation errors)
  */
-async function testInvalidField({ field, invalidValue, endpoint, basePayload, expectedStatus = 400 }) {
+async function testInvalidField({ field, invalidValue, endpoint, basePayload, expectedStatus = HTTP_CODE.BAD_REQUEST }) {
     const payload = { ...basePayload };
     if (invalidValue === undefined) {
         delete payload[field]; // remove field to simulate required check
@@ -32,7 +32,8 @@ async function testInvalidField({ field, invalidValue, endpoint, basePayload, ex
         payload[field] = invalidValue;
     }    
     const res = await chai.request(app).post(endpoint).send(payload);
-    expect(res).to.have.status(expectedStatus);
+    const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+    expect(expectedStatuses).to.include(res.status);
 }
 
 /**
@@ -240,7 +241,8 @@ async function validateNoExtraFields({ endpoint, basePayload, extraFields = {}, 
         ...extraFields
     };
     const res = await chai.request(app).post(endpoint).send(payload);
-    expect(res).to.have.status(expectedStatus);
+    const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+    expect(expectedStatuses).to.include(res.status);
 }
 
 module.exports = {
