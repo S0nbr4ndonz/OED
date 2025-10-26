@@ -6,7 +6,13 @@
 
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
-const { validateString, validateInt, testInvalidField } = require('../util/validationHelpers');
+const {
+    validateString,
+    validateInt,
+    testInvalidField,
+    validateNoExtraFields
+} = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Meters Parameter Validation', () => {
 
@@ -405,12 +411,16 @@ mocha.describe('Meters Parameter Validation', () => {
                 maliciousScript: '<script>alert("hack")</script>'
             };
 
-            const res = await chai.request(app)
-                .post(ADD_ENDPOINT)
-                .send(payloadWithExtra);
-            
-            // Should fail due to additionalProperties: false validation or auth
-            expect([400, 403]).to.include(res.status);
+            await validateNoExtraFields({
+                endpoint: ADD_ENDPOINT,
+                basePayload: baseMeterData,
+                extraFields: {
+                    adminOverride: true,
+                    bypassValidation: true,
+                    maliciousScript: '<script>alert("hack")</script>'
+                },
+                expectedStatus: HTTP_CODE.BAD_REQUEST
+            });
         });
 
         mocha.it('should handle type validation errors', async () => {
@@ -423,12 +433,13 @@ mocha.describe('Meters Parameter Validation', () => {
             ];
 
             for (const test of typeTests) {
+                // Admin auth short-circuits before validation, so we accept 400/403
                 await testInvalidField({
                     field: test.field,
                     invalidValue: test.invalidValue,
                     endpoint: ADD_ENDPOINT,
                     basePayload: baseMeterData,
-                    expectedStatus: 400
+                    expectedStatus: HTTP_CODE.BAD_REQUEST
                 });
             }
         });
