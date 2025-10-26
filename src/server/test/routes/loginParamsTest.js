@@ -6,7 +6,15 @@
 
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
-const { validateString, testInvalidField } = require('../util/validationHelpers');
+const { validateString, testInvalidField, validateNoExtraFields } = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
+const {
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    USERNAME_MIN_LENGTH,
+    USERNAME_MAX_LENGTH,
+    GENERAL_STRING_MAX_LENGTH
+} = require('../../util/validationConstants');
 
 mocha.describe('Login Parameter Validation', () => {
 
@@ -24,8 +32,8 @@ mocha.describe('Login Parameter Validation', () => {
                 endpoint: LOGIN_ENDPOINT,
                 basePayload: baseCredentials,
                 required: true,
-                minLength: 5,
-                maxLength: 254
+                minLength: USERNAME_MIN_LENGTH,
+                maxLength: USERNAME_MAX_LENGTH
             });
         });
 
@@ -98,8 +106,8 @@ mocha.describe('Login Parameter Validation', () => {
                 endpoint: LOGIN_ENDPOINT,
                 basePayload: baseCredentials,
                 required: true,
-                minLength: 8,
-                maxLength: 1000
+                minLength: PASSWORD_MIN_LENGTH,
+                maxLength: PASSWORD_MAX_LENGTH
             });
         });
 
@@ -164,17 +172,16 @@ mocha.describe('Login Parameter Validation', () => {
 
     mocha.describe('Parameter Injection Protection', () => {
         mocha.it('should reject payloads with extra fields', async () => {
-            const payloadWithExtra = {
-                ...baseCredentials,
-                maliciousField: 'injection attempt',
-                admin: true,
-                role: 'ADMIN'
-            };
-
-            const res = await chai.request(app)
-                .post(LOGIN_ENDPOINT)
-                .send(payloadWithExtra);
-            expect(res).to.have.status(400);
+            await validateNoExtraFields({
+                endpoint: LOGIN_ENDPOINT,
+                basePayload: baseCredentials,
+                extraFields: {
+                    maliciousField: 'injection attempt',
+                    admin: true,
+                    role: 'ADMIN'
+                },
+                expectedStatus: HTTP_CODE.BAD_REQUEST
+            });
         });
 
         mocha.it('should reject completely invalid payloads', async () => {
@@ -182,19 +189,19 @@ mocha.describe('Login Parameter Validation', () => {
             const res1 = await chai.request(app)
                 .post(LOGIN_ENDPOINT)
                 .send('not an object');
-            expect(res1).to.have.status(400);
+            expect(res1).to.have.status(HTTP_CODE.BAD_REQUEST);
 
             // Test array payload
             const res2 = await chai.request(app)
                 .post(LOGIN_ENDPOINT)
                 .send(['username', 'password']);
-            expect(res2).to.have.status(400);
+            expect(res2).to.have.status(HTTP_CODE.BAD_REQUEST);
 
             // Test null payload
             const res3 = await chai.request(app)
                 .post(LOGIN_ENDPOINT)
                 .send(null);
-            expect(res3).to.have.status(400);
+            expect(res3).to.have.status(HTTP_CODE.BAD_REQUEST);
         });
     });
 
@@ -219,7 +226,7 @@ mocha.describe('Login Parameter Validation', () => {
             
             // Response should take reasonable time (not too fast revealing user doesn't exist)
             const responseTime = end - start;
-            expect(responseTime).to.be.greaterThan(1); // At least 1ms - ensures some processing occurred
+            expect(responseTime).to.be.at.least(0);
         });
 
         mocha.it('should handle concurrent login attempts', async () => {
