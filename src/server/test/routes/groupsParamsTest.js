@@ -6,7 +6,17 @@
 
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
-const { validateString, validateInt, testInvalidField } = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
+const {
+	validateString,
+	validateInt,
+	testInvalidField,
+	validateNoExtraFields
+} = require('../util/validationHelpers');
+const {
+	GENERAL_STRING_MAX_LENGTH,
+	SHORT_STRING_MAX_LENGTH
+} = require('../../util/validationConstants');
 
 mocha.describe('Groups Parameter Validation', () => {
 
@@ -150,7 +160,7 @@ mocha.describe('Groups Parameter Validation', () => {
             // Test name field length
             await testInvalidField({
                 field: 'name',
-                invalidValue: 'x'.repeat(101),
+                invalidValue: 'x'.repeat(SHORT_STRING_MAX_LENGTH + 1),
                 endpoint: CREATE_ENDPOINT,
                 basePayload: baseGroupData,
                 expectedStatus: 403
@@ -159,7 +169,7 @@ mocha.describe('Groups Parameter Validation', () => {
             // Test note field length  
             await testInvalidField({
                 field: 'note',
-                invalidValue: 'x'.repeat(1001),
+                invalidValue: 'x'.repeat(GENERAL_STRING_MAX_LENGTH + 1),
                 endpoint: CREATE_ENDPOINT,
                 basePayload: baseGroupData,
                 expectedStatus: 403
@@ -306,21 +316,18 @@ mocha.describe('Groups Parameter Validation', () => {
         });
 
         mocha.it('should reject parameter injection', async () => {
-            const payloadWithExtra = {
-                ...baseGroupData,
-                maliciousField: 'injection attempt',
-                isAdmin: true,
-                deleteAll: true,
-                executeCommand: 'rm -rf /',
-                extraProperty: 'should be rejected'
-            };
-
-            const res = await chai.request(app)
-                .post(CREATE_ENDPOINT)
-                .send(payloadWithExtra);
-            
-            // Should fail due to additionalProperties: false (validation catches before auth)
-            expect(res.status).to.equal(403);
+            await validateNoExtraFields({
+                endpoint: CREATE_ENDPOINT,
+                basePayload: baseGroupData,
+                extraFields: {
+                    maliciousField: 'injection attempt',
+                    isAdmin: true,
+                    deleteAll: true,
+                    executeCommand: 'rm -rf /',
+                    extraProperty: 'should be rejected'
+                },
+                expectedStatus: 403
+            });
         });
 
         mocha.it('should handle malicious string inputs', async () => {
