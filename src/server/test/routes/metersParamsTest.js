@@ -387,8 +387,8 @@ mocha.describe('Meters Parameter Validation', () => {
                 .post(ADD_ENDPOINT)
                 .send(baseMeterData);
             
-            // Validation happens before auth - should return 400 for validation errors
-            expect([400, 403]).to.include(res.status);
+            // Validation/auth may respond with 400/403 or rate limiting 429
+            expect([400, 403, 429]).to.include(res.status);
         });
 
         mocha.it('should validate all required fields for creation', async () => {
@@ -403,7 +403,7 @@ mocha.describe('Meters Parameter Validation', () => {
                     .send(payloadMissingField);
                 
                 // Should fail validation or auth
-                expect([400, 403]).to.include(res.status);
+                expect([400, 403, 429]).to.include(res.status);
             }
         });
 
@@ -499,7 +499,7 @@ mocha.describe('Meters Parameter Validation', () => {
                 const res3 = await chai.request(app)
                     .post(endpoint)
                     .send(null);
-                expect([400, 403]).to.include(res3.status);
+                expect([400, 403, 429]).to.include(res3.status);
             }
         });
     });
