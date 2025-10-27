@@ -13,6 +13,10 @@ const {
     validateNoExtraFields
 } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const {
+    GENERAL_STRING_MAX_LENGTH,
+    SHORT_STRING_MAX_LENGTH
+} = require('../../util/validationConstants');
 
 mocha.describe('Meters Parameter Validation', () => {
 
@@ -129,21 +133,21 @@ mocha.describe('Meters Parameter Validation', () => {
 
         mocha.it('should validate string field lengths', async () => {
             const stringFieldTests = [
-                { field: 'name', maxLength: 100 },
-                { field: 'meterType', maxLength: 50 },
-                { field: 'timeZone', maxLength: 100 },
-                { field: 'identifier', maxLength: 100 },
-                { field: 'note', maxLength: 1000 },
-                { field: 'cumulativeResetStart', maxLength: 100 },
-                { field: 'cumulativeResetEnd', maxLength: 100 },
-                { field: 'timeSort', maxLength: 20 },
-                { field: 'startTimestamp', maxLength: 100 },
-                { field: 'endTimestamp', maxLength: 100 },
-                { field: 'previousEnd', maxLength: 100 },
+                { field: 'name', maxLength: SHORT_STRING_MAX_LENGTH },
+                { field: 'meterType', maxLength: SHORT_STRING_MAX_LENGTH },
+                { field: 'timeZone', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'identifier', maxLength: SHORT_STRING_MAX_LENGTH },
+                { field: 'note', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'cumulativeResetStart', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'cumulativeResetEnd', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'timeSort', maxLength: SHORT_STRING_MAX_LENGTH },
+                { field: 'startTimestamp', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'endTimestamp', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'previousEnd', maxLength: GENERAL_STRING_MAX_LENGTH },
                 { field: 'areaUnit', maxLength: 50 },
-                { field: 'readingFrequency', maxLength: 100 },
-                { field: 'minDate', maxLength: 100 },
-                { field: 'maxDate', maxLength: 100 },
+                { field: 'readingFrequency', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'minDate', maxLength: GENERAL_STRING_MAX_LENGTH },
+                { field: 'maxDate', maxLength: GENERAL_STRING_MAX_LENGTH },
                 { field: 'disableChecks', maxLength: 50 }
             ];
 

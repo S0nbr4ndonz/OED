@@ -7,6 +7,7 @@
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
 const { validateString, validateInt, validateBool, testInvalidField } = require('../util/validationHelpers');
+const { GENERAL_STRING_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Conversions Parameter Validation', () => {
 
@@ -169,10 +170,10 @@ mocha.describe('Conversions Parameter Validation', () => {
         });
 
         mocha.it('should validate note field (oneOf string/null)', async () => {
-            // Test oversized note (maxLength: 1000)
+            // Test oversized note (maxLength: GENERAL_STRING_MAX_LENGTH)
             await testInvalidField({
                 field: 'note',
-                invalidValue: 'x'.repeat(1001),
+                invalidValue: 'x'.repeat(GENERAL_STRING_MAX_LENGTH + 1),
                 endpoint: EDIT_ENDPOINT,
                 basePayload: baseConversionData,
                 expectedStatus: 403
@@ -189,7 +190,7 @@ mocha.describe('Conversions Parameter Validation', () => {
             // Test valid string note at max length
             const res2 = await chai.request(app)
                 .post(EDIT_ENDPOINT)
-                .send({ ...baseConversionData, note: 'x'.repeat(1000) });
+                .send({ ...baseConversionData, note: 'x'.repeat(GENERAL_STRING_MAX_LENGTH) });
             
             // Should pass validation but fail auth
             expect(res2.status).to.equal(403);
@@ -304,7 +305,7 @@ mocha.describe('Conversions Parameter Validation', () => {
 
             await testInvalidField({
                 field: 'note',
-                invalidValue: 'x'.repeat(1001),
+                invalidValue: 'x'.repeat(GENERAL_STRING_MAX_LENGTH + 1),
                 endpoint: ADD_ENDPOINT,
                 basePayload: baseConversionData,
                 expectedStatus: 403
