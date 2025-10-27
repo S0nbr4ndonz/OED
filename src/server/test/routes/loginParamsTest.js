@@ -27,13 +27,28 @@ mocha.describe('Login Parameter Validation', () => {
 
     mocha.describe('Username Validation', () => {
         mocha.it('should validate username field', async () => {
-            await validateString({
+            await testInvalidField({
                 field: 'username',
+                invalidValue: undefined,
                 endpoint: LOGIN_ENDPOINT,
                 basePayload: baseCredentials,
-                required: true,
-                minLength: USERNAME_MIN_LENGTH,
-                maxLength: USERNAME_MAX_LENGTH
+                expectedStatus: [HTTP_CODE.BAD_REQUEST, 401]
+            });
+
+            await testInvalidField({
+                field: 'username',
+                invalidValue: 'x'.repeat(USERNAME_MIN_LENGTH - 1),
+                endpoint: LOGIN_ENDPOINT,
+                basePayload: baseCredentials,
+                expectedStatus: [HTTP_CODE.BAD_REQUEST, 401]
+            });
+
+            await testInvalidField({
+                field: 'username',
+                invalidValue: 'x'.repeat(USERNAME_MAX_LENGTH + 1),
+                endpoint: LOGIN_ENDPOINT,
+                basePayload: baseCredentials,
+                expectedStatus: [HTTP_CODE.BAD_REQUEST, 401]
             });
         });
 
