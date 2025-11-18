@@ -11,7 +11,8 @@ const validate = require('jsonschema').validate;
 const { isTokenAuthorized, isUserAuthorized } = require('../util/userRoles');
 const { getConnection } = require('../db');
 const escapeHtml = require('escape-html');
-const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH } = require('../util/validationConstants');
+const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH }
+	= require('../util/validationConstants');
 
 /**
  * Middleware function to force a route to require authentication
@@ -33,6 +34,7 @@ authMiddleware = (req, res, next) => {
 			} else {
 				try {
 					const conn = getConnection();
+					// checks if user exists in the database in case it was deleted
 					await User.getByID(decoded.data, conn);
 					req.decoded = decoded;
 					next();

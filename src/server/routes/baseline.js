@@ -9,7 +9,7 @@ const Baseline = require('../models/Baseline');
 const log = require('../log');
 const validate = require('jsonschema').validate;
 const { adminAuthMiddleware } = require('./authenticator');
-const { GENERAL_STRING_MAX_LENGTH } = require('../util/validationConstants');
+const { STRING_GENERAL_MAX_LENGTH } = require('../util/validationConstants');
 const router = express.Router();
 router.get('/', async (req, res) => {
 	const conn = getConnection();
@@ -33,23 +33,23 @@ router.post('/new', adminAuthMiddleware('create baselines'), async (req, res) =>
 			},
 			applyStart: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			applyEnd: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			calcStart: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			calcEnd: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			note: {
 				oneOf: [
-					{ type: 'string', maxLength: GENERAL_STRING_MAX_LENGTH },
+					{ type: 'string', maxLength: STRING_GENERAL_MAX_LENGTH },
 					{ type: 'null' }
 				]
 			}

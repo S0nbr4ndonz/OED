@@ -9,7 +9,7 @@ const TimeInterval = require('../../common/TimeInterval').TimeInterval;
 const { log } = require('../log');
 const validate = require('jsonschema').validate;
 const { getConnection } = require('../db');
-const { GENERAL_STRING_MAX_LENGTH } = require('../util/validationConstants');
+const { STRING_GENERAL_MAX_LENGTH: GENERAL_STRING_MAX_LENGTH } = require('../util/validationConstants');
 
 const router = express.Router();
 

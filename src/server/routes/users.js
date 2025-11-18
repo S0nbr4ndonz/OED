@@ -11,7 +11,7 @@ const validate = require('jsonschema').validate;
 const { getConnection } = require('../db');
 const jwt = require('jsonwebtoken');
 const secretToken = require('../config').secretToken;
-const { GENERAL_STRING_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
+const { STRING_GENERAL_MAX_LENGTH, PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
 
 const router = express.Router();
 
@@ -111,7 +111,7 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 			},
 			note: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			}
 		}
 	};
@@ -140,7 +140,7 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 
 // Route for updating an existing user.
 router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
-	
+
 	const validParams = {
 		type: 'object',
 		additionalProperties: false,
@@ -172,7 +172,7 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 					},
 					note: {
 						type: 'string',
-						maxLength: GENERAL_STRING_MAX_LENGTH
+						maxLength: STRING_GENERAL_MAX_LENGTH
 					}
 				}
 			}
@@ -185,8 +185,8 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 		try {
 			const conn = getConnection();
 			const { user } = req.body;
-			const userBeforeChanges = await User.getByID(user.id,conn);
-			
+			const userBeforeChanges = await User.getByID(user.id, conn);
+
 			// This protects the database so that there will always be at least one admin
 			if (userBeforeChanges.role === 'admin' && user.role !== 'admin') {
 				const numberOfAdmins = await User.getNumberOfAdmins(conn);
@@ -206,8 +206,7 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 			userUpdates.push(
 				User.updateUser(user.id, user.username, user.role, user.note, conn)
 			);
-			
-			
+
 			// update the user's password if needed
 			if (user.password) {
 				const hashedPassword = await bcrypt.hash(user.password, 10);
@@ -220,7 +219,6 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 			return res.sendStatus(200);
 
 		} catch (error) {
-			
 			log.error('Error while performing edit user request.', error);
 			res.status(500).json({
 				message: 'Error while performing edit user request.',

@@ -13,7 +13,7 @@ const { adminAuthMiddleware, optionalAuthMiddleware } = require('./authenticator
 const { log } = require('../log');
 const Point = require('../models/Point');
 const { failure, success } = require('./response');
-const { GENERAL_STRING_MAX_LENGTH, SHORT_STRING_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
+const { STRING_GENERAL_MAX_LENGTH, STRING_SHORT_MAX_LENGTH: SHORT_STRING_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
 
 const router = express.Router();
 
@@ -233,7 +233,7 @@ router.post('/create', adminAuthMiddleware('create groups'), async (req, res) =>
 			},
 			note: {
 				oneOf: [
-					{ type: 'string', maxLength: GENERAL_STRING_MAX_LENGTH },
+					{ type: 'string', maxLength: STRING_GENERAL_MAX_LENGTH },
 					{ type: 'null' }
 				]
 			},
@@ -333,7 +333,7 @@ router.put('/edit', adminAuthMiddleware('edit groups'), async (req, res) => {
 			},
 			note: {
 				oneOf: [
-					{ type: 'string', maxLength: GENERAL_STRING_MAX_LENGTH },
+					{ type: 'string', maxLength: STRING_GENERAL_MAX_LENGTH },
 					{ type: 'null' }
 				]
 			},

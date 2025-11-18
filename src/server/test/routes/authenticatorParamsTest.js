@@ -16,235 +16,235 @@ const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH, USERNAME_
 
 mocha.describe('Authenticator Parameter Validation', () => {
 
-    // Test the credentials validation used by login and obvius endpoints
-    mocha.describe('Credentials Validation (username/password)', () => {
-        // Since authenticator.js doesn't export direct endpoints, we test through routes that use it
-        // The login route uses credentialsRequestValidationMiddleware
-        const LOGIN_ENDPOINT = '/api/login';
-        
-        const baseCredentials = {
-            username: 'validuser',
-            password: 'validpass123'
-        };
+	// Test the credentials validation used by login and obvius endpoints
+	mocha.describe('Credentials Validation (username/password)', () => {
+		// Since authenticator.js doesn't export direct endpoints, we test through routes that use it
+		// The login route uses credentialsRequestValidationMiddleware
+		const LOGIN_ENDPOINT = '/api/login';
 
-        mocha.it('should validate username field', async () => {
-            await validateString({
-                field: 'username',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                required: true,
-                minLength: USERNAME_MIN_LENGTH,
-                maxLength: USERNAME_MAX_LENGTH
-            });
-        });
+		const baseCredentials = {
+			username: 'validuser',
+			password: 'validpass123'
+		};
 
-        mocha.it('should validate password field', async () => {
-            await validateString({
-                field: 'password',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                required: true,
-                minLength: PASSWORD_MIN_LENGTH,
-                maxLength: PASSWORD_MAX_LENGTH
-            });
-        });
+		mocha.it('should validate username field', async () => {
+			await validateString({
+				field: 'username',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				required: true,
+				minLength: USERNAME_MIN_LENGTH,
+				maxLength: USERNAME_MAX_LENGTH
+			});
+		});
 
-        mocha.it('should reject payloads with extra fields (parameter injection)', async () => {
-            await validateNoExtraFields({
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                extraFields: {
-                    maliciousField: 'injection attempt',
-                    anotherField: 'should be rejected'
-                },
-                expectedStatus: HTTP_CODE.BAD_REQUEST
-            });
-        });
+		mocha.it('should validate password field', async () => {
+			await validateString({
+				field: 'password',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				required: true,
+				minLength: PASSWORD_MIN_LENGTH,
+				maxLength: PASSWORD_MAX_LENGTH
+			});
+		});
 
-        mocha.it('should handle malicious username inputs', async () => {
-            // Test SQL injection attempt - login will return 401 for invalid credentials
-            await testInvalidField({
-                field: 'username',
-                invalidValue: "'; DROP TABLE users; --",
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
+		mocha.it('should reject payloads with extra fields (parameter injection)', async () => {
+			await validateNoExtraFields({
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				extraFields: {
+					maliciousField: 'injection attempt',
+					anotherField: 'should be rejected'
+				},
+				expectedStatus: HTTP_CODE.BAD_REQUEST
+			});
+		});
 
-            // Test XSS attempt - login will return 401 for invalid credentials
-            await testInvalidField({
-                field: 'username',
-                invalidValue: '<script>alert("xss")</script>',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
+		mocha.it('should handle malicious username inputs', async () => {
+			// Test SQL injection attempt - login will return 401 for invalid credentials
+			await testInvalidField({
+				field: 'username',
+				invalidValue: "'; DROP TABLE users; --",
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
 
-            // Test command injection attempt
-            await testInvalidField({
-                field: 'username',
-                invalidValue: '$(rm -rf /)',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
+			// Test XSS attempt - login will return 401 for invalid credentials
+			await testInvalidField({
+				field: 'username',
+				invalidValue: '<script>alert("xss")</script>',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
 
-            await testInvalidField({
-                field: 'username',
-                invalidValue: '| cat /etc/passwd',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
-        });
+			// Test command injection attempt
+			await testInvalidField({
+				field: 'username',
+				invalidValue: '$(rm -rf /)',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
 
-        mocha.it('should handle malicious password inputs', async () => {
-            // Test extremely long password (DoS attack)
-            await testInvalidField({
-                field: 'password',
-                invalidValue: 'x'.repeat(1001),
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 400
-            });
+			await testInvalidField({
+				field: 'username',
+				invalidValue: '| cat /etc/passwd',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
+		});
 
-            // Test null bytes - login will return 401 for invalid credentials
-            await testInvalidField({
-                field: 'password',
-                invalidValue: 'password\x00injection',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
+		mocha.it('should handle malicious password inputs', async () => {
+			// Test extremely long password (DoS attack)
+			await testInvalidField({
+				field: 'password',
+				invalidValue: 'x'.repeat(1001),
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.BAD_REQUEST
+			});
 
-            // Test command injection attempt
-            await testInvalidField({
-                field: 'password',
-                invalidValue: '$(rm -rf /)',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
+			// Test null bytes - login will return 401 for invalid credentials
+			await testInvalidField({
+				field: 'password',
+				invalidValue: 'password\x00injection',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
 
-            await testInvalidField({
-                field: 'password',
-                invalidValue: '`shutdown -h now`',
-                endpoint: LOGIN_ENDPOINT,
-                basePayload: baseCredentials,
-                expectedStatus: 401
-            });
-        });
-    });
+			// Test command injection attempt
+			await testInvalidField({
+				field: 'password',
+				invalidValue: '$(rm -rf /)',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
 
-    // Test token validation used by auth middleware
-    mocha.describe('Token Validation', () => {
-        // Test through an endpoint that requires authentication
-        // Most endpoints use authMiddleware, so we'll test through a protected route
-        const PROTECTED_ENDPOINT = '/api/users';
+			await testInvalidField({
+				field: 'password',
+				invalidValue: '`shutdown -h now`',
+				endpoint: LOGIN_ENDPOINT,
+				basePayload: baseCredentials,
+				expectedStatus: HTTP_CODE.UNAUTHORIZED
+			});
+		});
+	});
 
-        mocha.it('should validate token length limits', async () => {
-            // Test extremely long token - auth middleware returns 403 for validation failure
-            const hugeToken = 'x'.repeat(3000);
-            const res = await chai.request(app)
-                .get(PROTECTED_ENDPOINT)
-                .set('token', hugeToken);
-            expect(res).to.have.status(403);
-        });
+	// Test token validation used by auth middleware
+	mocha.describe('Token Validation', () => {
+		// Test through an endpoint that requires authentication
+		// Most endpoints use authMiddleware, so we'll test through a protected route
+		const PROTECTED_ENDPOINT = '/api/users';
 
-        mocha.it('should reject non-string tokens in headers', async () => {
-            const res = await chai.request(app)
-                .get(PROTECTED_ENDPOINT)
-                .set('token', 12345);
-            
-            expect(res).to.have.status(401);
-        });
+		mocha.it('should validate token length limits', async () => {
+			// Test extremely long token - auth middleware returns 403 for validation failure
+			const hugeToken = 'x'.repeat(3000);
+			const res = await chai.request(app)
+				.get(PROTECTED_ENDPOINT)
+				.set('token', hugeToken);
+			expect(res).to.have.status(HTTP_CODE.FORBIDDEN);
+		});
 
-        mocha.it('should reject non-string tokens in body', async () => {
-            const res = await chai.request(app)
-                .post(PROTECTED_ENDPOINT)
-                .send({ token: 12345 });
-            
-            expect(res).to.have.status(404);
-        });
+		mocha.it('should reject non-string tokens in headers', async () => {
+			const res = await chai.request(app)
+				.get(PROTECTED_ENDPOINT)
+				.set('token', 12345);
 
-        mocha.it('should reject non-string tokens in query', async () => {
-            const res = await chai.request(app)
-                .get(PROTECTED_ENDPOINT)
-                .query({ token: 12345 });
-            
-            expect(res).to.have.status(401);
-        });
+			expect(res).to.have.status(HTTP_CODE.UNAUTHORIZED);
+		});
 
-        mocha.it('should handle extremely long bearer tokens', async () => {
-            // Emulate a bearer token prefix to ensure length check still applies
-            const hugeToken = 'Bearer ' + 'x'.repeat(2100);
-            const res = await chai.request(app)
-                .get(PROTECTED_ENDPOINT)
-                .set('token', hugeToken);
+		mocha.it('should reject non-string tokens in body', async () => {
+			const res = await chai.request(app)
+				.post(PROTECTED_ENDPOINT)
+				.send({ token: 12345 });
 
-            expect(res).to.have.status(403);
-        });
+			expect(res).to.have.status(HTTP_CODE.NOT_FOUND);
+		});
 
-        mocha.it('should reject malformed JWT tokens', async () => {
-            const malformedTokens = [
-                'malformed.jwt.token',
-                'not.a.jwt',
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid',
-                '', // Empty token
-                'null',
-                'undefined'
-            ];
+		mocha.it('should reject non-string tokens in query', async () => {
+			const res = await chai.request(app)
+				.get(PROTECTED_ENDPOINT)
+				.query({ token: 12345 });
 
-            for (const token of malformedTokens) {
-                const res = await chai.request(app)
-                    .get(PROTECTED_ENDPOINT)
-                    .set('token', token);
-                
-                // Should either be 403 (invalid format) or 401 (invalid signature)
-                expect([401, 403]).to.include(res.status);
-            }
-        });
-    });
+			expect(res).to.have.status(HTTP_CODE.UNAUTHORIZED);
+		});
 
-    mocha.describe('Security Edge Cases', () => {
-        mocha.it('should handle concurrent authentication attempts', async () => {
-            const LOGIN_ENDPOINT = '/api/login';
-            const invalidCredentials = {
-                username: 'nonexistent',
-                password: 'wrongpass'
-            };
+		mocha.it('should handle extremely long bearer tokens', async () => {
+			// Emulate a bearer token prefix to ensure length check still applies
+			const hugeToken = 'Bearer ' + 'x'.repeat(2100);
+			const res = await chai.request(app)
+				.get(PROTECTED_ENDPOINT)
+				.set('token', hugeToken);
 
-            // Send multiple concurrent requests to test rate limiting and DoS prevention
-            const promises = Array(10).fill().map(() => 
-                chai.request(app)
-                    .post(LOGIN_ENDPOINT)
-                    .send(invalidCredentials)
-            );
+			expect(res).to.have.status(HTTP_CODE.FORBIDDEN);
+		});
 
-            const results = await Promise.all(promises);
-            
-            // All should fail with 400 or 401 (invalid credentials)
-            results.forEach(res => {
-                expect([400, 401]).to.include(res.status);
-            });
-        });
+		mocha.it('should reject malformed JWT tokens', async () => {
+			const malformedTokens = [
+				'malformed.jwt.token',
+				'not.a.jwt',
+				'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid',
+				'', // Empty token
+				'null',
+				'undefined'
+			];
 
-        mocha.it('should prevent username enumeration attacks', async () => {
-            const LOGIN_ENDPOINT = '/api/login';
-            
-            // Test with non-existent user vs invalid password for existing user
-            // Both should return similar error responses (timing-safe)
-            const nonExistentUser = {
-                username: 'nonexistentuser12345',
-                password: 'somepassword'
-            };
+			for (const token of malformedTokens) {
+				const res = await chai.request(app)
+					.get(PROTECTED_ENDPOINT)
+					.set('token', token);
 
-            const res1 = await chai.request(app)
-                .post(LOGIN_ENDPOINT)
-                .send(nonExistentUser);
+				// Should either be 403 (invalid format) or 401 (invalid signature)
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
+			}
+		});
+	});
 
-            // Response should not reveal whether user exists or not
-            expect([400, 401]).to.include(res1.status);
-        });
-    });
+	mocha.describe('Security Edge Cases', () => {
+		mocha.it('should handle concurrent authentication attempts', async () => {
+			const LOGIN_ENDPOINT = '/api/login';
+			const invalidCredentials = {
+				username: 'nonexistent',
+				password: 'wrongpass'
+			};
+
+			// Send multiple concurrent requests to test rate limiting and DoS prevention
+			const promises = Array(10).fill().map(() =>
+				chai.request(app)
+					.post(LOGIN_ENDPOINT)
+					.send(invalidCredentials)
+			);
+
+			const results = await Promise.all(promises);
+
+			// All should fail with 400 or 401 (invalid credentials)
+			results.forEach(res => {
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
+			});
+		});
+
+		mocha.it('should prevent username enumeration attacks', async () => {
+			const LOGIN_ENDPOINT = '/api/login';
+
+			// Test with non-existent user vs invalid password for existing user
+			// Both should return similar error responses (timing-safe)
+			const nonExistentUser = {
+				username: 'nonexistentuser12345',
+				password: 'somepassword'
+			};
+
+			const res1 = await chai.request(app)
+				.post(LOGIN_ENDPOINT)
+				.send(nonExistentUser);
+
+			// Response should not reveal whether user exists or not
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED]).to.include(res1.status);
+		});
+	});
 });

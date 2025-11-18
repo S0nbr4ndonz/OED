@@ -11,7 +11,7 @@ const { adminAuthMiddleware } = require('./authenticator');
 const LogMsg = require('../models/LogMsg');
 const { getConnection } = require('../db');
 const { TimeInterval } = require('../../common/TimeInterval');
-const { GENERAL_STRING_MAX_LENGTH } = require('../util/validationConstants');
+const { STRING_GENERAL_MAX_LENGTH } = require('../util/validationConstants');
 
 const router = express.Router();
 
@@ -22,7 +22,7 @@ const validLog = {
 		message: {
 			type: 'string',
 			minLength: 1,
-			maxLength: GENERAL_STRING_MAX_LENGTH
+			maxLength: STRING_GENERAL_MAX_LENGTH
 		}
 	}
 };

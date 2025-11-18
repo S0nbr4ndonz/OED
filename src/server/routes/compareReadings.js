@@ -10,7 +10,7 @@ const moment = require('moment');
 const { getConnection } = require('../db');
 
 const Reading = require('../models/Reading');
-const { GENERAL_STRING_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
+const { STRING_GENERAL_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
 const ISO_DURATION_REGEX = /^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$/;
 
 function isValidIsoDateTime(value) {
@@ -29,7 +29,7 @@ function validateMeterCompareReadingsParams(params) {
 		properties: {
 			meter_ids: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH,
+				maxLength: STRING_GENERAL_MAX_LENGTH,
 				pattern: '^\\d+(?:,\\d+)*$'
 			}
 		}
@@ -46,7 +46,7 @@ function validateGroupCompareReadingsParams(params) {
 		properties: {
 			group_ids: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH,
+				maxLength: STRING_GENERAL_MAX_LENGTH,
 				pattern: '^\\d+(?:,\\d+)*$'
 			}
 		}
@@ -63,15 +63,15 @@ function validateQueryParams(queryParams) {
 		properties: {
 			curr_start: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			curr_end: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			shift: {
 				type: 'string',
-				maxLength: GENERAL_STRING_MAX_LENGTH
+				maxLength: STRING_GENERAL_MAX_LENGTH
 			},
 			graphicUnitId: {
 				type: 'string',
