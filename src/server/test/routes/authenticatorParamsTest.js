@@ -8,7 +8,8 @@ const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
 const { validateString, testInvalidField, validateNoExtraFields } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
-const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH } = require('../../util/validationConstants');
+const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH }
+	= require('../../util/validationConstants');
 
 // Note: authenticator.js primarily contains middleware functions, not direct API endpoints
 // However, the credentialsRequestValidationMiddleware is used by other routes that accept username/password
@@ -102,7 +103,7 @@ mocha.describe('Authenticator Parameter Validation', () => {
 			// Test extremely long password (DoS attack)
 			await testInvalidField({
 				field: 'password',
-				invalidValue: 'x'.repeat(1001),
+				invalidValue: 'x'.repeat(PASSWORD_MAX_LENGTH + 1),
 				endpoint: LOGIN_ENDPOINT,
 				basePayload: baseCredentials,
 				expectedStatus: HTTP_CODE.BAD_REQUEST
@@ -144,7 +145,7 @@ mocha.describe('Authenticator Parameter Validation', () => {
 
 		mocha.it('should validate token length limits', async () => {
 			// Test extremely long token - auth middleware returns 403 for validation failure
-			const hugeToken = 'x'.repeat(3000);
+			const hugeToken = 'x'.repeat(TOKEN_MAX_LENGTH + 1);
 			const res = await chai.request(app)
 				.get(PROTECTED_ENDPOINT)
 				.set('token', hugeToken);
@@ -177,7 +178,7 @@ mocha.describe('Authenticator Parameter Validation', () => {
 
 		mocha.it('should handle extremely long bearer tokens', async () => {
 			// Emulate a bearer token prefix to ensure length check still applies
-			const hugeToken = 'Bearer ' + 'x'.repeat(2100);
+			const hugeToken = 'Bearer ' + 'x'.repeat(TOKEN_MAX_LENGTH + 1);
 			const res = await chai.request(app)
 				.get(PROTECTED_ENDPOINT)
 				.set('token', hugeToken);

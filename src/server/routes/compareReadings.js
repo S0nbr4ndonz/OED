@@ -8,9 +8,9 @@ const express = require('express');
 const validate = require('jsonschema').validate;
 const moment = require('moment');
 const { getConnection } = require('../db');
-
 const Reading = require('../models/Reading');
 const { STRING_GENERAL_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
+
 const ISO_DURATION_REGEX = /^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$/;
 
 function isValidIsoDateTime(value) {
@@ -93,7 +93,7 @@ function validateQueryParams(queryParams) {
  * @param shift how far to shift back in time from current period to previous period
  * @returns {Promise<object<int, array<{reading_rate: number, start_timestamp: }>>>}
  */
- async function meterCompareReadings(meterIDs, graphicUnitId, currStart, currEnd, shift) {
+async function meterCompareReadings(meterIDs, graphicUnitId, currStart, currEnd, shift) {
 	const conn = getConnection();
 	return await Reading.getMeterCompareReadings(meterIDs, graphicUnitId, currStart, currEnd, shift, conn);
 }
@@ -107,7 +107,7 @@ function validateQueryParams(queryParams) {
  * @param shift how far to shift back in time from current period to previous period
  * @returns {Promise<object<int, array<{reading_rate: number, start_timestamp: }>>>}
  */
- async function groupCompareReadings(groupIDs, graphicUnitId, currStart, currEnd, shift) {
+async function groupCompareReadings(groupIDs, graphicUnitId, currStart, currEnd, shift) {
 	const conn = getConnection();
 	return await Reading.getGroupCompareReadings(groupIDs, graphicUnitId, currStart, currEnd, shift, conn);
 }
