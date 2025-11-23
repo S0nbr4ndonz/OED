@@ -132,6 +132,7 @@ function verifyObviusUser(req, res, next) {
 		failure(req, res, 'username parameter is required.');
 	} else if (typeof password !== 'string' || password.length > PASSWORD_MAX_LENGTH) {
 		failure(req, res, 'Invalid password format.');
+		// TODO 254 should be checked as accurate and then a global const here and in tests.
 	} else if (typeof username !== 'string' || username.length > 254) {
 		failure(req, res, 'Invalid username format.');
 	} else {

@@ -11,6 +11,7 @@ const {
 	expectValidCommaSeparatedIds
 } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const {	STRING_GENERAL_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Compare Readings Parameter Validation', () => {
 
@@ -60,7 +61,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 
 			mocha.it('should reject extremely long meter ID strings (DoS prevention)', async () => {
 				// Creates very long comma-separated list
-				const longMeterIds = '1,'.repeat(1000) + '1';
+				const longMeterIds = '1,'.repeat(STRING_GENERAL_MAX_LENGTH + 1);
 
 				const res = await chai.request(app)
 					.get(`${BASE_METER_ENDPOINT}/${longMeterIds}`)
@@ -101,7 +102,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 
 			mocha.it.skip('should validate curr_start parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
 				// Test extremely long date string (DoS prevention)
-				const longDateString = '2023-01-01T00:00:00.000Z' + 'x'.repeat(200);
+				const dateStart = '2023-01-01T00:00:00.000Z';
+				const longDateString = dateStart + 'x'.repeat(STRING_GENERAL_MAX_LENGTH - dateStart.length + 1);
 
 				const res = await chai.request(app)
 					.get(`${BASE_METER_ENDPOINT}/1`)
@@ -115,7 +117,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 
 			mocha.it.skip('should validate curr_end parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
 				// Test extremely long date string (DoS prevention)
-				const longDateString = 'x'.repeat(150);
+				const longDateString = 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1);
 
 				const res = await chai.request(app)
 					.get(`${BASE_METER_ENDPOINT}/1`)
@@ -129,7 +131,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 
 			mocha.it.skip('should validate shift parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
 				// Test extremely long duration string (DoS prevention)
-				const longDurationString = 'P1D' + 'x'.repeat(150);
+				const durationStart = 'P1D';
+				const longDurationString = durationStart + 'x'.repeat(STRING_GENERAL_MAX_LENGTH - durationStart.length + 1);
 
 				const res = await chai.request(app)
 					.get(`${BASE_METER_ENDPOINT}/1`)
@@ -210,7 +213,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 
 			mocha.it('should reject extremely long group ID strings (DoS prevention)', async () => {
 				// Creates very long comma-separated list
-				const longGroupIds = '1,'.repeat(1000) + '1';
+				const longGroupIds = '1,'.repeat(STRING_GENERAL_MAX_LENGTH + 1);
 
 				const res = await chai.request(app)
 					.get(`${BASE_GROUP_ENDPOINT}/${longGroupIds}`)
@@ -288,15 +291,15 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 			const oversizedTests = [
 				{
 					name: 'oversized date strings',
-					query: { ...validQuery, curr_start: 'x'.repeat(200) }
+					query: { ...validQuery, curr_start: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1) }
 				},
 				{
 					name: 'oversized duration strings',
-					query: { ...validQuery, shift: 'x'.repeat(200) }
+					query: { ...validQuery, shift: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1) }
 				},
 				{
 					name: 'oversized unit ID',
-					query: { ...validQuery, graphicUnitId: 'x'.repeat(50) }
+					query: { ...validQuery, graphicUnitId: 'x'.repeat(NUMERIC_ID_MAX_LENGTH + 1) }
 				}
 			];
 

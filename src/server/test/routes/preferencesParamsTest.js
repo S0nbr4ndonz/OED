@@ -8,6 +8,10 @@ const { expect } = require('chai');
 const { chai, mocha, app } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const {
+	STRING_SHORT_MAX_LENGTH,
+	STRING_GENERAL_MAX_LENGTH
+} = require('../../util/validationConstants');
 
 mocha.describe('Preferences Parameter Validation', () => {
 
@@ -90,12 +94,12 @@ mocha.describe('Preferences Parameter Validation', () => {
 
 		mocha.describe('String Field Validation', () => {
 			const stringFields = [
-				{ field: 'displayTitle', maxLength: 100 },
-				{ field: 'defaultChartToRender', maxLength: 50 },
+				{ field: 'displayTitle', maxLength: STRING_SHORT_MAX_LENGTH },
+				{ field: 'defaultChartToRender', maxLength: STRING_SHORT_MAX_LENGTH },
 				{ field: 'defaultLanguage', maxLength: 10 },
-				{ field: 'defaultMeterReadingFrequency', maxLength: 50 },
-				{ field: 'defaultMeterMinimumDate', maxLength: 100 },
-				{ field: 'defaultMeterMaximumDate', maxLength: 100 },
+				{ field: 'defaultMeterReadingFrequency', maxLength: STRING_SHORT_MAX_LENGTH },
+				{ field: 'defaultMeterMinimumDate', maxLength: STRING_GENERAL_MAX_LENGTH },
+				{ field: 'defaultMeterMaximumDate', maxLength: STRING_GENERAL_MAX_LENGTH },
 				{ field: 'defaultHelpUrl', maxLength: 500 }
 			];
 
@@ -135,10 +139,10 @@ mocha.describe('Preferences Parameter Validation', () => {
 
 		mocha.describe('Number Field Validation', () => {
 			const numberFields = [
-				{ field: 'defaultWarningFileSize', min: 0, max: 1000000000 },
-				{ field: 'defaultFileSizeLimit', min: 0, max: 1000000000 },
-				{ field: 'defaultMeterReadingGap', min: 0, max: 86400 },
-				{ field: 'defaultMeterMaximumErrors', min: 0, max: 10000 }
+				{ field: 'defaultWarningFileSize', min: 0, max: basePreferencesData.preferences.defaultWarningFileSize },
+				{ field: 'defaultFileSizeLimit', min: 0, max: basePreferencesData.preferences.defaultFileSizeLimit },
+				{ field: 'defaultMeterReadingGap', min: 0, max: basePreferencesData.preferences.defaultMeterReadingGap },
+				{ field: 'defaultMeterMaximumErrors', min: 0, max: basePreferencesData.preferences.defaultMeterMaximumErrors }
 			];
 
 			numberFields.forEach(({ field, min, max }) => {
@@ -322,7 +326,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 				const hugePayload = {
 					preferences: {
 						...basePreferencesData.preferences,
-						displayTitle: 'x'.repeat(1000000)
+						displayTitle: 'x'.repeat(STRING_SHORT_MAX_LENGTH + 1)
 					}
 				};
 

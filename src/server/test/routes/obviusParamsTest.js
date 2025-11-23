@@ -8,6 +8,7 @@ const { expect } = require('chai');
 const { chai, mocha, app } = require('../common');
 const zlib = require('zlib');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const { PASSWORD_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Obvius Parameter Validation', () => {
 
@@ -52,7 +53,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 		});
 
 		mocha.it('should validate password length limits', async () => {
-			const longPassword = 'x'.repeat(1100);
+			const longPassword = 'x'.repeat(PASSWORD_MAX_LENGTH + 1);
 
 			const res = await chai.request(app)
 				.post('/api/obvius')
@@ -361,7 +362,8 @@ mocha.describe('Obvius Parameter Validation', () => {
 		});
 
 		mocha.it('should handle oversized parameter attacks', async () => {
-			const hugeString = 'x'.repeat(1000000);
+			// TODO convert to const once set in route.
+			const hugeString = 'x'.repeat(254 + 1);
 
 			const res = await chai.request(app)
 				.post('/api/obvius')

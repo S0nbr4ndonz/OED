@@ -8,6 +8,11 @@ const { expect } = require('chai');
 const { chai, mocha, app } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const {
+	NUMERIC_ID_MAX_LENGTH,
+	STRING_GENERAL_MAX_LENGTH,
+	STRING_SHORT_MAX_LENGTH
+} = require('../../util/validationConstants');
 
 mocha.describe('Maps Parameter Validation', () => {
 
@@ -51,7 +56,7 @@ mocha.describe('Maps Parameter Validation', () => {
 		});
 
 		mocha.it('should reject extremely long map ID strings (DoS prevention)', async () => {
-			const longMapId = 'x'.repeat(30);
+			const longMapId = 'x'.repeat(NUMERIC_ID_MAX_LENGTH + 1);
 
 			const res = await chai.request(app)
 				.get(`${BASE_ENDPOINT}/${longMapId}`);
@@ -112,19 +117,19 @@ mocha.describe('Maps Parameter Validation', () => {
 			const oversizedTests = [
 				{
 					field: 'name',
-					value: 'x'.repeat(150)
+					value: 'x'.repeat(STRING_SHORT_MAX_LENGTH + 1)
 				},
 				{
 					field: 'filename',
-					value: 'x'.repeat(600)
+					value: 'x'.repeat(500 + 1)
 				},
 				{
 					field: 'modifiedDate',
-					value: 'x'.repeat(150)
+					value: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1)
 				},
 				{
 					field: 'mapSource',
-					value: 'x'.repeat(1100)
+					value: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1)
 				}
 			];
 
@@ -394,11 +399,11 @@ mocha.describe('Maps Parameter Validation', () => {
 				},
 				{
 					endpoint: '/api/maps/create',
-					payload: { name: 'Test', modifiedDate: '2023-01-01', filename: 'test.png', mapSource: 'x'.repeat(1100) }
+					payload: { name: 'Test', modifiedDate: '2023-01-01', filename: 'test.png', mapSource: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1) }
 				},
 				{
 					endpoint: '/api/maps/create',
-					payload: { name: 'Test', modifiedDate: '2023-01-01', filename: 'test.png', mapSource: 'Test', note: 'x'.repeat(1100) }
+					payload: { name: 'Test', modifiedDate: '2023-01-01', filename: 'test.png', mapSource: 'Test', note: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1) }
 				}
 			];
 

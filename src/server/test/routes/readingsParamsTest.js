@@ -6,6 +6,7 @@
 
 const { chai, mocha, expect, app } = require('../common');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const { STRING_GENERAL_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Readings Route Parameter Validation', () => {
 
@@ -25,7 +26,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 			});
 
 			mocha.it('should reject extremely long meter_ids string (DoS prevention)', async () => {
-				const hugeMeterIds = '1,'.repeat(1000) + '2'; // Over 2000 chars
+				const hugeMeterIds = '1,'.repeat(STRING_GENERAL_MAX_LENGTH + 1);
 				const res = await chai.request(app)
 					.get(`/api/readings/line/count/meters/${hugeMeterIds}`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });

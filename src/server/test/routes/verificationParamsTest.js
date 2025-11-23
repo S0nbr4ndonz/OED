@@ -8,6 +8,7 @@ const { expect } = require('chai');
 const { chai, mocha, app } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const { TOKEN_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Verification Parameter Validation', () => {
 
@@ -54,7 +55,7 @@ mocha.describe('Verification Parameter Validation', () => {
 			});
 
 			mocha.it('should validate token length limits', async () => {
-				const oversizedToken = 'x'.repeat(2100);
+				const oversizedToken = 'x'.repeat(TOKEN_MAX_LENGTH + 1);
 
 				await testInvalidField({
 					field: 'token',
@@ -66,7 +67,7 @@ mocha.describe('Verification Parameter Validation', () => {
 			});
 
 			mocha.it('should accept maximum length token', async () => {
-				const maxLengthToken = 'x'.repeat(2000);
+				const maxLengthToken = 'x'.repeat(TOKEN_MAX_LENGTH);
 
 				const res = await chai.request(app)
 					.post(VERIFY_ENDPOINT)
@@ -194,8 +195,8 @@ mocha.describe('Verification Parameter Validation', () => {
 				}
 			});
 
-			mocha.it('should handle extremely long tokens', async () => {
-				const hugeToken = 'x'.repeat(10000);
+			mocha.it('should reject extremely long tokens', async () => {
+				const hugeToken = 'x'.repeat(TOKEN_MAX_LENGTH + 1);
 
 				const res = await chai.request(app)
 					.post(VERIFY_ENDPOINT)

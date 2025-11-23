@@ -223,7 +223,7 @@ mocha.describe('Conversions Parameter Validation', () => {
 				'../../../etc/passwd',
 				'conversion\\x00injection',
 				'\\u0000malicious',
-				'A'.repeat(10000)
+				'A'.repeat(STRING_GENERAL_MAX_LENGTH)
 			];
 
 			for (const maliciousInput of maliciousInputs) {

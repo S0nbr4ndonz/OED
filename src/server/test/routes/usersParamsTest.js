@@ -8,6 +8,7 @@ const { expect } = require('chai');
 const { chai, mocha, app } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const { PASSWORD_MAX_LENGTH, TOKEN_MAX_LENGTH, STRING_GENERAL_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Users Parameter Validation', () => {
 
@@ -16,7 +17,7 @@ mocha.describe('Users Parameter Validation', () => {
 
 		mocha.it('should validate token length limits', async () => {
 			// Test extremely long token - should be caught by validation
-			const hugeToken = 'x'.repeat(2100);
+			const hugeToken = 'x'.repeat(TOKEN_MAX_LENGTH + 1);
 			const res = await chai.request(app)
 				.get(TOKEN_ENDPOINT)
 				.set('token', hugeToken);
@@ -117,7 +118,7 @@ mocha.describe('Users Parameter Validation', () => {
 			await testInvalidField({
 				field: 'password',
 				// Too long
-				invalidValue: 'x'.repeat(1001),
+				invalidValue: 'x'.repeat(PASSWORD_MAX_LENGTH + 1),
 				endpoint: CREATE_ENDPOINT,
 				basePayload: baseUserData,
 				expectedStatus: HTTP_CODE.FORBIDDEN
@@ -129,7 +130,7 @@ mocha.describe('Users Parameter Validation', () => {
 			await testInvalidField({
 				field: 'note',
 				// Too long
-				invalidValue: 'x'.repeat(1001),
+				invalidValue: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1),
 				endpoint: CREATE_ENDPOINT,
 				basePayload: baseUserData,
 				expectedStatus: HTTP_CODE.FORBIDDEN
@@ -259,7 +260,7 @@ mocha.describe('Users Parameter Validation', () => {
 			// Test password too long
 			await testInvalidField({
 				field: 'password',
-				invalidValue: 'x'.repeat(1001),
+				invalidValue: 'x'.repeat(PASSWORD_MAX_LENGTH + 1),
 				endpoint: EDIT_ENDPOINT,
 				basePayload: { user: { ...baseEditData.user } },
 				expectedStatus: HTTP_CODE.FORBIDDEN
@@ -290,7 +291,7 @@ mocha.describe('Users Parameter Validation', () => {
 			// Admin auth middleware returns 403 before validation
 			await testInvalidField({
 				field: 'note',
-				invalidValue: 'x'.repeat(1001),
+				invalidValue: 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1),
 				endpoint: EDIT_ENDPOINT,
 				basePayload: testPayload,
 				expectedStatus: HTTP_CODE.FORBIDDEN

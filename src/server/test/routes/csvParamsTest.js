@@ -9,6 +9,7 @@ const { chai, mocha, app } = require('../common');
 const fs = require('fs');
 const path = require('path');
 const { HTTP_CODE } = require('../../util/readingsUtils');
+const { STRING_GENERAL_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('CSV Parameter Validation', () => {
 
@@ -177,7 +178,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					'<script>alert("xss")</script>',
 					'../../../etc/passwd',
 					'meter\x00injection',
-					'x'.repeat(1000)
+					'x'.repeat(STRING_GENERAL_MAX_LENGTH)
 				];
 
 				for (const maliciousInput of maliciousInputs) {
