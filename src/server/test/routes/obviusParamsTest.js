@@ -10,447 +10,447 @@ const zlib = require('zlib');
 
 mocha.describe('Obvius Parameter Validation', () => {
 
-    mocha.describe('Authentication Validation', () => {
-        mocha.it('should reject requests without username', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect([406, 429]).to.include(res.status);
-            expect(res.text).to.include('username parameter is required');
-        });
+	mocha.describe('Authentication Validation', () => {
+		mocha.it('should reject requests without username', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					password: 'testpass',
+					mode: 'STATUS'
+				});
 
-        mocha.it('should reject requests without password', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: 'testuser',
-                    mode: 'STATUS'
-                });
-            
-            expect([406, 429]).to.include(res.status);
-            expect(res.text).to.include('password parameter is required');
-        });
+			expect([406, 429]).to.include(res.status);
+			expect(res.text).to.include('username parameter is required');
+		});
 
-        mocha.it('should validate username length limits', async () => {
-            const longUsername = 'x'.repeat(300);
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: longUsername,
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect([406, 429]).to.include(res.status);
-            expect(res.text).to.include('Invalid username format');
-        });
+		mocha.it('should reject requests without password', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: 'testuser',
+					mode: 'STATUS'
+				});
 
-        mocha.it('should validate password length limits', async () => {
-            const longPassword = 'x'.repeat(1100);
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: 'testuser',
-                    password: longPassword,
-                    mode: 'STATUS'
-                });
-            
-            expect([406, 429]).to.include(res.status);
-            expect(res.text).to.include('Invalid password format');
-        });
+			expect([406, 429]).to.include(res.status);
+			expect(res.text).to.include('password parameter is required');
+		});
 
-        mocha.it('should validate username type', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: 12345,
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect([406, 429]).to.include(res.status);
-            expect(res.text).to.include('Invalid username format');
-        });
+		mocha.it('should validate username length limits', async () => {
+			const longUsername = 'x'.repeat(300);
 
-        mocha.it('should validate password type', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: 'testuser',
-                    password: 12345,
-                    mode: 'STATUS'
-                });
-            
-            expect([406, 429]).to.include(res.status);
-            expect(res.text).to.include('Invalid password format');
-        });
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: longUsername,
+					password: 'testpass',
+					mode: 'STATUS'
+				});
 
-        mocha.it('should support backwards compatibility with email parameter', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    email: 'test@example.com',
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            // Should get to authentication rather than parameter validation error
-            expect([400, 401, 403, 406, 429]).to.include(res.status);
-        });
-    });
+			expect([406, 429]).to.include(res.status);
+			expect(res.text).to.include('Invalid username format');
+		});
 
-    mocha.describe('Mode Parameter Validation', () => {
-        const baseAuth = {
-            username: 'testuser',
-            password: 'testpass'
-        };
+		mocha.it('should validate password length limits', async () => {
+			const longPassword = 'x'.repeat(1100);
 
-        mocha.it('should require mode parameter', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send(baseAuth);
-            
-            // Route validates auth first, then mode parameter
-            expect([400, 406, 429]).to.include(res.status);
-        });
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: 'testuser',
+					password: longPassword,
+					mode: 'STATUS'
+				});
 
-        mocha.it('should handle STATUS mode', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    mode: 'STATUS'
-                });
-            
-            // Will fail auth but validates mode parameter properly
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+			expect([406, 429]).to.include(res.status);
+			expect(res.text).to.include('Invalid password format');
+		});
 
-        mocha.it('should reject unknown mode', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    mode: 'INVALID_MODE'
-                });
-            
-            // Will fail auth before mode validation in current implementation
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
-    });
+		mocha.it('should validate username type', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: 12345,
+					password: 'testpass',
+					mode: 'STATUS'
+				});
 
-    mocha.describe('Logfile Upload Validation', () => {
-        const baseAuth = {
-            username: 'testuser',
-            password: 'testpass',
-            mode: 'LOGFILE_UPLOAD'
-        };
+			expect([406, 429]).to.include(res.status);
+			expect(res.text).to.include('Invalid username format');
+		});
 
-        mocha.it('should require serial number for logfile upload', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send(baseAuth);
-            
-            // Will fail auth before validation in current implementation
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+		mocha.it('should validate password type', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: 'testuser',
+					password: 12345,
+					mode: 'STATUS'
+				});
 
-        mocha.it('should validate serial number format', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    serialnumber: 'x'.repeat(150)
-                });
-            
-            // Will fail auth before validation
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+			expect([406, 429]).to.include(res.status);
+			expect(res.text).to.include('Invalid password format');
+		});
 
-        mocha.it('should validate serial number type', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    serialnumber: 12345
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
-    });
+		mocha.it('should support backwards compatibility with email parameter', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					email: 'test@example.com',
+					password: 'testpass',
+					mode: 'STATUS'
+				});
 
-    mocha.describe('Config Upload Validation', () => {
-        const baseAuth = {
-            username: 'testuser',
-            password: 'testpass',
-            mode: 'CONFIG_FILE_UPLOAD'
-        };
+			// Should get to authentication rather than parameter validation error
+			expect([400, 401, 403, 406, 429]).to.include(res.status);
+		});
+	});
 
-        mocha.it('should require serial number for config upload', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    modbusdevice: 'test'
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+	mocha.describe('Mode Parameter Validation', () => {
+		const baseAuth = {
+			username: 'testuser',
+			password: 'testpass'
+		};
 
-        mocha.it('should require modbus device for config upload', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    serialnumber: 'test123'
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+		mocha.it('should require mode parameter', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send(baseAuth);
 
-        mocha.it('should validate serial number format in config upload', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    serialnumber: 'x'.repeat(150),
-                    modbusdevice: 'test'
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+			// Route validates auth first, then mode parameter
+			expect([400, 406, 429]).to.include(res.status);
+		});
 
-        mocha.it('should validate modbus device format', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    serialnumber: 'test123',
-                    modbusdevice: 'x'.repeat(60)
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+		mocha.it('should handle STATUS mode', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					mode: 'STATUS'
+				});
 
-        mocha.it('should validate parameter types', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    ...baseAuth,
-                    serialnumber: 12345,
-                    modbusdevice: 67890
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
-    });
+			// Will fail auth but validates mode parameter properly
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
 
-    mocha.describe('File Upload Security', () => {
-        const baseAuth = {
-            username: 'testuser',
-            password: 'testpass',
-            mode: 'LOGFILE_UPLOAD',
-            serialnumber: 'test123'
-        };
+		mocha.it('should reject unknown mode', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					mode: 'INVALID_MODE'
+				});
 
-        mocha.it('should handle multer file size limits', async () => {
-            // Create a large buffer that exceeds the 50MB limit
-            const largeBuffer = Buffer.alloc(60 * 1024 * 1024, 'x');
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .field('username', baseAuth.username)
-                .field('password', baseAuth.password)
-                .field('mode', baseAuth.mode)
-                .field('serialnumber', baseAuth.serialnumber)
-                .attach('logfile', largeBuffer, 'large.log.gz');
-            
-            // Multer file size/count limits may return various error codes
-            expect([400, 413, 500]).to.include(res.status);
-        });
+			// Will fail auth before mode validation in current implementation
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+	});
 
-        mocha.it('should handle maximum number of files', async () => {
-            const testBuffer = Buffer.from('test data');
-            let request = chai.request(app)
-                .post('/api/obvius')
-                .field('username', baseAuth.username)
-                .field('password', baseAuth.password)
-                .field('mode', baseAuth.mode)
-                .field('serialnumber', baseAuth.serialnumber);
-            
-            // Try to attach 15 files (exceeds limit of 10)
-            for (let i = 0; i < 15; i++) {
-                request = request.attach(`file${i}`, testBuffer, `test${i}.log.gz`);
-            }
-            
-            const res = await request;
-            
-            // Multer file size/count limits may return various error codes  
-            expect([400, 413, 500]).to.include(res.status);
-        });
+	mocha.describe('Logfile Upload Validation', () => {
+		const baseAuth = {
+			username: 'testuser',
+			password: 'testpass',
+			mode: 'LOGFILE_UPLOAD'
+		};
 
-        mocha.it('should handle gzip decompression errors gracefully', async () => {
-            // Create invalid gzip data
-            const invalidGzipBuffer = Buffer.from('not a gzip file');
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .field('username', baseAuth.username)
-                .field('password', baseAuth.password)
-                .field('mode', baseAuth.mode)
-                .field('serialnumber', baseAuth.serialnumber)
-                .attach('logfile', invalidGzipBuffer, 'invalid.log.gz');
-            
-            // Will fail auth before reaching gzip processing
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
-    });
+		mocha.it('should require serial number for logfile upload', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send(baseAuth);
 
-    mocha.describe('Security Attack Prevention', () => {
-        mocha.it('should prevent SQL injection in username', async () => {
-            const sqlInjection = "'; DROP TABLE users; --";
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: sqlInjection,
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            // Should be handled safely (length validation may catch this)
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+			// Will fail auth before validation in current implementation
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
 
-        mocha.it('should prevent XSS injection in parameters', async () => {
-            const xssPayload = '<script>alert("xss")</script>';
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: xssPayload,
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-            // Response should be HTML-escaped
-            if (res.text) {
-                expect(res.text).to.not.include('<script>');
-            }
-        });
+		mocha.it('should validate serial number format', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					serialnumber: 'x'.repeat(150)
+				});
 
-        mocha.it('should handle prototype pollution attempts', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: 'testuser',
-                    password: 'testpass',
-                    mode: 'STATUS',
-                    '__proto__': { isAdmin: true }
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+			// Will fail auth before validation
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
 
-        mocha.it('should handle oversized parameter attacks', async () => {
-            const hugeString = 'x'.repeat(1000000);
-            
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: hugeString,
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect(res.status).to.equal(406);
-            expect(res.text).to.include('Invalid username format');
-        });
-    });
+		mocha.it('should validate serial number type', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					serialnumber: 12345
+				});
 
-    mocha.describe('Error Handling', () => {
-        mocha.it('should return proper Obvius protocol error format', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    password: 'testpass'
-                });
-            
-            expect(res.status).to.equal(406);
-            expect(res.text).to.include('<pre>');
-            expect(res.text).to.include('username parameter is required');
-            expect(res.text).to.include('</pre>');
-        });
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+	});
 
-        mocha.it('should handle empty request body', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({});
-            
-            expect(res.status).to.equal(406);
-        });
+	mocha.describe('Config Upload Validation', () => {
+		const baseAuth = {
+			username: 'testuser',
+			password: 'testpass',
+			mode: 'CONFIG_FILE_UPLOAD'
+		};
 
-        mocha.it('should handle null request body', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send(null);
-            
-            expect(res.status).to.equal(406);
-        });
+		mocha.it('should require serial number for config upload', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					modbusdevice: 'test'
+				});
 
-        mocha.it('should handle malformed JSON', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .set('Content-Type', 'application/json')
-                .send('invalid json');
-            
-            expect([400, 406]).to.include(res.status);
-        });
-    });
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
 
-    mocha.describe('HTTP Method Handling', () => {
-        mocha.it('should accept GET requests', async () => {
-            const res = await chai.request(app)
-                .get('/api/obvius')
-                .query({
-                    username: 'testuser',
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            // Should process the request (will fail auth)
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+		mocha.it('should require modbus device for config upload', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					serialnumber: 'test123'
+				});
 
-        mocha.it('should accept POST requests', async () => {
-            const res = await chai.request(app)
-                .post('/api/obvius')
-                .send({
-                    username: 'testuser',
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
 
-        mocha.it('should accept PUT requests', async () => {
-            const res = await chai.request(app)
-                .put('/api/obvius')
-                .send({
-                    username: 'testuser',
-                    password: 'testpass',
-                    mode: 'STATUS'
-                });
-            
-            expect([400, 401, 403, 406]).to.include(res.status);
-        });
-    });
+		mocha.it('should validate serial number format in config upload', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					serialnumber: 'x'.repeat(150),
+					modbusdevice: 'test'
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+
+		mocha.it('should validate modbus device format', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					serialnumber: 'test123',
+					modbusdevice: 'x'.repeat(60)
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+
+		mocha.it('should validate parameter types', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					...baseAuth,
+					serialnumber: 12345,
+					modbusdevice: 67890
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+	});
+
+	mocha.describe('File Upload Security', () => {
+		const baseAuth = {
+			username: 'testuser',
+			password: 'testpass',
+			mode: 'LOGFILE_UPLOAD',
+			serialnumber: 'test123'
+		};
+
+		mocha.it('should handle multer file size limits', async () => {
+			// Create a large buffer that exceeds the 50MB limit
+			const largeBuffer = Buffer.alloc(60 * 1024 * 1024, 'x');
+
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.field('username', baseAuth.username)
+				.field('password', baseAuth.password)
+				.field('mode', baseAuth.mode)
+				.field('serialnumber', baseAuth.serialnumber)
+				.attach('logfile', largeBuffer, 'large.log.gz');
+
+			// Multer file size/count limits may return various error codes
+			expect([400, 413, 500]).to.include(res.status);
+		});
+
+		mocha.it('should handle maximum number of files', async () => {
+			const testBuffer = Buffer.from('test data');
+			let request = chai.request(app)
+				.post('/api/obvius')
+				.field('username', baseAuth.username)
+				.field('password', baseAuth.password)
+				.field('mode', baseAuth.mode)
+				.field('serialnumber', baseAuth.serialnumber);
+
+			// Try to attach 15 files (exceeds limit of 10)
+			for (let i = 0; i < 15; i++) {
+				request = request.attach(`file${i}`, testBuffer, `test${i}.log.gz`);
+			}
+
+			const res = await request;
+
+			// Multer file size/count limits may return various error codes  
+			expect([400, 413, 500]).to.include(res.status);
+		});
+
+		mocha.it('should handle gzip decompression errors gracefully', async () => {
+			// Create invalid gzip data
+			const invalidGzipBuffer = Buffer.from('not a gzip file');
+
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.field('username', baseAuth.username)
+				.field('password', baseAuth.password)
+				.field('mode', baseAuth.mode)
+				.field('serialnumber', baseAuth.serialnumber)
+				.attach('logfile', invalidGzipBuffer, 'invalid.log.gz');
+
+			// Will fail auth before reaching gzip processing
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+	});
+
+	mocha.describe('Security Attack Prevention', () => {
+		mocha.it('should prevent SQL injection in username', async () => {
+			const sqlInjection = "'; DROP TABLE users; --";
+
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: sqlInjection,
+					password: 'testpass',
+					mode: 'STATUS'
+				});
+
+			// Should be handled safely (length validation may catch this)
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+
+		mocha.it('should prevent XSS injection in parameters', async () => {
+			const xssPayload = '<script>alert("xss")</script>';
+
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: xssPayload,
+					password: 'testpass',
+					mode: 'STATUS'
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+			// Response should be HTML-escaped
+			if (res.text) {
+				expect(res.text).to.not.include('<script>');
+			}
+		});
+
+		mocha.it('should handle prototype pollution attempts', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: 'testuser',
+					password: 'testpass',
+					mode: 'STATUS',
+					'__proto__': { isAdmin: true }
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+
+		mocha.it('should handle oversized parameter attacks', async () => {
+			const hugeString = 'x'.repeat(1000000);
+
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: hugeString,
+					password: 'testpass',
+					mode: 'STATUS'
+				});
+
+			expect(res.status).to.equal(406);
+			expect(res.text).to.include('Invalid username format');
+		});
+	});
+
+	mocha.describe('Error Handling', () => {
+		mocha.it('should return proper Obvius protocol error format', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					password: 'testpass'
+				});
+
+			expect(res.status).to.equal(406);
+			expect(res.text).to.include('<pre>');
+			expect(res.text).to.include('username parameter is required');
+			expect(res.text).to.include('</pre>');
+		});
+
+		mocha.it('should handle empty request body', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({});
+
+			expect(res.status).to.equal(406);
+		});
+
+		mocha.it('should handle null request body', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send(null);
+
+			expect(res.status).to.equal(406);
+		});
+
+		mocha.it('should handle malformed JSON', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.set('Content-Type', 'application/json')
+				.send('invalid json');
+
+			expect([400, 406]).to.include(res.status);
+		});
+	});
+
+	mocha.describe('HTTP Method Handling', () => {
+		mocha.it('should accept GET requests', async () => {
+			const res = await chai.request(app)
+				.get('/api/obvius')
+				.query({
+					username: 'testuser',
+					password: 'testpass',
+					mode: 'STATUS'
+				});
+
+			// Should process the request (will fail auth)
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+
+		mocha.it('should accept POST requests', async () => {
+			const res = await chai.request(app)
+				.post('/api/obvius')
+				.send({
+					username: 'testuser',
+					password: 'testpass',
+					mode: 'STATUS'
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+
+		mocha.it('should accept PUT requests', async () => {
+			const res = await chai.request(app)
+				.put('/api/obvius')
+				.send({
+					username: 'testuser',
+					password: 'testpass',
+					mode: 'STATUS'
+				});
+
+			expect([400, 401, 403, 406]).to.include(res.status);
+		});
+	});
 });

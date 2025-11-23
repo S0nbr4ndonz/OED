@@ -10,446 +10,446 @@ const { validateString, validateInt, testInvalidField } = require('../util/valid
 
 mocha.describe('Users Parameter Validation', () => {
 
-    mocha.describe('GET /api/users/token - Token Validation', () => {
-        const TOKEN_ENDPOINT = '/api/users/token';
+	mocha.describe('GET /api/users/token - Token Validation', () => {
+		const TOKEN_ENDPOINT = '/api/users/token';
 
-        mocha.it('should validate token length limits', async () => {
-            // Test extremely long token - should be caught by validation
-            const hugeToken = 'x'.repeat(2100);
-            const res = await chai.request(app)
-                .get(TOKEN_ENDPOINT)
-                .set('token', hugeToken);
-            expect(res).to.have.status(403);
-        });
+		mocha.it('should validate token length limits', async () => {
+			// Test extremely long token - should be caught by validation
+			const hugeToken = 'x'.repeat(2100);
+			const res = await chai.request(app)
+				.get(TOKEN_ENDPOINT)
+				.set('token', hugeToken);
+			expect(res).to.have.status(403);
+		});
 
-        mocha.it('should reject non-string tokens', async () => {
-            // Test non-string token in header
-            const res1 = await chai.request(app)
-                .get(TOKEN_ENDPOINT)
-                .set('token', 12345);
-            expect(res1).to.have.status(401); // JWT verification failure
+		mocha.it('should reject non-string tokens', async () => {
+			// Test non-string token in header
+			const res1 = await chai.request(app)
+				.get(TOKEN_ENDPOINT)
+				.set('token', 12345);
+			expect(res1).to.have.status(401); // JWT verification failure
 
-            // Test missing token
-            const res2 = await chai.request(app)
-                .get(TOKEN_ENDPOINT);
-            expect(res2).to.have.status(403);
-        });
+			// Test missing token
+			const res2 = await chai.request(app)
+				.get(TOKEN_ENDPOINT);
+			expect(res2).to.have.status(403);
+		});
 
-        mocha.it('should handle malformed tokens', async () => {
-            const malformedTokens = [
-                'malformed.jwt.token',
-                'not.a.jwt',
-                '',
-                'null',
-                'undefined'
-            ];
+		mocha.it('should handle malformed tokens', async () => {
+			const malformedTokens = [
+				'malformed.jwt.token',
+				'not.a.jwt',
+				'',
+				'null',
+				'undefined'
+			];
 
-            for (const token of malformedTokens) {
-                const res = await chai.request(app)
-                    .get(TOKEN_ENDPOINT)
-                    .set('token', token);
-                
-                // Should either be 403 (validation) or 401 (JWT verification)
-                expect([401, 403]).to.include(res.status);
-            }
-        });
-    });
+			for (const token of malformedTokens) {
+				const res = await chai.request(app)
+					.get(TOKEN_ENDPOINT)
+					.set('token', token);
 
-    mocha.describe('GET /api/users/:user_id - User ID Validation', () => {
-        const USER_ID_ENDPOINT = '/api/users/123';
+				// Should either be 403 (validation) or 401 (JWT verification)
+				expect([401, 403]).to.include(res.status);
+			}
+		});
+	});
 
-        mocha.it('should validate user_id parameter', async () => {
-            // Test invalid user ID patterns (non-numeric)
-            const invalidIds = ['abc', '12abc', 'user123', 'null', ''];
-            
-            for (const invalidId of invalidIds) {
-                const res = await chai.request(app)
-                    .get(`/api/users/${invalidId}`);
-                
-                // Should return 403 for auth error (admin required) or 400 for validation
-                expect([400, 403]).to.include(res.status);
-            }
-        });
+	mocha.describe('GET /api/users/:user_id - User ID Validation', () => {
+		const USER_ID_ENDPOINT = '/api/users/123';
 
-        mocha.it('should handle extremely long user IDs', async () => {
-            const longId = '1'.repeat(25);
-            const res = await chai.request(app)
-                .get(`/api/users/${longId}`);
-            
-            expect([400, 403]).to.include(res.status);
-        });
+		mocha.it('should validate user_id parameter', async () => {
+			// Test invalid user ID patterns (non-numeric)
+			const invalidIds = ['abc', '12abc', 'user123', 'null', ''];
 
-        mocha.it('should handle SQL injection in user ID', async () => {
-            const sqlInjection = encodeURIComponent("1' OR '1'='1");
-            const res = await chai.request(app)
-                .get(`/api/users/${sqlInjection}`);
-            
-            expect([400, 403]).to.include(res.status);
-        });
-    });
+			for (const invalidId of invalidIds) {
+				const res = await chai.request(app)
+					.get(`/api/users/${invalidId}`);
 
-    mocha.describe('POST /api/users/create - User Creation Validation', () => {
-        const CREATE_ENDPOINT = '/api/users/create';
-        
-        const baseUserData = {
-            username: 'newuser@example.com',
-            password: 'newpassword123',
-            // TODO: Use actual enum value from User.role
-            role: 'ADMIN',
-            note: 'Test user creation'
-        };
+				// Should return 403 for auth error (admin required) or 400 for validation
+				expect([400, 403]).to.include(res.status);
+			}
+		});
 
-        mocha.it('should validate username field', async () => {
-            // Admin auth middleware returns 403 before validation, so test manually
-            await testInvalidField({
-                field: 'username',
-                // Too long
-                invalidValue: 'x'.repeat(255),
-                endpoint: CREATE_ENDPOINT,
-                basePayload: baseUserData,
-                expectedStatus: 403
-            });
-        });
+		mocha.it('should handle extremely long user IDs', async () => {
+			const longId = '1'.repeat(25);
+			const res = await chai.request(app)
+				.get(`/api/users/${longId}`);
 
-        mocha.it('should validate password field', async () => {
-            // Admin auth middleware returns 403 before validation
-            await testInvalidField({
-                field: 'password',
-                // Too long
-                invalidValue: 'x'.repeat(1001),
-                endpoint: CREATE_ENDPOINT,
-                basePayload: baseUserData,
-                expectedStatus: 403
-            });
-        });
+			expect([400, 403]).to.include(res.status);
+		});
 
-        mocha.it('should validate note field', async () => {
-            // Admin auth middleware returns 403 before validation
-            await testInvalidField({
-                field: 'note',
-                // Too long
-                invalidValue: 'x'.repeat(1001),
-                endpoint: CREATE_ENDPOINT,
-                basePayload: baseUserData,
-                expectedStatus: 403
-            });
-        });
+		mocha.it('should handle SQL injection in user ID', async () => {
+			const sqlInjection = encodeURIComponent("1' OR '1'='1");
+			const res = await chai.request(app)
+				.get(`/api/users/${sqlInjection}`);
 
-        mocha.it('should reject invalid role values', async () => {
-            const invalidRoles = ['INVALID_ROLE', 'admin', 'user', '', 'ROOT', 'SUPERUSER'];
-            
-            for (const invalidRole of invalidRoles) {
-                await testInvalidField({
-                    field: 'role',
-                    invalidValue: invalidRole,
-                    endpoint: CREATE_ENDPOINT,
-                    basePayload: baseUserData,
-                    expectedStatus: 403
-                });
-            }
-        });
+			expect([400, 403]).to.include(res.status);
+		});
+	});
 
-        mocha.it('should reject payloads with extra fields', async () => {
-            const payloadWithExtra = {
-                ...baseUserData,
-                maliciousField: 'injection attempt',
-                isAdmin: true,
-                permissions: ['all']
-            };
+	mocha.describe('POST /api/users/create - User Creation Validation', () => {
+		const CREATE_ENDPOINT = '/api/users/create';
 
-            const res = await chai.request(app)
-                .post(CREATE_ENDPOINT)
-                .send(payloadWithExtra);
-            expect([400, 403]).to.include(res.status);
-        });
+		const baseUserData = {
+			username: 'newuser@example.com',
+			password: 'newpassword123',
+			// TODO: Use actual enum value from User.role
+			role: 'ADMIN',
+			note: 'Test user creation'
+		};
 
-        mocha.it('should handle malicious username inputs', async () => {
-            const maliciousInputs = [
-                "'; DROP TABLE users; --",
-                '<script>alert("xss")</script>',
-                'admin)(&(password=*))',
-                'user\x00@example.com'
-            ];
+		mocha.it('should validate username field', async () => {
+			// Admin auth middleware returns 403 before validation, so test manually
+			await testInvalidField({
+				field: 'username',
+				// Too long
+				invalidValue: 'x'.repeat(255),
+				endpoint: CREATE_ENDPOINT,
+				basePayload: baseUserData,
+				expectedStatus: 403
+			});
+		});
 
-            for (const maliciousInput of maliciousInputs) {
-                await testInvalidField({
-                    field: 'username',
-                    invalidValue: maliciousInput,
-                    endpoint: CREATE_ENDPOINT,
-                    basePayload: baseUserData,
-                    expectedStatus: 403
-                });
-            }
-        });
+		mocha.it('should validate password field', async () => {
+			// Admin auth middleware returns 403 before validation
+			await testInvalidField({
+				field: 'password',
+				// Too long
+				invalidValue: 'x'.repeat(1001),
+				endpoint: CREATE_ENDPOINT,
+				basePayload: baseUserData,
+				expectedStatus: 403
+			});
+		});
 
-        mocha.it('should handle missing required fields', async () => {
-            const requiredFields = ['username', 'password', 'role', 'note'];
-            
-            for (const field of requiredFields) {
-                const payloadMissingField = { ...baseUserData };
-                delete payloadMissingField[field];
-                
-                const res = await chai.request(app)
-                    .post(CREATE_ENDPOINT)
-                    .send(payloadMissingField);
-                expect([400, 403]).to.include(res.status);
-            }
-        });
-    });
+		mocha.it('should validate note field', async () => {
+			// Admin auth middleware returns 403 before validation
+			await testInvalidField({
+				field: 'note',
+				// Too long
+				invalidValue: 'x'.repeat(1001),
+				endpoint: CREATE_ENDPOINT,
+				basePayload: baseUserData,
+				expectedStatus: 403
+			});
+		});
 
-    mocha.describe('POST /api/users/edit - User Edit Validation', () => {
-        const EDIT_ENDPOINT = '/api/users/edit';
-        
-        const baseEditData = {
-            user: {
-                id: 1,
-                username: 'edituser@example.com',
-                role: 'ADMIN',
-                // TODO: Use actual enum value from User.role
-                note: 'Edited user',
-                password: 'newpassword123'
-            }
-        };
+		mocha.it('should reject invalid role values', async () => {
+			const invalidRoles = ['INVALID_ROLE', 'admin', 'user', '', 'ROOT', 'SUPERUSER'];
 
-        mocha.it('should validate user object structure', async () => {
-            // Test missing user object - admin auth returns 403
-            const res1 = await chai.request(app)
-                .post(EDIT_ENDPOINT)
-                .send({});
-            expect(res1.status).to.equal(403);
+			for (const invalidRole of invalidRoles) {
+				await testInvalidField({
+					field: 'role',
+					invalidValue: invalidRole,
+					endpoint: CREATE_ENDPOINT,
+					basePayload: baseUserData,
+					expectedStatus: 403
+				});
+			}
+		});
 
-            // Test invalid user object type - admin auth returns 403
-            const res2 = await chai.request(app)
-                .post(EDIT_ENDPOINT)
-                .send({ user: 'not an object' });
-            expect(res2.status).to.equal(403);
-        });
+		mocha.it('should reject payloads with extra fields', async () => {
+			const payloadWithExtra = {
+				...baseUserData,
+				maliciousField: 'injection attempt',
+				isAdmin: true,
+				permissions: ['all']
+			};
 
-        mocha.it('should validate user ID field', async () => {
-            // Admin auth middleware returns 403 before validation
-            await testInvalidField({
-                field: 'id',
-                invalidValue: -1,
-                endpoint: EDIT_ENDPOINT,
-                basePayload: { user: { ...baseEditData.user } },
-                expectedStatus: 403
-            });
-        });
+			const res = await chai.request(app)
+				.post(CREATE_ENDPOINT)
+				.send(payloadWithExtra);
+			expect([400, 403]).to.include(res.status);
+		});
 
-        mocha.it('should validate username field in edit', async () => {
-            const testPayload = {
-                user: {
-                    ...baseEditData.user,
-                    username: 'test'
-                }
-            };
+		mocha.it('should handle malicious username inputs', async () => {
+			const maliciousInputs = [
+				"'; DROP TABLE users; --",
+				'<script>alert("xss")</script>',
+				'admin)(&(password=*))',
+				'user\x00@example.com'
+			];
 
-            // Admin auth middleware returns 403 before validation
-            await testInvalidField({
-                field: 'username',
-                invalidValue: 'x'.repeat(255),
-                endpoint: EDIT_ENDPOINT,
-                basePayload: testPayload,
-                expectedStatus: 403
-            });
-        });
+			for (const maliciousInput of maliciousInputs) {
+				await testInvalidField({
+					field: 'username',
+					invalidValue: maliciousInput,
+					endpoint: CREATE_ENDPOINT,
+					basePayload: baseUserData,
+					expectedStatus: 403
+				});
+			}
+		});
 
-        mocha.it('should validate optional password field', async () => {
-            // Test password too long
-            await testInvalidField({
-                field: 'password',
-                invalidValue: 'x'.repeat(1001),
-                endpoint: EDIT_ENDPOINT,
-                basePayload: { user: { ...baseEditData.user } },
-                expectedStatus: 403
-            });
+		mocha.it('should handle missing required fields', async () => {
+			const requiredFields = ['username', 'password', 'role', 'note'];
 
-            // Test password can be omitted (optional field)
-            const payloadWithoutPassword = {
-                user: {
-                    ...baseEditData.user
-                }
-            };
-            delete payloadWithoutPassword.user.password;
-            
-            const res = await chai.request(app)
-                .post(EDIT_ENDPOINT)
-                .send(payloadWithoutPassword);
-            expect([400, 403]).to.include(res.status);
-        });
+			for (const field of requiredFields) {
+				const payloadMissingField = { ...baseUserData };
+				delete payloadMissingField[field];
 
-        mocha.it('should validate note field in edit', async () => {
-            const testPayload = {
-                user: {
-                    ...baseEditData.user,
-                    note: 'test'
-                }
-            };
+				const res = await chai.request(app)
+					.post(CREATE_ENDPOINT)
+					.send(payloadMissingField);
+				expect([400, 403]).to.include(res.status);
+			}
+		});
+	});
 
-            // Admin auth middleware returns 403 before validation
-            await testInvalidField({
-                field: 'note',
-                invalidValue: 'x'.repeat(1001),
-                endpoint: EDIT_ENDPOINT,
-                basePayload: testPayload,
-                expectedStatus: 403
-            });
-        });
+	mocha.describe('POST /api/users/edit - User Edit Validation', () => {
+		const EDIT_ENDPOINT = '/api/users/edit';
 
-        mocha.it('should reject extra fields in user object', async () => {
-            const payloadWithExtra = {
-                user: {
-                    ...baseEditData.user,
-                    maliciousField: 'injection',
-                    isActive: true,
-                    permissions: ['admin']
-                }
-            };
+		const baseEditData = {
+			user: {
+				id: 1,
+				username: 'edituser@example.com',
+				role: 'ADMIN',
+				// TODO: Use actual enum value from User.role
+				note: 'Edited user',
+				password: 'newpassword123'
+			}
+		};
 
-            const res = await chai.request(app)
-                .post(EDIT_ENDPOINT)
-                .send(payloadWithExtra);
-            expect([400, 403]).to.include(res.status);
-        });
+		mocha.it('should validate user object structure', async () => {
+			// Test missing user object - admin auth returns 403
+			const res1 = await chai.request(app)
+				.post(EDIT_ENDPOINT)
+				.send({});
+			expect(res1.status).to.equal(403);
 
-        mocha.it('should handle nested parameter injection', async () => {
-            const payloadWithExtraFields = {
-                user: baseEditData.user,
-                maliciousField: 'top level injection',
-                admin: true
-            };
+			// Test invalid user object type - admin auth returns 403
+			const res2 = await chai.request(app)
+				.post(EDIT_ENDPOINT)
+				.send({ user: 'not an object' });
+			expect(res2.status).to.equal(403);
+		});
 
-            const res = await chai.request(app)
-                .post(EDIT_ENDPOINT)
-                .send(payloadWithExtraFields);
-            expect([400, 403]).to.include(res.status);
-        });
-    });
+		mocha.it('should validate user ID field', async () => {
+			// Admin auth middleware returns 403 before validation
+			await testInvalidField({
+				field: 'id',
+				invalidValue: -1,
+				endpoint: EDIT_ENDPOINT,
+				basePayload: { user: { ...baseEditData.user } },
+				expectedStatus: 403
+			});
+		});
 
-    mocha.describe('POST /api/users/delete - User Deletion Validation', () => {
-        const DELETE_ENDPOINT = '/api/users/delete';
-        
-        const baseDeleteData = {
-            username: 'deleteuser@example.com'
-        };
+		mocha.it('should validate username field in edit', async () => {
+			const testPayload = {
+				user: {
+					...baseEditData.user,
+					username: 'test'
+				}
+			};
 
-        mocha.it('should validate username field', async () => {
-            // Admin auth middleware returns 403 before validation
-            await testInvalidField({
-                field: 'username',
-                invalidValue: 'x'.repeat(255),
-                endpoint: DELETE_ENDPOINT,
-                basePayload: baseDeleteData,
-                expectedStatus: 403
-            });
-        });
+			// Admin auth middleware returns 403 before validation
+			await testInvalidField({
+				field: 'username',
+				invalidValue: 'x'.repeat(255),
+				endpoint: EDIT_ENDPOINT,
+				basePayload: testPayload,
+				expectedStatus: 403
+			});
+		});
 
-        mocha.it('should reject payloads with extra fields', async () => {
-            const payloadWithExtra = {
-                ...baseDeleteData,
-                force: true,
-                confirmDelete: true,
-                maliciousField: 'injection'
-            };
+		mocha.it('should validate optional password field', async () => {
+			// Test password too long
+			await testInvalidField({
+				field: 'password',
+				invalidValue: 'x'.repeat(1001),
+				endpoint: EDIT_ENDPOINT,
+				basePayload: { user: { ...baseEditData.user } },
+				expectedStatus: 403
+			});
 
-            const res = await chai.request(app)
-                .post(DELETE_ENDPOINT)
-                .send(payloadWithExtra);
-            expect([400, 403]).to.include(res.status);
-        });
+			// Test password can be omitted (optional field)
+			const payloadWithoutPassword = {
+				user: {
+					...baseEditData.user
+				}
+			};
+			delete payloadWithoutPassword.user.password;
 
-        mocha.it('should handle malicious username inputs', async () => {
-            const maliciousInputs = [
-                "'; DROP TABLE users; --",
-                '../../../etc/passwd',
-                '<script>alert("xss")</script>',
-                'admin\x00user'
-            ];
+			const res = await chai.request(app)
+				.post(EDIT_ENDPOINT)
+				.send(payloadWithoutPassword);
+			expect([400, 403]).to.include(res.status);
+		});
 
-            for (const maliciousInput of maliciousInputs) {
-                await testInvalidField({
-                    field: 'username',
-                    invalidValue: maliciousInput,
-                    endpoint: DELETE_ENDPOINT,
-                    basePayload: baseDeleteData,
-                    expectedStatus: 403
-                });
-            }
-        });
+		mocha.it('should validate note field in edit', async () => {
+			const testPayload = {
+				user: {
+					...baseEditData.user,
+					note: 'test'
+				}
+			};
 
-        mocha.it('should handle non-string usernames', async () => {
-            const nonStringUsernames = [
-                12345,
-                true,
-                null,
-                undefined,
-                { username: 'user@example.com' },
-                ['user@example.com']
-            ];
+			// Admin auth middleware returns 403 before validation
+			await testInvalidField({
+				field: 'note',
+				invalidValue: 'x'.repeat(1001),
+				endpoint: EDIT_ENDPOINT,
+				basePayload: testPayload,
+				expectedStatus: 403
+			});
+		});
 
-            for (const invalidUsername of nonStringUsernames) {
-                await testInvalidField({
-                    field: 'username',
-                    invalidValue: invalidUsername,
-                    endpoint: DELETE_ENDPOINT,
-                    basePayload: baseDeleteData,
-                    expectedStatus: 403
-                });
-            }
-        });
-    });
+		mocha.it('should reject extra fields in user object', async () => {
+			const payloadWithExtra = {
+				user: {
+					...baseEditData.user,
+					maliciousField: 'injection',
+					isActive: true,
+					permissions: ['admin']
+				}
+			};
 
-    mocha.describe('Cross-Endpoint Security Tests', () => {
-        mocha.it('should handle concurrent requests safely', async () => {
-            const CREATE_ENDPOINT = '/api/users/create';
-            const userData = {
-                username: 'concurrent@example.com',
-                password: 'password123',
-                role: 'ADMIN',
-                note: 'Concurrent test'
-            };
+			const res = await chai.request(app)
+				.post(EDIT_ENDPOINT)
+				.send(payloadWithExtra);
+			expect([400, 403]).to.include(res.status);
+		});
 
-            // Send multiple concurrent requests
-            const promises = Array(3).fill().map(() =>
-                chai.request(app)
-                    .post(CREATE_ENDPOINT)
-                    .send(userData)
-            );
+		mocha.it('should handle nested parameter injection', async () => {
+			const payloadWithExtraFields = {
+				user: baseEditData.user,
+				maliciousField: 'top level injection',
+				admin: true
+			};
 
-            const results = await Promise.all(promises);
-            
-            // All should fail with 403 (admin auth required)
-            results.forEach(res => {
-                expect(res.status).to.equal(403);
-            });
-        });
+			const res = await chai.request(app)
+				.post(EDIT_ENDPOINT)
+				.send(payloadWithExtraFields);
+			expect([400, 403]).to.include(res.status);
+		});
+	});
 
-        mocha.it('should reject completely invalid payloads', async () => {
-            const endpoints = [
-                '/api/users/create',
-                '/api/users/edit', 
-                '/api/users/delete'
-            ];
+	mocha.describe('POST /api/users/delete - User Deletion Validation', () => {
+		const DELETE_ENDPOINT = '/api/users/delete';
 
-            for (const endpoint of endpoints) {
-                // Test non-object payload - admin auth returns 403
-                const res1 = await chai.request(app)
-                    .post(endpoint)
-                    .send('not an object');
-                expect(res1.status).to.equal(403);
+		const baseDeleteData = {
+			username: 'deleteuser@example.com'
+		};
 
-                // Test array payload - admin auth returns 403
-                const res2 = await chai.request(app)
-                    .post(endpoint)
-                    .send(['array', 'payload']);
-                expect(res2.status).to.equal(403);
+		mocha.it('should validate username field', async () => {
+			// Admin auth middleware returns 403 before validation
+			await testInvalidField({
+				field: 'username',
+				invalidValue: 'x'.repeat(255),
+				endpoint: DELETE_ENDPOINT,
+				basePayload: baseDeleteData,
+				expectedStatus: 403
+			});
+		});
 
-                // Test null payload - admin auth returns 403
-                const res3 = await chai.request(app)
-                    .post(endpoint)
-                    .send(null);
-                expect(res3.status).to.equal(403);
-            }
-        });
-    });
+		mocha.it('should reject payloads with extra fields', async () => {
+			const payloadWithExtra = {
+				...baseDeleteData,
+				force: true,
+				confirmDelete: true,
+				maliciousField: 'injection'
+			};
+
+			const res = await chai.request(app)
+				.post(DELETE_ENDPOINT)
+				.send(payloadWithExtra);
+			expect([400, 403]).to.include(res.status);
+		});
+
+		mocha.it('should handle malicious username inputs', async () => {
+			const maliciousInputs = [
+				"'; DROP TABLE users; --",
+				'../../../etc/passwd',
+				'<script>alert("xss")</script>',
+				'admin\x00user'
+			];
+
+			for (const maliciousInput of maliciousInputs) {
+				await testInvalidField({
+					field: 'username',
+					invalidValue: maliciousInput,
+					endpoint: DELETE_ENDPOINT,
+					basePayload: baseDeleteData,
+					expectedStatus: 403
+				});
+			}
+		});
+
+		mocha.it('should handle non-string usernames', async () => {
+			const nonStringUsernames = [
+				12345,
+				true,
+				null,
+				undefined,
+				{ username: 'user@example.com' },
+				['user@example.com']
+			];
+
+			for (const invalidUsername of nonStringUsernames) {
+				await testInvalidField({
+					field: 'username',
+					invalidValue: invalidUsername,
+					endpoint: DELETE_ENDPOINT,
+					basePayload: baseDeleteData,
+					expectedStatus: 403
+				});
+			}
+		});
+	});
+
+	mocha.describe('Cross-Endpoint Security Tests', () => {
+		mocha.it('should handle concurrent requests safely', async () => {
+			const CREATE_ENDPOINT = '/api/users/create';
+			const userData = {
+				username: 'concurrent@example.com',
+				password: 'password123',
+				role: 'ADMIN',
+				note: 'Concurrent test'
+			};
+
+			// Send multiple concurrent requests
+			const promises = Array(3).fill().map(() =>
+				chai.request(app)
+					.post(CREATE_ENDPOINT)
+					.send(userData)
+			);
+
+			const results = await Promise.all(promises);
+
+			// All should fail with 403 (admin auth required)
+			results.forEach(res => {
+				expect(res.status).to.equal(403);
+			});
+		});
+
+		mocha.it('should reject completely invalid payloads', async () => {
+			const endpoints = [
+				'/api/users/create',
+				'/api/users/edit',
+				'/api/users/delete'
+			];
+
+			for (const endpoint of endpoints) {
+				// Test non-object payload - admin auth returns 403
+				const res1 = await chai.request(app)
+					.post(endpoint)
+					.send('not an object');
+				expect(res1.status).to.equal(403);
+
+				// Test array payload - admin auth returns 403
+				const res2 = await chai.request(app)
+					.post(endpoint)
+					.send(['array', 'payload']);
+				expect(res2.status).to.equal(403);
+
+				// Test null payload - admin auth returns 403
+				const res3 = await chai.request(app)
+					.post(endpoint)
+					.send(null);
+				expect(res3.status).to.equal(403);
+			}
+		});
+	});
 });
