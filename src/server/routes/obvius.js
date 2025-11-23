@@ -30,7 +30,7 @@ const { getConnection } = require('../db');
 const escapeHtml = require('escape-html');
 const { PASSWORD_MAX_LENGTH } = require('../util/validationConstants');
 
-const upload = multer({ 
+const upload = multer({
 	storage: multer.memoryStorage(),
 	limits: {
 		fileSize: 50 * 1024 * 1024, // 50MB limit
@@ -123,9 +123,19 @@ function verifyObviusUser(req, res, next) {
 	const password = req.param('password');
 	// TODO This is allowing for backwards compatibility if previous obvius meters are using the'email' parameter
 	// instead of the 'username' parameter to login. Developers need to decide in the future if we should deprecate
-	// email or continue to allow this backwards compatibility
-	const username = req.param('username') || req.param('email');
+	// email or continue to allow this backwards compatibility.
+	let username;
+	if (req.param('email')) {
+		username = req.param('email');
+		// Treat request as if it had username instead of email
+		req.body.username = username;
+		delete req.body['email'];
+	} else {
+		username = req.param('username');
+	}
 
+	// The test for password and username existence is redone later with JSONSchema but left since error
+	// message is different for historical reasons.
 	if (!password) {
 		failure(req, res, 'password parameter is required.');
 	} else if (!username) {
@@ -137,8 +147,7 @@ function verifyObviusUser(req, res, next) {
 		failure(req, res, 'Invalid username format.');
 	} else {
 		// Authenticate Obvius user after all validation passes.
-		req.body.username = username;
-		req.body.password = password;
+		// See above for why only have username and not email.
 		obviusUsernameAndPasswordAuthMiddleware('Obvius pipeline')(req, res, next);
 	}
 }
@@ -216,7 +225,7 @@ router.all('/', obviusLog, verifyObviusUser, async (req, res) => {
 		// Check required parameters
 		const serialNumber = req.param('serialnumber', false);
 		const modbusDevice = req.param('modbusdevice', false);
-		
+
 		if (!serialNumber) {
 			failure(req, res, 'Config Upload Requires Serial Number');
 			return;
@@ -225,7 +234,7 @@ router.all('/', obviusLog, verifyObviusUser, async (req, res) => {
 			failure(req, res, 'Config Upload Requires Modbus Device ID');
 			return;
 		}
-		
+
 		// Basic parameter validation
 		if (typeof serialNumber !== 'string' || serialNumber.length > 100) {
 			failure(req, res, 'Invalid serial number format');

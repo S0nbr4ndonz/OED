@@ -55,7 +55,9 @@ authMiddleware = (req, res, next) => {
 function credentialsRequestValidationMiddleware(req, res, next) {
 	const validParams = {
 		type: 'object',
-		additionalProperties: false,
+		// Don't use ``additionalProperties: false,`` since there are more parameters for some modes and this
+		// is used across all those routes.
+		// The route replaces historical email with username so don't need a oneOf to test for one as required.
 		required: ['username', 'password'],
 		properties: {
 			username: {
