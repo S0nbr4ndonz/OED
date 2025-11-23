@@ -74,6 +74,10 @@ router.post('/', adminAuthMiddleware('edit site preferences'), async (req, res) 
 					defaultAreaNormalization: {
 						type: 'boolean'
 					},
+					defaultAreaUnit: {
+						type: 'string',
+						maxLength: SHORT_STRING_MAX_LENGTH
+					},
 					defaultMeterReadingFrequency: {
 						type: 'string',
 						maxLength: SHORT_STRING_MAX_LENGTH
