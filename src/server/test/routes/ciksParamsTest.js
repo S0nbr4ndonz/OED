@@ -5,7 +5,7 @@
  */
 
 const { expect } = require('chai');
-const { chai, mocha, app, testDB } = require('../common');
+const { chai, mocha, app } = require('../common');
 const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('CIKs Parameter Validation', () => {

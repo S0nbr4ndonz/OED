@@ -4,12 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-const { chai, mocha, expect, app, testUsers } = require('../common');
-const {
-	testInvalidField,
-	validateString,
-	validateInt
-} = require('../util/validationHelpers');
+const { chai, mocha, expect, app } = require('../common');
 const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Readings Route Parameter Validation', () => {

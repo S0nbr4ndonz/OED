@@ -5,7 +5,7 @@
  */
 
 const { expect } = require('chai');
-const { chai, mocha, app, testDB } = require('../common');
+const { chai, mocha, app } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
 
 mocha.describe('Conversion Array Parameter Validation', () => {

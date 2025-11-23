@@ -4,9 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-const chai = require('chai');
-
-const { mocha, expect, testDB } = require('../common');
+const { mocha, expect } = require('../common');
 const sinon = require('sinon');
 const moment = require('moment');
 const Reading = require('../../models/Reading');

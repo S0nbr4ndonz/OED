@@ -5,8 +5,8 @@
  */
 
 const { expect } = require('chai');
-const { chai, mocha, app, testDB } = require('../common');
-const { validateString, validateInt, validateBool, testInvalidField } = require('../util/validationHelpers');
+const { chai, mocha, app } = require('../common');
+const { testInvalidField } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Preferences Parameter Validation', () => {

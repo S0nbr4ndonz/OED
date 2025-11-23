@@ -5,7 +5,7 @@
  */
 
 const { expect } = require('chai');
-const { chai, mocha, app, testDB } = require('../common');
+const { chai, mocha, app } = require('../common');
 const { validateString, testInvalidField, validateNoExtraFields } = require('../util/validationHelpers');
 const { HTTP_CODE } = require('../../util/readingsUtils');
 const {
