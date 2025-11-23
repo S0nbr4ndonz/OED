@@ -12,6 +12,7 @@ const {
 	validateCommaSeparatedIdPatterns,
 	expectValidCommaSeparatedIds
 } = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Compare Readings Parameter Validation', () => {
 
@@ -67,7 +68,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 					.get(`${BASE_METER_ENDPOINT}/${longMeterIds}`)
 					.query(validQuery);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 		});
 
@@ -83,7 +84,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 						.get(`${BASE_METER_ENDPOINT}/1`)
 						.query(incompleteQuery);
 
-					expect(res.status).to.equal(400);
+					expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 				}
 			});
 
@@ -97,7 +98,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 					.get(`${BASE_METER_ENDPOINT}/1`)
 					.query(queryWithExtra);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it.skip('should validate curr_start parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
@@ -111,7 +112,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 						curr_start: longDateString
 					});
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it.skip('should validate curr_end parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
@@ -125,7 +126,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 						curr_end: longDateString
 					});
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it.skip('should validate shift parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
@@ -139,7 +140,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 						shift: longDurationString
 					});
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it('should validate graphicUnitId parameter', async () => {
@@ -159,7 +160,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 							graphicUnitId: invalidId
 						});
 
-					expect(res.status).to.equal(400);
+					expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 				}
 			});
 		});
@@ -217,7 +218,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 					.get(`${BASE_GROUP_ENDPOINT}/${longGroupIds}`)
 					.query(validQuery);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 		});
 
@@ -233,7 +234,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 						.get(`${BASE_GROUP_ENDPOINT}/1`)
 						.query(incompleteQuery);
 
-					expect(res.status).to.equal(400);
+					expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 				}
 			});
 
@@ -247,7 +248,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 					.get(`${BASE_GROUP_ENDPOINT}/1`)
 					.query(queryWithExtra);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			// Query parameter validation is identical for both endpoints, 
@@ -280,8 +281,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 					.get('/api/compareReadings/groups/1')
 					.query(maliciousQuery);
 
-				expect(res1.status).to.equal(400);
-				expect(res2.status).to.equal(400);
+				expect(res1.status).to.equal(HTTP_CODE.BAD_REQUEST);
+				expect(res2.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			}
 		});
 
@@ -310,8 +311,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 					.get('/api/compareReadings/groups/1')
 					.query(test.query);
 
-				expect(res1.status).to.equal(400);
-				expect(res2.status).to.equal(400);
+				expect(res1.status).to.equal(HTTP_CODE.BAD_REQUEST);
+				expect(res2.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			}
 		});
 	});

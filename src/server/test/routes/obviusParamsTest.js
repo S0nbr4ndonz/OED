@@ -7,6 +7,7 @@
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
 const zlib = require('zlib');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Obvius Parameter Validation', () => {
 
@@ -19,7 +20,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([406, 429]).to.include(res.status);
+			expect([HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			expect(res.text).to.include('username parameter is required');
 		});
 
@@ -31,7 +32,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([406, 429]).to.include(res.status);
+			expect([HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			expect(res.text).to.include('password parameter is required');
 		});
 
@@ -46,7 +47,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([406, 429]).to.include(res.status);
+			expect([HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			expect(res.text).to.include('Invalid username format');
 		});
 
@@ -61,7 +62,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([406, 429]).to.include(res.status);
+			expect([HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			expect(res.text).to.include('Invalid password format');
 		});
 
@@ -74,7 +75,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([406, 429]).to.include(res.status);
+			expect([HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			expect(res.text).to.include('Invalid username format');
 		});
 
@@ -87,7 +88,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([406, 429]).to.include(res.status);
+			expect([HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			expect(res.text).to.include('Invalid password format');
 		});
 
@@ -101,7 +102,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				});
 
 			// Should get to authentication rather than parameter validation error
-			expect([400, 401, 403, 406, 429]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 		});
 	});
 
@@ -117,7 +118,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.send(baseAuth);
 
 			// Route validates auth first, then mode parameter
-			expect([400, 406, 429]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.NOT_ACCEPTABLE, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 		});
 
 		mocha.it('should handle STATUS mode', async () => {
@@ -129,7 +130,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				});
 
 			// Will fail auth but validates mode parameter properly
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should reject unknown mode', async () => {
@@ -141,7 +142,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				});
 
 			// Will fail auth before mode validation in current implementation
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 	});
 
@@ -158,7 +159,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.send(baseAuth);
 
 			// Will fail auth before validation in current implementation
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should validate serial number format', async () => {
@@ -170,7 +171,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				});
 
 			// Will fail auth before validation
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should validate serial number type', async () => {
@@ -181,7 +182,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					serialnumber: 12345
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 	});
 
@@ -200,7 +201,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					modbusdevice: 'test'
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should require modbus device for config upload', async () => {
@@ -211,7 +212,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					serialnumber: 'test123'
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should validate serial number format in config upload', async () => {
@@ -223,7 +224,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					modbusdevice: 'test'
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should validate modbus device format', async () => {
@@ -235,7 +236,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					modbusdevice: 'x'.repeat(60)
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should validate parameter types', async () => {
@@ -247,7 +248,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					modbusdevice: 67890
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 	});
 
@@ -272,7 +273,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.attach('logfile', largeBuffer, 'large.log.gz');
 
 			// Multer file size/count limits may return various error codes
-			expect([400, 413, 500]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, 413, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 
 		mocha.it('should handle maximum number of files', async () => {
@@ -292,7 +293,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 			const res = await request;
 
 			// Multer file size/count limits may return various error codes  
-			expect([400, 413, 500]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, 413, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 
 		mocha.it('should handle gzip decompression errors gracefully', async () => {
@@ -308,7 +309,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.attach('logfile', invalidGzipBuffer, 'invalid.log.gz');
 
 			// Will fail auth before reaching gzip processing
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 	});
 
@@ -325,7 +326,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				});
 
 			// Should be handled safely (length validation may catch this)
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should prevent XSS injection in parameters', async () => {
@@ -339,7 +340,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 			// Response should be HTML-escaped
 			if (res.text) {
 				expect(res.text).to.not.include('<script>');
@@ -356,7 +357,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					'__proto__': { isAdmin: true }
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should handle oversized parameter attacks', async () => {
@@ -370,7 +371,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect(res.status).to.equal(406);
+			expect(res.status).to.equal(HTTP_CODE.NOT_ACCEPTABLE);
 			expect(res.text).to.include('Invalid username format');
 		});
 	});
@@ -383,7 +384,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					password: 'testpass'
 				});
 
-			expect(res.status).to.equal(406);
+			expect(res.status).to.equal(HTTP_CODE.NOT_ACCEPTABLE);
 			expect(res.text).to.include('<pre>');
 			expect(res.text).to.include('username parameter is required');
 			expect(res.text).to.include('</pre>');
@@ -394,7 +395,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.post('/api/obvius')
 				.send({});
 
-			expect(res.status).to.equal(406);
+			expect(res.status).to.equal(HTTP_CODE.NOT_ACCEPTABLE);
 		});
 
 		mocha.it('should handle null request body', async () => {
@@ -402,7 +403,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.post('/api/obvius')
 				.send(null);
 
-			expect(res.status).to.equal(406);
+			expect(res.status).to.equal(HTTP_CODE.NOT_ACCEPTABLE);
 		});
 
 		mocha.it('should handle malformed JSON', async () => {
@@ -411,7 +412,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				.set('Content-Type', 'application/json')
 				.send('invalid json');
 
-			expect([400, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 	});
 
@@ -426,7 +427,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 				});
 
 			// Should process the request (will fail auth)
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should accept POST requests', async () => {
@@ -438,7 +439,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 
 		mocha.it('should accept PUT requests', async () => {
@@ -450,7 +451,7 @@ mocha.describe('Obvius Parameter Validation', () => {
 					mode: 'STATUS'
 				});
 
-			expect([400, 401, 403, 406]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN, HTTP_CODE.NOT_ACCEPTABLE]).to.include(res.status);
 		});
 	});
 });

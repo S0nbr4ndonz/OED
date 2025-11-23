@@ -6,6 +6,7 @@
 
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('CIKs Parameter Validation', () => {
 
@@ -14,7 +15,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 			const res = await chai.request(app)
 				.get('/api/ciks');
 
-			expect([200, 500]).to.include(res.status);
+			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 
 		mocha.it('should ignore query parameters if provided', async () => {
@@ -22,14 +23,14 @@ mocha.describe('CIKs Parameter Validation', () => {
 				.get('/api/ciks')
 				.query({ someParam: 'value', anotherParam: 123 });
 
-			expect([200, 500]).to.include(res.status);
+			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 
 		mocha.it('should return JSON response', async () => {
 			const res = await chai.request(app)
 				.get('/api/ciks');
 
-			if (res.status === 200) {
+			if (res.status === HTTP_CODE.OK) {
 				expect(res).to.be.json;
 				expect(res.body).to.be.an('array');
 			}
@@ -39,7 +40,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 			const res = await chai.request(app)
 				.get('/api/ciks');
 
-			if (res.status === 200 && res.body.length > 0) {
+			if (res.status === HTTP_CODE.OK && res.body.length > 0) {
 				const cik = res.body[0];
 				expect(cik).to.have.property('meterUnitId');
 				expect(cik).to.have.property('nonMeterUnitId');
@@ -55,7 +56,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 				.get('/api/ciks')
 				.set('X-HTTP-Method-Override', 'POST');
 
-			expect([200, 500]).to.include(res.status);
+			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 
 		mocha.it('should handle malformed headers gracefully', async () => {
@@ -64,7 +65,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 				.set('Content-Type', 'application/malformed')
 				.set('Accept', 'text/invalid');
 
-			expect([200, 500]).to.include(res.status);
+			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 	});
 });

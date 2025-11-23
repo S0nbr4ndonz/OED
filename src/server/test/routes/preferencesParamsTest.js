@@ -7,6 +7,7 @@
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
 const { validateString, validateInt, validateBool, testInvalidField } = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Preferences Parameter Validation', () => {
 
@@ -15,7 +16,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 			const res = await chai.request(app)
 				.get('/api/preferences');
 
-			expect([200, 500]).to.include(res.status);
+			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 	});
 
@@ -46,7 +47,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 				.post(UPDATE_ENDPOINT)
 				.send(basePreferencesData);
 
-			expect([401, 403]).to.include(res.status);
+			expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 		});
 
 		mocha.it('should require preferences field', async () => {
@@ -55,7 +56,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 				invalidValue: undefined,
 				endpoint: UPDATE_ENDPOINT,
 				basePayload: basePreferencesData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 		});
 
@@ -69,7 +70,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 				.post(UPDATE_ENDPOINT)
 				.send(payloadWithExtra);
 
-			expect([401, 403]).to.include(res.status);
+			expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 		});
 
 		mocha.it('should reject extra fields in preferences object', async () => {
@@ -84,7 +85,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 				.post(UPDATE_ENDPOINT)
 				.send(payloadWithExtra);
 
-			expect([401, 403]).to.include(res.status);
+			expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 		});
 
 		mocha.describe('String Field Validation', () => {
@@ -112,7 +113,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				});
 
 				mocha.it(`should validate ${field} is string type`, async () => {
@@ -127,7 +128,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				});
 			});
 		});
@@ -153,7 +154,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				});
 
 				mocha.it(`should validate ${field} maximum value`, async () => {
@@ -168,7 +169,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				});
 
 				mocha.it(`should validate ${field} is number type`, async () => {
@@ -183,7 +184,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				});
 			});
 		});
@@ -207,7 +208,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 							.post(UPDATE_ENDPOINT)
 							.send(payload);
 
-						expect([401, 403]).to.include(res.status);
+						expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 					}
 				});
 			});
@@ -226,7 +227,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should accept null timezone', async () => {
@@ -241,7 +242,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should reject oversized timezone strings', async () => {
@@ -256,7 +257,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should reject invalid timezone types', async () => {
@@ -274,7 +275,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			});
 		});
@@ -296,7 +297,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			});
 
@@ -314,7 +315,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should prevent oversized payloads', async () => {
@@ -329,7 +330,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(hugePayload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should prevent prototype pollution attempts', async () => {
@@ -344,7 +345,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 		});
 
@@ -358,7 +359,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should handle null preferences', async () => {
@@ -370,7 +371,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 					.post(UPDATE_ENDPOINT)
 					.send(payload);
 
-				expect([401, 403]).to.include(res.status);
+				expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			});
 
 			mocha.it('should handle non-object preferences', async () => {
@@ -385,7 +386,7 @@ mocha.describe('Preferences Parameter Validation', () => {
 						.post(UPDATE_ENDPOINT)
 						.send(payload);
 
-					expect([401, 403]).to.include(res.status);
+					expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			});
 		});

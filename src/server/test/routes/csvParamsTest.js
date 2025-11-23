@@ -9,6 +9,7 @@ const { chai, mocha, app, testDB } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
 const fs = require('fs');
 const path = require('path');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('CSV Parameter Validation', () => {
 
@@ -51,7 +52,7 @@ mocha.describe('CSV Parameter Validation', () => {
 				.field(baseMeterData);
 
 			// Should fail due to missing file or auth (403 for CSV role required)
-			expect([400, 403]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 		});
 
 		mocha.it('should reject unauthenticated requests with file', async () => {
@@ -64,7 +65,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(baseMeterData);
 
 				// Should fail due to validation or authentication
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -87,7 +88,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithExtra);
 
 				// Should fail due to additional properties validation or auth
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -111,7 +112,7 @@ mocha.describe('CSV Parameter Validation', () => {
 						.field(payload);
 
 					// Should fail validation or auth
-					expect([400, 403]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			} finally {
 				cleanupTestFile(testFile);
@@ -136,7 +137,7 @@ mocha.describe('CSV Parameter Validation', () => {
 						.field(payload);
 
 					// Should fail validation or auth
-					expect([400, 403]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			} finally {
 				cleanupTestFile(testFile);
@@ -161,7 +162,7 @@ mocha.describe('CSV Parameter Validation', () => {
 						.field(payload);
 
 					// Should fail validation or auth
-					expect([400, 403]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			} finally {
 				cleanupTestFile(testFile);
@@ -192,7 +193,7 @@ mocha.describe('CSV Parameter Validation', () => {
 						.field(payload);
 
 					// Should fail validation or auth
-					expect([400, 403]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			} finally {
 				cleanupTestFile(testFile);
@@ -217,7 +218,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithMeterName);
 
 				// Should fail due to validation or authentication  
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -257,7 +258,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadMissingIdentifier);
 
 				// Should fail validation or auth
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -281,7 +282,7 @@ mocha.describe('CSV Parameter Validation', () => {
 						.field(payload);
 
 					// Should fail validation or auth
-					expect([400, 403]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			} finally {
 				cleanupTestFile(testFile);
@@ -306,7 +307,7 @@ mocha.describe('CSV Parameter Validation', () => {
 						.field(payload);
 
 					// Should fail validation or auth
-					expect([400, 403]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 				}
 			} finally {
 				cleanupTestFile(testFile);
@@ -334,7 +335,7 @@ mocha.describe('CSV Parameter Validation', () => {
 							.field(payload);
 
 						// Should fail validation or auth
-						expect([400, 403]).to.include(res.status);
+						expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 					}
 				}
 			} finally {
@@ -360,7 +361,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithExtra);
 
 				// Should fail due to additional properties validation or auth
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -383,7 +384,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithCredentials);
 
 				// Should fail due to validation or authentication
-				expect([400, 401, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -406,7 +407,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithEmail);
 
 				// Should fail due to validation or authentication
-				expect([400, 401, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -426,7 +427,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field('meterIdentifier', 'test-meter');
 
 				// Should fail due to missing csvfile
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -444,7 +445,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field('meterIdentifier', 'test-meter');
 
 				// Should fail due to multiple files or auth
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile1);
 				cleanupTestFile(testFile2);
@@ -462,7 +463,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field('meterIdentifier', 'test-meter');
 
 				// Should fail due to validation or authentication
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}
@@ -489,10 +490,10 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithMultipleErrors);
 
 				// Should fail validation or auth
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 
 				// If it's a validation error (400), check for detailed message
-				if (res.status === 400 && res.body && res.body.message) {
+				if (res.status === HTTP_CODE.BAD_REQUEST && res.body && res.body.message) {
 					expect(res.body.message).to.be.a('string');
 				}
 			} finally {
@@ -517,7 +518,7 @@ mocha.describe('CSV Parameter Validation', () => {
 					.field(payloadWithEmptyValues);
 
 				// Should fail validation or auth
-				expect([400, 403]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN]).to.include(res.status);
 			} finally {
 				cleanupTestFile(testFile);
 			}

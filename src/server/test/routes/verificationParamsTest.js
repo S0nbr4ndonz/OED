@@ -7,6 +7,7 @@
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
 const { testInvalidField } = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Verification Parameter Validation', () => {
 
@@ -24,7 +25,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					invalidValue: undefined,
 					endpoint: VERIFY_ENDPOINT,
 					basePayload: validTokenData,
-					expectedStatus: 400
+					expectedStatus: HTTP_CODE.BAD_REQUEST
 				});
 			});
 
@@ -33,7 +34,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({});
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 		});
 
@@ -47,7 +48,7 @@ mocha.describe('Verification Parameter Validation', () => {
 						invalidValue: invalid,
 						endpoint: VERIFY_ENDPOINT,
 						basePayload: validTokenData,
-						expectedStatus: 400
+						expectedStatus: HTTP_CODE.BAD_REQUEST
 					});
 				}
 			});
@@ -60,7 +61,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					invalidValue: oversizedToken,
 					endpoint: VERIFY_ENDPOINT,
 					basePayload: validTokenData,
-					expectedStatus: 400
+					expectedStatus: HTTP_CODE.BAD_REQUEST
 				});
 			});
 
@@ -72,7 +73,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.send({ token: maxLengthToken });
 
 				// Should pass validation but fail JWT verification
-				expect([200, 401]).to.include(res.status);
+				expect([HTTP_CODE.OK, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 			});
 
 			mocha.it('should reject empty string token', async () => {
@@ -81,7 +82,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.send({ token: '' });
 
 				// Should pass validation but fail JWT verification
-				expect([200, 401]).to.include(res.status);
+				expect([HTTP_CODE.OK, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 			});
 		});
 
@@ -97,7 +98,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send(payloadWithExtra);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it('should prevent prototype pollution attempts', async () => {
@@ -111,7 +112,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.send(payload);
 
 				// __proto__ gets filtered by JSON.parse, so validation passes and JWT fails
-				expect([400, 401]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 			});
 
 			mocha.it('should prevent constructor pollution', async () => {
@@ -124,7 +125,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send(payload);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 		});
 
@@ -136,7 +137,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({ token: invalidSignatureToken });
 
-				expect(res.status).to.equal(401);
+				expect(res.status).to.equal(HTTP_CODE.UNAUTHORIZED);
 				expect(res.body).to.have.property('success', false);
 				expect(res.body).to.have.property('message', 'Failed to authenticate token.');
 			});
@@ -155,7 +156,7 @@ mocha.describe('Verification Parameter Validation', () => {
 						.post(VERIFY_ENDPOINT)
 						.send({ token });
 
-					expect(res.status).to.equal(401);
+					expect(res.status).to.equal(HTTP_CODE.UNAUTHORIZED);
 					expect(res.body).to.have.property('success', false);
 				}
 			});
@@ -168,7 +169,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({ token: expiredFormatToken });
 
-				expect(res.status).to.equal(401);
+				expect(res.status).to.equal(HTTP_CODE.UNAUTHORIZED);
 				expect(res.body).to.have.property('success', false);
 			});
 		});
@@ -189,7 +190,7 @@ mocha.describe('Verification Parameter Validation', () => {
 						.send({ token: injection });
 
 					// Should either fail validation or JWT parsing
-					expect([400, 401]).to.include(res.status);
+					expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 				}
 			});
 
@@ -200,7 +201,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({ token: hugeToken });
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it('should handle binary data in token field', async () => {
@@ -211,7 +212,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.send({ token: binaryData });
 
 				// Should pass validation but fail JWT verification
-				expect([200, 401]).to.include(res.status);
+				expect([HTTP_CODE.OK, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 			});
 
 			mocha.it('should handle unicode characters in token', async () => {
@@ -221,7 +222,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({ token: unicodeToken });
 
-				expect([200, 401]).to.include(res.status);
+				expect([HTTP_CODE.OK, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 			});
 		});
 
@@ -231,7 +232,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send(null);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it('should handle non-object request body', async () => {
@@ -239,27 +240,27 @@ mocha.describe('Verification Parameter Validation', () => {
 				const res1 = await chai.request(app)
 					.post(VERIFY_ENDPOINT)
 					.send('string');
-				expect(res1.status).to.equal(400);
+				expect(res1.status).to.equal(HTTP_CODE.BAD_REQUEST);
 
 				// Test array body
 				const res2 = await chai.request(app)
 					.post(VERIFY_ENDPOINT)
 					.send([]);
-				expect(res2.status).to.equal(400);
+				expect(res2.status).to.equal(HTTP_CODE.BAD_REQUEST);
 
 				// Test boolean via string (chai-http limitation)
 				const res3 = await chai.request(app)
 					.post(VERIFY_ENDPOINT)
 					.set('Content-Type', 'application/json')
 					.send('true');
-				expect(res3.status).to.equal(400);
+				expect(res3.status).to.equal(HTTP_CODE.BAD_REQUEST);
 
 				// Test number via string (chai-http limitation)
 				const res4 = await chai.request(app)
 					.post(VERIFY_ENDPOINT)
 					.set('Content-Type', 'application/json')
 					.send('123');
-				expect(res4.status).to.equal(400);
+				expect(res4.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it('should handle malformed JSON', async () => {
@@ -268,7 +269,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.set('Content-Type', 'application/json')
 					.send('{"token": invalid}');
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
 			mocha.it('should handle nested token objects', async () => {
@@ -283,7 +284,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send(payload);
 
-				expect(res.status).to.equal(400);
+				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 		});
 
@@ -295,7 +296,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({ token: 'invalid_but_valid_format' });
 
-				expect(res.status).to.equal(401);
+				expect(res.status).to.equal(HTTP_CODE.UNAUTHORIZED);
 				expect(res.body).to.be.an('object');
 				expect(res.body).to.have.property('success');
 				expect(res.body).to.have.property('message');
@@ -306,7 +307,7 @@ mocha.describe('Verification Parameter Validation', () => {
 					.post(VERIFY_ENDPOINT)
 					.send({ token: 'test_token' });
 
-				if (res.status === 401) {
+				if (res.status === HTTP_CODE.UNAUTHORIZED) {
 					expect(res).to.be.json;
 				}
 			});
@@ -330,7 +331,7 @@ mocha.describe('Verification Parameter Validation', () => {
 
 				// All should be processed (no rate limiting implemented currently)
 				responses.forEach(res => {
-					expect([200, 401]).to.include(res.status);
+					expect([HTTP_CODE.OK, HTTP_CODE.UNAUTHORIZED]).to.include(res.status);
 				});
 			});
 		});

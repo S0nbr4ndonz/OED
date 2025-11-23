@@ -7,6 +7,7 @@
 const { expect } = require('chai');
 const { chai, mocha, app, testDB } = require('../common');
 const { validateString, validateInt, testInvalidField } = require('../util/validationHelpers');
+const { HTTP_CODE } = require('../../util/readingsUtils');
 
 mocha.describe('Baseline Parameter Validation', () => {
 
@@ -15,7 +16,7 @@ mocha.describe('Baseline Parameter Validation', () => {
             const res = await chai.request(app)
                 .get('/api/baseline');
             
-            expect([200, 500]).to.include(res.status);
+            expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
         });
     });
 
@@ -40,7 +41,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                 .post(CREATE_ENDPOINT)
                 .send(baseBaselineData);
             
-            expect([401, 403]).to.include(res.status);
+            expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
         });
         */
 
@@ -56,7 +57,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         invalidValue: undefined,
                         endpoint: CREATE_ENDPOINT,
                         basePayload: baseBaselineData,
-                        expectedStatus: 403
+                        expectedStatus: HTTP_CODE.FORBIDDEN
                     });
                 });
             });
@@ -77,7 +78,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payloadWithExtra);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should prevent SQL injection in string fields', async () => {
@@ -94,7 +95,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         .post(CREATE_ENDPOINT)
                         .send(payload);
                     
-                    expect([401, 403]).to.include(res.status);
+                    expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
                 }
             });
         });
@@ -112,7 +113,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         invalidValue: invalid,
                         endpoint: CREATE_ENDPOINT,
                         basePayload: baseBaselineData,
-                        expectedStatus: 403
+                        expectedStatus: HTTP_CODE.FORBIDDEN
                     });
                 }
             });
@@ -126,7 +127,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         invalidValue: invalid,
                         endpoint: CREATE_ENDPOINT,
                         basePayload: baseBaselineData,
-                        expectedStatus: 403
+                        expectedStatus: HTTP_CODE.FORBIDDEN
                     });
                 }
             });
@@ -137,7 +138,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     invalidValue: 2147483648,
                     endpoint: CREATE_ENDPOINT,
                     basePayload: baseBaselineData,
-                    expectedStatus: 403
+                    expectedStatus: HTTP_CODE.FORBIDDEN
                 });
             });
         });
@@ -158,7 +159,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                             invalidValue: invalid,
                             endpoint: CREATE_ENDPOINT,
                             basePayload: baseBaselineData,
-                            expectedStatus: 403
+                            expectedStatus: HTTP_CODE.FORBIDDEN
                         });
                     }
                 });
@@ -171,7 +172,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         invalidValue: oversizedValue,
                         endpoint: CREATE_ENDPOINT,
                         basePayload: baseBaselineData,
-                        expectedStatus: 403
+                        expectedStatus: HTTP_CODE.FORBIDDEN
                     });
                 });
             });
@@ -191,7 +192,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should accept null note', async () => {
@@ -204,7 +205,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should reject oversized note', async () => {
@@ -215,7 +216,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     invalidValue: oversizedNote,
                     endpoint: CREATE_ENDPOINT,
                     basePayload: baseBaselineData,
-                    expectedStatus: 403
+                    expectedStatus: HTTP_CODE.FORBIDDEN
                 });
             });
 
@@ -228,7 +229,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         invalidValue: invalid,
                         endpoint: CREATE_ENDPOINT,
                         basePayload: baseBaselineData,
-                        expectedStatus: 403
+                        expectedStatus: HTTP_CODE.FORBIDDEN
                     });
                 }
             });
@@ -250,7 +251,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should prevent oversized payloads', async () => {
@@ -263,7 +264,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(hugePayload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should prevent prototype pollution attempts', async () => {
@@ -276,7 +277,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should prevent NoSQL injection attempts', async () => {
@@ -291,7 +292,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
         });
         */
@@ -304,7 +305,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send({});
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should handle null request body', async () => {
@@ -312,7 +313,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(null);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should handle non-object request body', async () => {
@@ -323,7 +324,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                         .post(CREATE_ENDPOINT)
                         .send(body);
                     
-                    expect([401, 403]).to.include(res.status);
+                    expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
                 }
             });
 
@@ -337,7 +338,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(partialData);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
         });
         */
@@ -355,7 +356,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should accept maximum valid meterID', async () => {
@@ -368,7 +369,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should accept maximum length strings', async () => {
@@ -386,7 +387,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
 
             mocha.it('should accept maximum length note', async () => {
@@ -401,7 +402,7 @@ mocha.describe('Baseline Parameter Validation', () => {
                     .post(CREATE_ENDPOINT)
                     .send(payload);
                 
-                expect([401, 403]).to.include(res.status);
+                expect([HTTP_CODE.UNAUTHORIZED, HTTP_CODE.FORBIDDEN]).to.include(res.status);
             });
         });
         */

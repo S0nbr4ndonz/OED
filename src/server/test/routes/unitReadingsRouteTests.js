@@ -8,11 +8,8 @@ const chai = require('chai');
 
 const { mocha, expect, testDB } = require('../common');
 const sinon = require('sinon');
-
 const moment = require('moment');
-
 const Reading = require('../../models/Reading');
-
 const { meterLineReadings,
 	validateLineReadingsParams,
 	validateLineReadingsQueryParams,

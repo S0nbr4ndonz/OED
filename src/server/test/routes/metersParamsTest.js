@@ -32,7 +32,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					.get(`/api/meters/${invalidId}`);
 
 				// Should return 400 for validation error or 200 if somehow valid
-				expect([200, 400]).to.include(res.status);
+				expect([HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST]).to.include(res.status);
 			}
 		});
 
@@ -41,7 +41,7 @@ mocha.describe('Meters Parameter Validation', () => {
 			const res = await chai.request(app)
 				.get(`/api/meters/${longId}`);
 
-			expect(res.status).to.equal(400);
+			expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 		});
 
 		mocha.it('should handle SQL injection in meter ID', async () => {
@@ -49,7 +49,7 @@ mocha.describe('Meters Parameter Validation', () => {
 			const res = await chai.request(app)
 				.get(`/api/meters/${sqlInjection}`);
 
-			expect(res.status).to.equal(400);
+			expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 		});
 
 		mocha.it('should accept valid numeric meter IDs', async () => {
@@ -60,7 +60,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					.get(`/api/meters/${validId}`);
 
 				// Should pass validation - may return 404 (not found) or 500 (DB error)
-				expect([404, 500]).to.include(res.status);
+				expect([HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			}
 		});
 	});
@@ -112,7 +112,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				.send(baseMeterData);
 
 			// Should require admin authentication
-			expect(res.status).to.equal(403);
+			expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
 		});
 
 		mocha.it('should validate required fields', async () => {
@@ -127,7 +127,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					.send(payloadMissingField);
 
 				// Should fail due to missing required field or auth
-				expect([400, 403, 429]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			}
 		});
 
@@ -157,7 +157,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					invalidValue: 'x'.repeat(test.maxLength + 1),
 					endpoint: EDIT_ENDPOINT,
 					basePayload: baseMeterData,
-					expectedStatus: 403
+					expectedStatus: HTTP_CODE.FORBIDDEN
 				});
 			}
 		});
@@ -174,7 +174,7 @@ mocha.describe('Meters Parameter Validation', () => {
 						invalidValue: invalidValue,
 						endpoint: EDIT_ENDPOINT,
 						basePayload: baseMeterData,
-						expectedStatus: 403
+						expectedStatus: HTTP_CODE.FORBIDDEN
 					});
 				}
 			}
@@ -187,7 +187,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: { latitude: 91, longitude: 0 },
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 
 			// Test invalid longitude (outside -180 to 180)  
@@ -196,7 +196,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: { latitude: 0, longitude: 181 },
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 
 			// Test missing required GPS fields
@@ -206,7 +206,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: { latitude: 45 },
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 
 			// Test non-numeric GPS values
@@ -215,7 +215,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: { latitude: 'north', longitude: 'west' },
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 		});
 
@@ -226,7 +226,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: -1,
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 
 			// Test readingDuplication outside bounds (1-9)
@@ -235,7 +235,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: 0,
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 
 			await testInvalidField({
@@ -243,7 +243,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: 10,
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 
 			// Test invalid meter ID (minimum: 1)
@@ -252,7 +252,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				invalidValue: 0,
 				endpoint: EDIT_ENDPOINT,
 				basePayload: baseMeterData,
-				expectedStatus: 403
+				expectedStatus: HTTP_CODE.FORBIDDEN
 			});
 		});
 
@@ -265,7 +265,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					invalidValue: invalidType,
 					endpoint: EDIT_ENDPOINT,
 					basePayload: baseMeterData,
-					expectedStatus: 403
+					expectedStatus: HTTP_CODE.FORBIDDEN
 				});
 			}
 
@@ -277,7 +277,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					invalidValue: invalidSort,
 					endpoint: EDIT_ENDPOINT,
 					basePayload: baseMeterData,
-					expectedStatus: 403
+					expectedStatus: HTTP_CODE.FORBIDDEN
 				});
 			}
 		});
@@ -297,7 +297,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				.send(payloadWithExtra);
 
 			// Should fail due to additionalProperties: false or auth
-			expect(res.status).to.equal(403);
+			expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
 		});
 
 		mocha.it('should handle malicious string inputs', async () => {
@@ -318,7 +318,7 @@ mocha.describe('Meters Parameter Validation', () => {
 						invalidValue: maliciousInput,
 						endpoint: EDIT_ENDPOINT,
 						basePayload: baseMeterData,
-						expectedStatus: 403
+						expectedStatus: HTTP_CODE.FORBIDDEN
 					});
 				}
 			}
@@ -339,7 +339,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					.send(payloadWithNull);
 
 				// Should pass validation but fail auth
-				expect(res.status).to.equal(403);
+				expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
 			}
 		});
 	});
@@ -388,7 +388,7 @@ mocha.describe('Meters Parameter Validation', () => {
 				.send(baseMeterData);
 
 			// Validation/auth may respond with 400/403 or rate limiting 429
-			expect([400, 403, 429]).to.include(res.status);
+			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 		});
 
 		mocha.it('should validate all required fields for creation', async () => {
@@ -403,7 +403,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					.send(payloadMissingField);
 
 				// Should fail validation or auth
-				expect([400, 403, 429]).to.include(res.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			}
 		});
 
@@ -423,7 +423,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					bypassValidation: true,
 					maliciousScript: '<script>alert("hack")</script>'
 				},
-				expectedStatus: [HTTP_CODE.BAD_REQUEST, 403, 429]
+				expectedStatus: [HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]
 			});
 		});
 
@@ -443,7 +443,7 @@ mocha.describe('Meters Parameter Validation', () => {
 					invalidValue: test.invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseMeterData,
-					expectedStatus: [HTTP_CODE.BAD_REQUEST, 403, 429]
+					expectedStatus: [HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]
 				});
 			}
 		});
@@ -475,7 +475,7 @@ mocha.describe('Meters Parameter Validation', () => {
 
 			// All should fail with 403 (auth required)
 			results.forEach(res => {
-				expect([403, 429]).to.include(res.status);
+				expect([HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res.status);
 			});
 		});
 
@@ -487,19 +487,19 @@ mocha.describe('Meters Parameter Validation', () => {
 				const res1 = await chai.request(app)
 					.post(endpoint)
 					.send('not an object');
-				expect([400, 403, 429]).to.include(res1.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res1.status);
 
 				// Test array payload - validation happens before auth for addMeter
 				const res2 = await chai.request(app)
 					.post(endpoint)
 					.send(['array', 'payload']);
-				expect([400, 403, 429]).to.include(res2.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res2.status);
 
 				// Test null payload - validation happens before auth for addMeter
 				const res3 = await chai.request(app)
 					.post(endpoint)
 					.send(null);
-				expect([400, 403, 429]).to.include(res3.status);
+				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.FORBIDDEN, HTTP_CODE.TOO_MANY_REQUESTS]).to.include(res3.status);
 			}
 		});
 	});
