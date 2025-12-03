@@ -56,9 +56,15 @@ const loadedSqlFiles = {};
  * @returns {pgPromise.QueryFile}
  */
 function sqlFile(filePath) {
-	const sqlFilePath = path.join(sqlFilesDir, filePath);
+	const sanitizedPath = filePath.replace(/\.\./g, ''); 
+    const resolvedPath = path.resolve(sqlFilesDir, sanitizedPath);
+	if (!resolvedPath.startsWith(path.resolve(sqlFilesDir))) {
+		throw new Error('Invalid file path: path traversal detected');
+	}
+
+	const sqlFilePath = resolvedPath
 	if (loadedSqlFiles[sqlFilePath] === undefined) {
-		loadedSqlFiles[sqlFilePath] = new pgp.QueryFile(path.join(sqlFilesDir, filePath), { minify: true });
+		loadedSqlFiles[sqlFilePath] = new pgp.QueryFile(sqlFilePath, {minify: true});
 	}
 	return loadedSqlFiles[sqlFilePath];
 }
