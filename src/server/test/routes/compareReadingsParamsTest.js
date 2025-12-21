@@ -100,7 +100,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
-			mocha.it.skip('should validate curr_start parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
+			// TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
+			mocha.it.skip('should validate curr_start parameter', async () => {
 				// Test extremely long date string (DoS prevention)
 				const dateStart = '2023-01-01T00:00:00.000Z';
 				const longDateString = dateStart + 'x'.repeat(STRING_GENERAL_MAX_LENGTH - dateStart.length + 1);
@@ -115,7 +116,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
-			mocha.it.skip('should validate curr_end parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
+			// TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
+			mocha.it.skip('should validate curr_end parameter', async () => {
 				// Test extremely long date string (DoS prevention)
 				const longDateString = 'x'.repeat(STRING_GENERAL_MAX_LENGTH + 1);
 
@@ -129,7 +131,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 				expect(res.status).to.equal(HTTP_CODE.BAD_REQUEST);
 			});
 
-			mocha.it.skip('should validate shift parameter', async () => { // TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
+			// TODO: re-enable once compareReadings rejects invalid ISO values without hitting DB
+			mocha.it.skip('should validate shift parameter', async () => {
 				// Test extremely long duration string (DoS prevention)
 				const durationStart = 'P1D';
 				const longDurationString = durationStart + 'x'.repeat(STRING_GENERAL_MAX_LENGTH - durationStart.length + 1);
@@ -287,7 +290,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 			}
 		});
 
-		mocha.it.skip('should prevent DoS attacks via oversized parameters', async () => { // TODO: re-enable after rate-limiting friendly test setup
+		// TODO: re-enable after rate-limiting friendly test setup
+		mocha.it.skip('should prevent DoS attacks via oversized parameters', async () => {
 			const oversizedTests = [
 				{
 					name: 'oversized date strings',

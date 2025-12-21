@@ -215,7 +215,7 @@ mocha.describe('Authenticator Parameter Validation', () => {
 				password: 'wrongpass'
 			};
 
-			// Send multiple concurrent requests to test rate limiting and DoS prevention
+			// Send multiple concurrent requests to test DoS prevention
 			const promises = Array(10).fill().map(() =>
 				chai.request(app)
 					.post(LOGIN_ENDPOINT)
