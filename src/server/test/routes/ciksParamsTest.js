@@ -15,7 +15,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 			const res = await chai.request(app)
 				.get('/api/ciks');
 
-			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+			expect(res).to.have.status(HTTP_CODE.OK);
 		});
 
 		mocha.it('should ignore query parameters if provided', async () => {
@@ -23,7 +23,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 				.get('/api/ciks')
 				.query({ someParam: 'value', anotherParam: 123 });
 
-			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+			expect(res).to.have.status(HTTP_CODE.OK);
 		});
 
 		mocha.it('should return JSON response', async () => {
@@ -56,7 +56,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 				.get('/api/ciks')
 				.set('X-HTTP-Method-Override', 'POST');
 
-			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+			expect(res).to.have.status(HTTP_CODE.OK);
 		});
 
 		mocha.it('should handle malformed headers gracefully', async () => {
@@ -65,7 +65,7 @@ mocha.describe('CIKs Parameter Validation', () => {
 				.set('Content-Type', 'application/malformed')
 				.set('Accept', 'text/invalid');
 
-			expect([HTTP_CODE.OK, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+			expect(res).to.have.status(HTTP_CODE.OK);
 		});
 	});
 });
