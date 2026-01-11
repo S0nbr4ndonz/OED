@@ -13,7 +13,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 	const LINE_COUNT_BASE_ENDPOINT = '/api/readings/line/count/meters';
 	const RAW_READINGS_BASE_ENDPOINT = '/api/readings/line/raw/meter';
 
-	mocha.describe('GET /api/readings/line/count/meters/:meter_ids', () => {
+	mocha.describe(`GET ${LINE_COUNT_BASE_ENDPOINT}/:meter_ids`, () => {
 
 		mocha.describe('URL Parameter Validation (meter_ids)', () => {
 			mocha.it('should accept valid comma-separated meter IDs', async () => {
@@ -105,7 +105,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 		});
 	});
 
-	mocha.describe('GET /api/readings/line/raw/meter/:meter_id', () => {
+	mocha.describe(`GET ${RAW_READINGS_BASE_ENDPOINT}/:meter_id`, () => {
 
 		mocha.describe('URL Parameter Validation (meter_id)', () => {
 			mocha.it('should accept valid integer meter ID', async () => {
