@@ -42,6 +42,8 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 				});
 			});
 
+			// TODO: Consider consolidating invalid ID pattern tests into a shared helper or expanding
+			// test coverage with additional edge cases (e.g., Unicode characters, URL encoding attacks).
 			mocha.it('should reject invalid meter ID patterns', async () => {
 				await validateCommaSeparatedIdPatterns({
 					baseEndpoint: BASE_METER_ENDPOINT,

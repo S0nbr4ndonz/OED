@@ -17,6 +17,10 @@ const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN
 
 mocha.describe('Authenticator Parameter Validation', () => {
 
+	// TODO: There is overlap between authenticator tests and user tests (both validate username/password,
+	// malicious inputs, and field length limits). Consider consolidating shared test data (malicious username
+	// patterns, SQL injection strings, etc.) into a shared fixture file in src/server/test/util/ in the future.
+
 	// Test the credentials validation used by login and obvius endpoints
 	mocha.describe('Credentials Validation (username/password)', () => {
 		// Since authenticator.js doesn't export direct endpoints, we test through routes that use it
