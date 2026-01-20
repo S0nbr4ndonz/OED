@@ -30,6 +30,7 @@ enum GroupNodeType {
 	childGroup = 'childGroup',
 	deepGroup = 'deepGroup'
 };
+
 enum MeterNodeType {
 	meter = 'meter',
 	childMeter = 'childMeter',
@@ -37,7 +38,6 @@ enum MeterNodeType {
 };
 
 type AllNodeType = GroupNodeType | MeterNodeType;
-
 
 export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 	groups,
