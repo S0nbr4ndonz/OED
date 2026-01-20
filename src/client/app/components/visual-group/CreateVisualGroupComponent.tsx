@@ -23,7 +23,7 @@ interface CreateVisualGroupProps {
 	meters: MeterData[];
 }
 
-//Declare node types for groups and meters, will determine every node's design schema on the graphic
+// Declare node types for groups and meters, will determine every node's design schema on the graphic
 enum GroupNodeType {
 	unselectedGroup = 'unselectedGroup',
 	selectedGroup = 'selectedGroup',
@@ -48,16 +48,16 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const intl = useIntl();
 
-	/*Get Meter data from redux*/
+	// Get Meter data from redux
 	const allMeters: MeterData[] = useAppSelector(selectAllMeters);
 
-	/* Fetch deep groups data from API */
+	// Fetch deep groups data from API 
 	const { data: deepGroupsData = [], isLoading: deepGroupsLoading } = groupsApi.useGetAllGroupsDeepGroupsQuery();
 
-	/* Get all Group data from Redux */
+	// Get all Group data from Redux 
 	const allGroups: GroupData[] = useAppSelector(selectAllGroups);
 
-	/* Merge deepGroups data with allGroups */
+	// Merge deepGroups data with allGroups 
 	const mergedGroups: GroupData[] = allGroups.map(group => {
 		const deepGroupData = deepGroupsData.find(dg => dg.id === group.id);
 		return {
@@ -68,12 +68,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const selectedGroup: GroupData | undefined = mergedGroups.find(group => group.id === selectedGroupId);
 
-	/*Get all meters who are in any way a children of a group */
+	// Get all meters who are in any way a children of a group 
 	const groupedMeterIds: Set<number> = new Set(
 		mergedGroups.flatMap(group => group.deepMeters)
 	);
 
-	/*Only keep meters who have a relationship with a group */
+	// Only keep meters who have a relationship with a group 
 	const groupedMeters: MeterData[] = allMeters.filter(meterData => groupedMeterIds.has(meterData.id));
 
 	// Sort meters to minimize distance between meters that share groups
@@ -136,14 +136,14 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
-	/*Create color schema for meter and group props*/
+	// Create color schema for meter and group props 
 	const allNodeTypes: AllNodeType[] = [...Object.values(MeterNodeType), ...Object.values(GroupNodeType)];
 	const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#b4331fff', '#FFF2CC', '#DAE8FC', '#D5E8D4'];
 	const colorSchema = d3.scaleOrdinal<string, string>()
 		.domain(allNodeTypes)
 		.range(colors);
 
-	/*Create stroke schema for meter and group props*/
+	// Create stroke schema for meter and group props
 	interface StrokeStyle {
 		color: string;
 		width: number;
@@ -165,7 +165,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		.domain(allNodeTypes)
 		.range(strokeStyles);
 
-	/* Create data container to pass to D3 to force graph */
+	// Create data container to pass to D3 to force graph
 	const data: { nodes: any[], links: any[] } = {
 		nodes: [],
 		links: []
@@ -259,7 +259,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		})
 	});
 
-	/* Uses Topological Sorting to sort groups into columns based on their depth*/
+	// Uses Topological Sorting to sort groups into columns based on their depth
 	const topSortAndPlaceGroups = (groups: GroupData[]): GroupData[][] => {
 		// Build adjacency list (child -> parents relationship)
 		const adjacencyList = new Map<number, number[]>();
@@ -346,7 +346,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const columns = topSortAndPlaceGroups(mergedGroups);
 
-	/* Sort each column to ensure that groups are closer to their children, minimizes intersecting edges/links */
+	// Sort each column to ensure that groups are closer to their children, minimizes intersecting edges/links
 	const sortGroupsByChildren = (columns: GroupData[][], meters: MeterData[]): GroupData[][] => {
 
 		const sortedGroups: GroupData[][] = [];
@@ -367,17 +367,17 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 				for (const meter of meters) {
 					const parentGroups = mergedGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
 
-					/*Saving the length before pushing current parent group. 
-					This ensures that a group with a single meter child is 
-					placed closer to it's meter child*/
+					// Saving the length before pushing current parent group. 
+					// This ensures that a group with a single meter child is 
+					// placed closer to it's meter child
 					const currentLength = currentSortedColumn.length;
 					for (const parent of parentGroups) {
 						if (currentSortedColumn.includes(parent)) {
 							continue;
 						}
 
-						/*If any parent group has the meter as their only child, then insert that parent 
-						before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
+						// If any parent group has the meter as their only child, then insert that parent 
+						// before any of the other parents currently in parentGroup. To ensure less edge interceptions
 						if (parent.childMeters.length == 1 && currentLength > 0) {
 							currentSortedColumn.splice(currentLength, 0, parent);
 							continue;
@@ -401,17 +401,17 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 						continue;
 					}
 
-					/*Saving the length before pushing current parent group. 
-					This ensures that a group with a single meter child is 
-					placed closer to it's meter child*/
+					// Saving the length before pushing current parent group. 
+					// This ensures that a group with a single meter child is 
+					// placed closer to it's meter child
 					const currentLength = currentSortedColumn.length;
 					for (const parent of parentGroups) {
 						if (currentSortedColumn.includes(parent)) {
 							continue;
 						}
 
-						/*If any parent group has the meter as their only child, then insert that parent 
-						before any of the other parents currently in parentGroup. To ensure less edge interceptions*/
+						// If any parent group has the meter as their only child, then insert that parent 
+						// before any of the other parents currently in parentGroup. To ensure less edge interceptions
 						if (parent.childGroups.length == 1 && currentLength > 0) {
 							currentSortedColumn.splice(currentLength, 0, parent);
 							continue;
@@ -435,13 +435,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const sortedFinally = sortGroupsByChildren(columns, sortedGroupedMeters);
 
-	/*visuals start here */
+	// visuals start here
 	useEffect(() => {
-		/* View-box dimensions */
+		// View-box dimensions
 		const width = window.innerWidth;
 		const height = 750;
 
-		/* Grab data via shallow copy */
+		// Grab data via shallow copy
 		const nodes = data.nodes.map(d => ({ ...d }));
 		const links = data.links.map(d => ({ ...d }));
 
@@ -452,7 +452,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		const meterNodeData = nodes.filter(node => meterTypes.includes(node.type));
 		const groupNodeData = nodes.filter(node => groupTypes.includes(node.type));
 
-		/* Position meter nodes in a column on the left*/
+		// Position meter nodes in a column on the left
 		// 100px from left edge
 		const meterColumnX = -width / 2 + 200;
 		// Space between meters
@@ -523,7 +523,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 		const simulation = d3.forceSimulation(nodes)
 			.force('link', d3.forceLink(links)
-				/* Set all link ids (from data.links) */
+				// Set all link ids (from data.links)
 				.id((d: any) => d.id)
 				//link length is 90
 				.distance(90)
@@ -564,7 +564,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		});
 
 
-		/* End arrow heads - create separate markers for each node type */
+		// End arrow heads - create separate markers for each node type
 		const defs = g.append('defs');
 
 		allNodeTypes.forEach(nodeType => {
@@ -587,7 +587,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 				.attr('stroke', strokeStyle.color)
 		});
 
-		/* Link Style */
+		// Link Style
 		const link = g.selectAll('line')
 			.data(links)
 			.enter().append('line')
@@ -596,7 +596,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('stroke-dasharray', d => strokeSchema(d.sourceType).dasharray)
 			.attr('marker-end', d => `url(#arrow-end-${d.sourceType})`)
 
-		/* Unselected/Default Group Node Style */
+		// Unselected/Default Group Node Style
 		const groupNodes = g.selectAll('.group-node')
 			.data(groupNodeData)
 			.enter().append('circle')
@@ -611,7 +611,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('stroke-opacity', d => strokeSchema(d.type).opacity)
 			.attr('fill-opacity', 0.5);
 
-		/* Meter Node Style */
+		// Meter Node Style
 		const meterNodes = g.selectAll('.meter-node')
 			.data(meterNodeData)
 			.enter().append('rect')
@@ -628,13 +628,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('y', d => d.y - 20);
 
 
-		/* Drag behavior - only for group nodes */
+		// Drag behavior - only for group nodes
 		groupNodes.call(d3.drag()
 			.on('start', dragstart)
 			.on('drag', dragged)
 			.on('end', dragend));
 
-		/* Node label style */
+		// Node label style
 		const label = g.selectAll('.label')
 			.data(nodes)
 			.enter()
@@ -645,58 +645,58 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('font-family', 'Arial')
 			.attr('font-size', 10);
 
-		/* Update element positions when moved */
+		// Update element positions when moved
 		simulation.on('tick', () => {
 			link
 				.attr('x1', d => {
-					/*translate where links begin to have them start at 
-					the edge of an element instead of the center of one*/
+					// translate where links begin to have them start at 
+					// the edge of an element instead of the center of one
 
-					/*if link starts from a meter*/
+					// if link starts from a meter
 					if (d.type == 'meter-to-group') {
 
 
-						/*take half of the width of the meter's rectangle element*/
+						// take half of the width of the meter's rectangle element
 						const halfWidth = 30;
 
-						/*Translate the beginning of the link 
-						by the halfwidth, to have it start at the edge*/
+						// Translate the beginning of the link 
+						// by the halfwidth, to have it start at the edge
 						return d.source.x + halfWidth;
 					}
 					else {
-						/* link starts from a group node*/
+						// link starts from a group node
 
-						/*radius for a group node is set to 20 for all nodes*/
+						// radius for a group node is set to 20 for all nodes
 						const radius = 20;
 
-						/*translate link by the radius to have it start from the edge*/
+						// translate link by the radius to have it start from the edge
 						return d.source.x + radius;
 					}
 				})
 				.attr('y1', d => d.source.y)
 				.attr('x2', d => {
-					/*Get the x-distance and the y-distance from source to target*/
+					// Get the x-distance and the y-distance from source to target
 					const dx = d.target.x - d.source.x;
 					const dy = d.target.y - d.source.y;
 
-					/*Calculate the hypotenuse/length the link should be*/
+					// Calculate the hypotenuse/length the link should be
 					const length = Math.sqrt(dx * dx + dy * dy);
 					const nodeRadius = 20;
 
-					/* Translate link endpoint from node center to node edge by scaling the direction vector by node radius */
+					// Translate link endpoint from node center to node edge by scaling the direction vector by node radius
 					return d.target.x - (dx / length) * nodeRadius;
 
 				})
 				.attr('y2', d => {
-					/*Get the x-distance and the y-distance from source to target*/
+					// Get the x-distance and the y-distance from source to target
 					const dx = d.target.x - d.source.x;
 					const dy = d.target.y - d.source.y;
 
-					/*Calculate the hypotenuse/length the link should be*/
+					// Calculate the hypotenuse/length the link should be
 					const length = Math.sqrt(dx * dx + dy * dy);
 					const nodeRadius = 20;
 
-					/* Translate link endpoint from node center to node edge by scaling the direction vector by node radius */
+					// Translate link endpoint from node center to node edge by scaling the direction vector by node radius
 					return d.target.y - (dy / length) * nodeRadius;
 				});
 
@@ -735,6 +735,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			if (!event.active) {
 				simulation.alphaTarget(0);
 			}
+
 			event.subject.fx = null;
 			event.subject.fy = null;
 
@@ -767,7 +768,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 
 
-		/* Color Legend */
+		// Color Legend
 		const legend = g.append('g')
 			.attr('transform', `translate(${-width / 2}, ${-height / 2 + 20})`);
 
@@ -867,7 +868,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 				.style('fill', '#000')
 				.style('font-size', '12px')
 				.style('alignment-middle', 'middle')
-				/* internationalizing color legend text */
+				// internationalizing color legend text
 				.text(intl.formatMessage({ id: `legend.graph.text.${item}` }));
 		});
 
