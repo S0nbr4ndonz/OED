@@ -48,3 +48,4 @@ export interface GroupsState {
 	byGroupID: GroupDataByID
 	selectedGroups: number[];
 }
+
