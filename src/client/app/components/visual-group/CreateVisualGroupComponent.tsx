@@ -909,7 +909,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		<div>
 			<div className='container-fluid'>
 				<h1 style={titleStyle}>
-					<FormattedMessage id='group.visual.page.title'></FormattedMessage>
+					<FormattedMessage id='visual.group'></FormattedMessage>
 					<div style={tooltipStyle}>
 						<TooltipMarkerComponent page='visual-group' helpTextId={tooltipStyle.tooltipVisualGroupView} />
 					</div>
