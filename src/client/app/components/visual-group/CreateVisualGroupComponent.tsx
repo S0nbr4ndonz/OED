@@ -774,7 +774,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 		colorSchema.domain().forEach((item, i) => {
 			const legendEntry = legend.append('g')
-				.attr('transform', `translate(0, ${i * 30})`);
+				.attr('transform', `translate(0, ${i * 40})`);
 
 			if (item == MeterNodeType.meter) {
 				legendEntry.append('rect')
@@ -829,6 +829,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					// Center the circle horizontally
 					.attr('cx', 15)
 					// Center the circle vertically
+					.attr('cy', 15)
 					.attr('fill', colorSchema(item))
 					.attr('fill-opacity', 0.5)
 					.attr('stroke', 'black')
@@ -840,6 +841,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					// Center the circle horizontally
 					.attr('cx', 15)
 					// Center the circle vertically
+					.attr('cy', 15)
 					.attr('fill', colorSchema(item))
 					.attr('fill-opacity', 0.5)
 					.attr('stroke', 'black')
@@ -851,13 +853,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					// Center the circle horizontally
 					.attr('cx', 15)
 					// Center the circle vertically
+					.attr('cy', 15)
 					.attr('fill', colorSchema(item))
 					.attr('fill-opacity', 0.5)
 					.attr('stroke', 'black')
 					.attr('stroke-width', 1)
 			}
-
-
 
 			// Text label
 			legendEntry.append('text')
