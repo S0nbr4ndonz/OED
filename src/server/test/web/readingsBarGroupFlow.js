@@ -241,8 +241,43 @@ mocha.describe('readings API', () => {
                             note: 'Electric → kW' 
                         }
                     ]
-                
-                
+                    const meterDatakWGroups = [
+                        {
+                            name: 'meterDatakWGroups',
+                            unit: 'Electric',
+                            defaultGraphicUnit: 'kW',
+                            displayable: true,
+                            gps: undefined,
+                            note: 'special meter',
+                            file: 'test/web/readingsData/',
+                            deleteFile: false,
+                            readingFrequency: '15 minutes',
+                            id: METER_ID
+                        },
+                        {
+                            name: 'meterDatakWOther',
+                            unit: 'Electric',
+                            defaultGraphicUnit: 'kW',
+                            displayable: true, 
+                            gps: undefined,
+                            note: 'special meter',
+                            file: 'test/web/readingsData/',
+                            deleteFile: false,
+                            readingFrequency: '20 minutes',
+                            id: (METER_ID + 1)
+                        }
+                    ];
+                    const groupDatakW = [
+                        {
+                            id: GROUP_ID,
+                            name: 'meterDatakWGroups + meterDatakWOther',
+                            displayable: true,
+                            note: 'special group',
+                            defaultGraphicUnit: 'kW',
+                            childMeters: ['meterDatakWGroups', 'meterDatakWOther'],
+                            childGroups: [], 
+                        }
+                    ]
                 
                 });
                 // Add BG18 here
