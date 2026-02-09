@@ -138,7 +138,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	// Create color schema for meter and group props 
 	const allNodeTypes: AllNodeType[] = [...Object.values(MeterNodeType), ...Object.values(GroupNodeType)];
-	const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#b4331fff', '#FFF2CC', '#DAE8FC', '#D5E8D4'];
+	const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#dc9b92', '#FFF2CC', '#DAE8FC', '#D5E8D4'];
 	const colorSchema = d3.scaleOrdinal<string, string>()
 		.domain(allNodeTypes)
 		.range(colors);
@@ -149,16 +149,17 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		width: number;
 		dasharray: string;
 		opacity: number;
+		zIndex: number;
 	}
 
 	const strokeStyles: StrokeStyle[] = [
-		{ color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5 },  // meter
-		{ color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0 }, // childMeter
-		{ color: '#82B366', width: 3, dasharray: 'none', opacity: 1.0 }, // deepMeter
-		{ color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5 },  // group
-		{ color: '#D6B656', width: 3, dasharray: 'none', opacity: 1.0 }, // selectedGroup
-		{ color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0 }, // childGroup
-		{ color: '#82B366', width: 3, dasharray: 'none', opacity: 1.0 }  // deepGroup
+		{ color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5, zIndex: -1 },  // meter (default)
+		{ color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0, zIndex: 1 }, // childMeter
+		{ color: '#82B366', width: 3, dasharray: 'none', opacity: 1.0, zIndex: 1 }, // deepMeter
+		{ color: '#000000', width: 1, dasharray: '5,5', opacity: 0.5, zIndex: -1 },  // group (default)
+		{ color: '#D6B656', width: 3, dasharray: 'none', opacity: 1.0, zIndex: 1 }, // selectedGroup
+		{ color: '#6C8EBF', width: 3, dasharray: 'none', opacity: 1.0, zIndex: 1 }, // childGroup
+		{ color: '#82B366', width: 3, dasharray: 'none', opacity: 1.0, zIndex: 1 }  // deepGroup
 	];
 
 	const strokeSchema = d3.scaleOrdinal<string, StrokeStyle>()
@@ -225,7 +226,6 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		let childGroupType: GroupNodeType = GroupNodeType.unselectedGroup;
 
 		// node type of child meters of the current group
-
 		let childMeterType: MeterNodeType = MeterNodeType.meter;
 
 		if (selectedGroup) {
@@ -595,6 +595,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('stroke-width', d => strokeSchema(d.sourceType).width)
 			.attr('stroke-dasharray', d => strokeSchema(d.sourceType).dasharray)
 			.attr('marker-end', d => `url(#arrow-end-${d.sourceType})`)
+			.lower();
 
 		// Unselected/Default Group Node Style
 		const groupNodes = g.selectAll('.group-node')
@@ -609,7 +610,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('stroke-width', d => strokeSchema(d.type).width)
 			.attr('stroke-dasharray', d => strokeSchema(d.type).dasharray)
 			.attr('stroke-opacity', d => strokeSchema(d.type).opacity)
-			.attr('fill-opacity', 0.5);
+			.attr('fill-opacity', 1);
 
 		// Meter Node Style
 		const meterNodes = g.selectAll('.meter-node')
@@ -626,7 +627,6 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			//Center the rectangle
 			.attr('x', d => d.x - 30)
 			.attr('y', d => d.y - 20);
-
 
 		// Drag behavior - only for group nodes
 		groupNodes.call(d3.drag()
@@ -818,7 +818,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					// Center the circle vertically
 					.attr('cy', 15)
 					.attr('fill', colorSchema(item))
-					.attr('fill-opacity', 0.5)
+					.attr('fill-opacity', 1)
 					.attr('stroke', 'black')
 					.attr('stroke-width', 1)
 					.attr('stroke-dasharray', ('5,5'));
