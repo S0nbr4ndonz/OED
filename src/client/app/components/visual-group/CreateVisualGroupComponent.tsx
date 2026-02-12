@@ -16,7 +16,7 @@ import { FormattedMessage } from 'react-intl';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 
 /**
- *   Visual graph component that shows the relationship between all groups and meters
+ * Visual graph component that shows the relationship between all groups and meters
  * entered by an admin
  * @returns D3 force graph visual
  */
@@ -53,13 +53,13 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 	// Get Meter data from redux
 	const allMeters: MeterData[] = useAppSelector(selectAllMeters);
 
-	// Fetch deep groups data from API 
+	// Fetch deep groups data from API
 	const { data: deepGroupsData = [], isLoading: deepGroupsLoading } = groupsApi.useGetAllGroupsDeepGroupsQuery();
 
-	// Get all Group data from Redux 
+	// Get all Group data from Redux
 	const allGroups: GroupData[] = useAppSelector(selectAllGroups);
 
-	// Merge deepGroups data with allGroups 
+	// Merge deepGroups data with allGroups
 	const mergedGroups: GroupData[] = allGroups.map(group => {
 		const deepGroupData = deepGroupsData.find(dg => dg.id === group.id);
 		return {
@@ -70,12 +70,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const selectedGroup: GroupData | undefined = mergedGroups.find(group => group.id === selectedGroupId);
 
-	// Get all meters who are in any way a children of a group 
+	// Get all meters who are in any way a children of a group
 	const groupedMeterIds: Set<number> = new Set(
 		mergedGroups.flatMap(group => group.deepMeters)
 	);
 
-	// Only keep meters who have a relationship with a group 
+	// Only keep meters who have a relationship with a group
 	const groupedMeters: MeterData[] = allMeters.filter(meterData => groupedMeterIds.has(meterData.id));
 
 	// Sort meters to minimize distance between meters that share groups
@@ -138,7 +138,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 	const sortedGroupedMeters = sortMetersByGroupRelationships(groupedMeters);
 
-	// Create color schema for meter and group props 
+	// Create color schema for meter and group props
 	const allNodeTypes: AllNodeType[] = [...Object.values(MeterNodeType), ...Object.values(GroupNodeType)];
 	const colors = ['#000000', '#DAE8FC', '#D5E8D4', '#dc9b92', '#FFF2CC', '#DAE8FC', '#D5E8D4'];
 	const colorSchema = d3.scaleOrdinal<string, string>()
@@ -180,7 +180,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 		if (selectedGroup) {
 			if (selectedGroup.childMeters.includes(value.id)) {
-				//The current meter is a child meter 
+				//The current meter is a child meter
 				nodeType = MeterNodeType.childMeter;
 			} else if (selectedGroup.deepMeters.includes(value.id)) {
 				//The current meter is a deep meter
@@ -276,7 +276,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		//For each group, add edges from child to parent
 		groups.forEach(group => {
 			group.childGroups.forEach(childGroupId => {
-				// Add edge from child to parent 
+				// Add edge from child to parent
 				const childEdges = adjacencyList.get(childGroupId) || [];
 				childEdges.push(group.id);
 				adjacencyList.set(childGroupId, childEdges);
@@ -369,8 +369,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 				for (const meter of meters) {
 					const parentGroups = mergedGroups.filter(group => group.childMeters.includes(meter.id) && column.includes(group));
 
-					// Saving the length before pushing current parent group. 
-					// This ensures that a group with a single meter child is 
+					// Saving the length before pushing current parent group.
+					// This ensures that a group with a single meter child is
 					// placed closer to it's meter child
 					const currentLength = currentSortedColumn.length;
 					for (const parent of parentGroups) {
@@ -378,7 +378,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 							continue;
 						}
 
-						// If any parent group has the meter as their only child, then insert that parent 
+						// If any parent group has the meter as their only child, then insert that parent
 						// before any of the other parents currently in parentGroup. To ensure less edge interceptions
 						if (parent.childMeters.length == 1 && currentLength > 0) {
 							currentSortedColumn.splice(currentLength, 0, parent);
@@ -403,8 +403,8 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 						continue;
 					}
 
-					// Saving the length before pushing current parent group. 
-					// This ensures that a group with a single meter child is 
+					// Saving the length before pushing current parent group.
+					// This ensures that a group with a single meter child is
 					// placed closer to it's meter child
 					const currentLength = currentSortedColumn.length;
 					for (const parent of parentGroups) {
@@ -412,7 +412,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 							continue;
 						}
 
-						// If any parent group has the meter as their only child, then insert that parent 
+						// If any parent group has the meter as their only child, then insert that parent
 						// before any of the other parents currently in parentGroup. To ensure less edge interceptions
 						if (parent.childGroups.length == 1 && currentLength > 0) {
 							currentSortedColumn.splice(currentLength, 0, parent);
@@ -651,7 +651,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 		simulation.on('tick', () => {
 			link
 				.attr('x1', d => {
-					// translate where links begin to have them start at 
+					// translate where links begin to have them start at
 					// the edge of an element instead of the center of one
 
 					// if link starts from a meter
@@ -661,7 +661,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 						// take half of the width of the meter's rectangle element
 						const halfWidth = 30;
 
-						// Translate the beginning of the link 
+						// Translate the beginning of the link
 						// by the halfwidth, to have it start at the edge
 						return d.source.x + halfWidth;
 					}
