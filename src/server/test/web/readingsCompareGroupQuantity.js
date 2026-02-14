@@ -199,6 +199,47 @@ mocha.describe('readings API', () => {
 				});
 				
 				// Add CG10 here
+				mocha.it('CG10: 1 day shift end 2022-10-31 17:00:00 for 15 minute reading intervals and quantity units & kWh as BTU', async () => {
+                    // Define unit u3 for BTU
+                    const u16 = {
+                    	name: 'BTU',
+                    	identifier: '',  // Check if identifier is correct, GitHub table shows no identifier
+                    	unitRepresent: Unit.unitRepresentType.QUANTITY,
+                    	secInRate: 3600,
+                    	typeOfUnit: Unit.unitType.UNIT, suffix: '',
+                    	displayable: Unit.displayableType.ALL,
+                    	preferredDisplay: true,
+                    	note: 'OED created standard unit'
+                	}
+                    // Define conversion c3 for kWh to BTU
+                    const c3 = {
+                    	sourceName: 'MJ',
+                    	destinationName: 'BTU',
+                    	bidirectional: true,
+                    	slope: 947.8,
+                    	intercept: 0,
+                    	note: 'MJ → BTU'
+                	}
+                    await prepareTest(
+                        unitDatakWh.concat(u16), // Use units [u1, u2] + u3
+                        conversionDatakWh.concat(c3), // Use conversion [c1] + c3
+                        meterDatakWhGroups,
+                        groupDatakWh
+                    );
+                    // Get the unit ID since the DB could use any value.
+                    const unitId = await getUnitId('BTU');
+                    const expected = [19334049.5356478, 20037163.9086933];
+
+                    // for comparison, need the unitID, currentStart, currentEnd, shift
+                    const res = await chai.request(app).get(`/api/compareReadings/groups/${GROUP_ID}`)
+                        .query({
+                            curr_start: '2022-10-31 00:00:00',
+                            curr_end: '2022-10-31 17:00:00',
+                            shift: 'P1D',
+                            graphicUnitId: unitId
+                        });
+                    expectCompareToEqualExpected(res, expected, GROUP_ID);
+                });
 
 				// Add CG11 here
 
