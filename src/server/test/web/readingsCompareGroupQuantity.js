@@ -200,7 +200,7 @@ mocha.describe('readings API', () => {
 				
 				// Add CG10 here
 				mocha.it('CG10: 1 day shift end 2022-10-31 17:00:00 for 15 minute reading intervals and quantity units & kWh as BTU', async () => {
-                    // Define unit u3 for BTU
+                    // Define unit u16 for BTU
                     const u16 = {
                     	name: 'BTU',
                     	identifier: '',  // Check if identifier is correct, GitHub table shows no identifier
