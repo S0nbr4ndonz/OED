@@ -198,12 +198,11 @@ mocha.describe('readings API', () => {
 					expectCompareToEqualExpected(res, expected, GROUP_ID);
 				});
 				
-				// Add CG10 here
 				mocha.it('CG10: 1 day shift end 2022-10-31 17:00:00 for 15 minute reading intervals and quantity units & kWh as BTU', async () => {
                     // Define unit u16 for BTU
                     const u16 = {
                     	name: 'BTU',
-                    	identifier: '',  // Check if identifier is correct, GitHub table shows no identifier
+                    	identifier: '', 
                     	unitRepresent: Unit.unitRepresentType.QUANTITY,
                     	secInRate: 3600,
                     	typeOfUnit: Unit.unitType.UNIT, suffix: '',
@@ -211,7 +210,7 @@ mocha.describe('readings API', () => {
                     	preferredDisplay: true,
                     	note: 'OED created standard unit'
                 	}
-                    // Define conversion c3 for kWh to BTU
+                    // Define conversion c3 for MJ to BTU
                     const c3 = {
                     	sourceName: 'MJ',
                     	destinationName: 'BTU',
@@ -221,7 +220,7 @@ mocha.describe('readings API', () => {
                     	note: 'MJ → BTU'
                 	}
                     await prepareTest(
-                        unitDatakWh.concat(u16), // Use units [u1, u2] + u3
+                        unitDatakWh.concat(u16), // Use units [u1, u2] + u16
                         conversionDatakWh.concat(c3), // Use conversion [c1] + c3
                         meterDatakWhGroups,
                         groupDatakWh
