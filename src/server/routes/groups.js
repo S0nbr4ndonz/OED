@@ -13,6 +13,7 @@ const { adminAuthMiddleware, optionalAuthMiddleware } = require('./authenticator
 const { log } = require('../log');
 const Point = require('../models/Point');
 const { failure, success } = require('./response');
+const { STRING_GENERAL_MAX_LENGTH, STRING_SHORT_MAX_LENGTH: SHORT_STRING_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
 
 const router = express.Router();
 
@@ -137,12 +138,13 @@ router.get('/allChildren/', optionalAuthMiddleware, async (req, res) => {
 router.get('/deep/groups/:group_id', optionalAuthMiddleware, async (req, res) => {
 	const validParams = {
 		type: 'object',
-		maxProperties: 1,
+		additionalProperties: false,
 		required: ['group_id'],
 		properties: {
 			group_id: {
 				type: 'string',
-				pattern: '^\\d+$'
+				pattern: '^\\d+$',
+				maxLength: NUMERIC_ID_MAX_LENGTH
 			}
 		}
 	};
@@ -165,12 +167,13 @@ router.get('/deep/groups/:group_id', optionalAuthMiddleware, async (req, res) =>
 router.get('/deep/meters/:group_id', optionalAuthMiddleware, async (req, res) => {
 	const validParams = {
 		type: 'object',
-		maxProperties: 1,
+		additionalProperties: false,
 		required: ['group_id'],
 		properties: {
 			group_id: {
 				type: 'string',
-				pattern: '^\\d+$'
+				pattern: '^\\d+$',
+				maxLength: NUMERIC_ID_MAX_LENGTH
 			}
 		}
 	};
@@ -193,12 +196,13 @@ router.get('/deep/meters/:group_id', optionalAuthMiddleware, async (req, res) =>
 router.get('/parents/:group_id', optionalAuthMiddleware, async (req, res) => {
 	const validParams = {
 		type: 'object',
-		maxProperties: 1,
+		additionalProperties: false,
 		required: ['group_id'],
 		properties: {
 			group_id: {
 				type: 'string',
-				pattern: '^\\d+$'
+				pattern: '^\\d+$',
+				maxLength: NUMERIC_ID_MAX_LENGTH
 			}
 		}
 	};
@@ -221,16 +225,17 @@ router.get('/parents/:group_id', optionalAuthMiddleware, async (req, res) => {
 router.post('/create', adminAuthMiddleware('create groups'), async (req, res) => {
 	const validGroup = {
 		type: 'object',
-		maxProperties: 10,
+		additionalProperties: false,
 		required: ['name', 'childGroups', 'childMeters'],
 		properties: {
-			id: { type: 'integer' },
+			id: { type: 'integer', minimum: 1 },
 			name: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: SHORT_STRING_MAX_LENGTH
 			},
 			displayable: {
-				type: 'bool'
+				type: 'boolean'
 			},
 			gps: {
 				oneOf: [
@@ -247,7 +252,7 @@ router.post('/create', adminAuthMiddleware('create groups'), async (req, res) =>
 			},
 			note: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: STRING_GENERAL_MAX_LENGTH },
 					{ type: 'null' }
 				]
 			},
@@ -255,21 +260,26 @@ router.post('/create', adminAuthMiddleware('create groups'), async (req, res) =>
 			childGroups: {
 				type: 'array',
 				uniqueItems: true,
+				maxItems: 1000,
 				items: {
-					type: 'integer'
+					type: 'integer',
+					minimum: 1
 				}
 			},
 			childMeters: {
 				type: 'array',
 				uniqueItems: true,
+				maxItems: 1000,
 				items: {
-					type: 'integer'
+					type: 'integer',
+					minimum: 1
 				}
 			},
-			defaultGraphicUnit: { type: 'integer' },
+			defaultGraphicUnit: { type: 'integer', minimum: 1 },
 			areaUnit: {
 				type: 'string',
 				minLength: 1,
+				maxLength: 50,
 				enum: Object.values(Unit.areaUnitType)
 			}
 		}
@@ -315,16 +325,17 @@ router.post('/create', adminAuthMiddleware('create groups'), async (req, res) =>
 router.put('/edit', adminAuthMiddleware('edit groups'), async (req, res) => {
 	const validGroup = {
 		type: 'object',
-		maxProperties: 10,
+		additionalProperties: false,
 		required: ['id', 'name', 'childGroups', 'childMeters'],
 		properties: {
-			id: { type: 'integer' },
+			id: { type: 'integer', minimum: 1 },
 			name: {
 				type: 'string',
-				minLength: 1
+				minLength: 1,
+				maxLength: SHORT_STRING_MAX_LENGTH
 			},
 			displayable: {
-				type: 'bool'
+				type: 'boolean'
 			},
 			gps: {
 				oneOf: [
@@ -341,7 +352,7 @@ router.put('/edit', adminAuthMiddleware('edit groups'), async (req, res) => {
 			},
 			note: {
 				oneOf: [
-					{ type: 'string' },
+					{ type: 'string', maxLength: STRING_GENERAL_MAX_LENGTH },
 					{ type: 'null' }
 				]
 			},
@@ -349,21 +360,26 @@ router.put('/edit', adminAuthMiddleware('edit groups'), async (req, res) => {
 			childGroups: {
 				type: 'array',
 				uniqueItems: true,
+				maxItems: 1000,
 				items: {
-					type: 'integer'
+					type: 'integer',
+					minimum: 1
 				}
 			},
 			childMeters: {
 				type: 'array',
 				uniqueItems: true,
+				maxItems: 1000,
 				items: {
-					type: 'integer'
+					type: 'integer',
+					minimum: 1
 				}
 			},
-			defaultGraphicUnit: { type: 'integer' },
+			defaultGraphicUnit: { type: 'integer', minimum: 1 },
 			areaUnit: {
 				type: 'string',
 				minLength: 1,
+				maxLength: 50,
 				enum: Object.values(Unit.areaUnitType)
 			}
 		}
@@ -425,10 +441,10 @@ router.put('/edit', adminAuthMiddleware('edit groups'), async (req, res) => {
 router.post('/delete', adminAuthMiddleware('delete groups'), async (req, res) => {
 	const validParams = {
 		type: 'object',
-		maxProperties: 1,
+		additionalProperties: false,
 		required: ['id'],
 		properties: {
-			id: { type: 'integer' }
+			id: { type: 'integer', minimum: 1 }
 		}
 	};
 
@@ -449,4 +465,3 @@ router.post('/delete', adminAuthMiddleware('delete groups'), async (req, res) =>
 });
 
 module.exports = router;
-
