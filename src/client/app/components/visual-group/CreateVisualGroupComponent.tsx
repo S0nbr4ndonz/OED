@@ -15,16 +15,6 @@ import TooltipMarkerComponent from '../TooltipMarkerComponent';
 import { FormattedMessage } from 'react-intl';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 
-/**
- * Visual graph component that shows the relationship between all groups and meters
- * entered by an admin
- * @returns D3 force graph visual
- */
-interface CreateVisualGroupProps {
-	groups: GroupData[];
-	meters: MeterData[];
-}
-
 // Declare node types for groups and meters, will determine every node's design schema on the graphic
 enum GroupNodeType {
 	unselectedGroup = 'unselectedGroup',
@@ -41,10 +31,12 @@ enum MeterNodeType {
 
 type AllNodeType = GroupNodeType | MeterNodeType;
 
-export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
-	groups,
-	meters
-}) => {
+/**
+ * Visual graph component that shows the relationship between all groups and meters
+ * entered by an admin
+ * @returns D3 force graph visual
+ */
+export const CreateVisualGroupComponent: React.FC = () => {
 
 	const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 
@@ -518,8 +510,6 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 
 			// Update SVG dimensions
 			svg
-				.attr('width', contentWidth)
-				.attr('height', contentHeight)
 				.attr('viewBox', [bbox.x - padding, bbox.y - padding, contentWidth, contentHeight]);
 		};
 
@@ -543,7 +533,7 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 			.attr('width', width)
 			.attr('height', height)
 			.attr('viewBox', [-width / 2, -height / 2, width, height])
-			.attr('style', 'max-width: 100%; height: auto;');
+			.attr('style', 'max-width: 100%; height: 100%;');
 
 		const g = svg
 			.append('g');
@@ -918,13 +908,12 @@ export const CreateVisualGroupComponent: React.FC<CreateVisualGroupProps> = ({
 					</div>
 				</h1>
 			</div>
-			<div id='sample' style={{ width: '100%', height: '100vh', overflowY: 'auto', overflowX: 'auto' }} />
-			<div>
+			<div style={{ display: 'flex', justifyContent: 'center' }}>
 				<button id="zoom-in">+</button>
 				<button id="zoom-out">-</button>
 				<button id="reset">Reset</button>
-				<div id="sample" style={{ width: '100%', height: '100vh', overflow: 'auto' }} />
 			</div>
+			<div id='sample' style={{ width: '100%', height: '100vh', overflowY: 'auto', overflowX: 'auto' }} />
 		</div>
 
 	);
