@@ -917,6 +917,4 @@ export const CreateVisualGroupComponent: React.FC = () => {
 		</div>
 
 	);
-
-
-}
+};
