@@ -4,7 +4,7 @@
 
 import * as React from 'react';
 import * as d3 from 'd3';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useIntl } from 'react-intl';
 import { useAppSelector } from '../../redux/reduxHooks';
 import { GroupData } from '../../../../client/app/types/redux/groups'
@@ -39,6 +39,7 @@ type AllNodeType = GroupNodeType | MeterNodeType;
 export const CreateVisualGroupComponent: React.FC = () => {
 
 	const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+	const zoomTransformRef = useRef(d3.zoomIdentity);
 
 	const intl = useIntl();
 
@@ -431,6 +432,9 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 	// visuals start here
 	useEffect(() => {
+		// Hiding visual flash
+		d3.select('#sample').style('opacity', '0');
+
 		// View-box dimensions
 		const width = window.innerWidth;
 		const height = 750;
@@ -538,7 +542,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 		const g = svg
 			.append('g');
 
-		svg.call(zoom).call(zoom.transform, d3.zoomIdentity);
+		svg.call(zoom).call(zoom.transform, zoomTransformRef.current);
 
 		// Zoom in
 		d3.select("#zoom-in").on("click", () => {
@@ -554,7 +558,6 @@ export const CreateVisualGroupComponent: React.FC = () => {
 		d3.select("#reset").on("click", () => {
 			svg.transition().call(zoom.transform, d3.zoomIdentity);
 		});
-
 
 		// End arrow heads - create separate markers for each node type
 		const defs = g.append('defs');
@@ -752,13 +755,10 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				});
 		}
 
-
 		function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
+			zoomTransformRef.current = event.transform;
 			g.attr("transform", event.transform.toString());
 		}
-
-
-
 
 		// Color Legend
 		const legend = g.append('g')
@@ -866,13 +866,23 @@ export const CreateVisualGroupComponent: React.FC = () => {
 		});
 
 		// Calculate SVG dimensions after all elements are created
-		setTimeout(() => calculateSvgDimensions(), 0);
+		setTimeout(() => {
+			calculateSvgDimensions();
+			requestAnimationFrame(() => {
+				// restore opacity now that graphic is built
+				d3.select('#sample').style('opacity', '1');
+			}); 
+		}, 0);
 
 		// Cleanup function - runs when component unmounts or dependencies change
 		return () => {
 			console.log("Cleaning up D3 visualization");
 			const existingSvg = d3.select('#sample svg');
 			if (!existingSvg.empty()) {
+				const node = existingSvg.node();
+				if (node) {
+					zoomTransformRef.current = d3.zoomTransform(node as Element);
+				}
 				existingSvg.remove();
 			}
 		};
