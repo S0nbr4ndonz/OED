@@ -10,6 +10,7 @@ const { log } = require('../log');
 const validate = require('jsonschema').validate;
 const { isTokenAuthorized, isUserAuthorized } = require('../util/userRoles');
 const { getConnection } = require('../db');
+const { HTTP_CODE } = require('../util/readingsUtils');
 const escapeHtml = require('escape-html');
 const { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, TOKEN_MAX_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH }
 	= require('../util/validationConstants');
@@ -26,11 +27,11 @@ authMiddleware = (req, res, next) => {
 		maxLength: TOKEN_MAX_LENGTH
 	};
 	if (!validate(token, validParams).valid) {
-		res.status(403).json({ success: false, message: 'No token provided or JSON was invalid.' });
+		res.status(HTTP_CODE.FORBIDDEN).json({ success: false, message: 'No token provided or JSON was invalid.' });
 	} else if (token) {
 		jwt.verify(token, secretToken, async (err, decoded) => {
 			if (err) {
-				res.status(401).json({ success: false, message: 'Failed to authenticate token.' });
+				res.status(HTTP_CODE.UNAUTHORIZED).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
 				try {
 					const conn = getConnection();
@@ -39,12 +40,12 @@ authMiddleware = (req, res, next) => {
 					req.decoded = decoded;
 					next();
 				} catch (error) {
-					res.status(401).json({ success: false, message: 'User does not exist in database.' });
+					res.status(HTTP_CODE.UNAUTHORIZED).json({ success: false, message: 'User does not exist in database.' });
 				}
 			}
 		});
 	} else {
-		res.status(403).send({ success: false, message: 'No token provided.' });
+		res.status(HTTP_CODE.FORBIDDEN).send({ success: false, message: 'No token provided.' });
 	}
 };
 
@@ -73,7 +74,7 @@ function credentialsRequestValidationMiddleware(req, res, next) {
 		}
 	};
 	if (!validate(req.body, validParams).valid) {
-		res.status(400).send('Invalid JSON. \n');
+		res.status(HTTP_CODE.BAD_REQUEST).send('Invalid JSON. \n');
 	} else {
 		next();
 	}
@@ -116,7 +117,7 @@ function roleTokenAuthMiddleware(role, action) {
 				next();
 			} else {
 				log.warn(`Got request to '${action}' with invalid credentials. ${role.toUpperCase()} role is required to '${action}'.`);
-				res.status(403)
+				res.status(HTTP_CODE.FORBIDDEN)
 					.json({ message: `Invalid credentials supplied. Only ${role.toUpperCase()} can ${action}.` });
 			}
 		})
@@ -158,24 +159,24 @@ function obviusUsernameAndPasswordAuthMiddleware(action) {
 					if (isUserAuthorized(user, User.role.OBVIUS)) {
 						next();
 					} else {
-						const message = `Got request to '${action}' with invalid authorization level. Obvius role is at least required to '${action}'.`;
-						log.warn(message);
-						res.status(401).send(message);
-						return;
-					}
+							const message = `Got request to '${action}' with invalid authorization level. Obvius role is at least required to '${action}'.`;
+							log.warn(message);
+							res.status(HTTP_CODE.UNAUTHORIZED).send(message);
+							return;
+						}
 				} else {
-					const message = `Got request to '${action} with invalid credentials.`;
-					log.warn(message);
-					res.status(400).send(message);
+						const message = `Got request to '${action} with invalid credentials.`;
+						log.warn(message);
+						res.status(HTTP_CODE.BAD_REQUEST).send(message);
 					return;
 				}
 			} catch (error) {
-				if (error.message === 'No data returned from the query.') {
-					res.status(400).send(`No user corresponding to the username: ${escapeHtml(req.body.username)} was found. Please make a request with a valid username.`);
-				} else {
-					log.error('Internal Server Error for Obvius request.', error);
-					res.status(500).send('Internal OED Server Error for Obvius request.');
-				}
+					if (error.message === 'No data returned from the query.') {
+						res.status(HTTP_CODE.BAD_REQUEST).send(`No user corresponding to the username: ${escapeHtml(req.body.username)} was found. Please make a request with a valid username.`);
+					} else {
+						log.error('Internal Server Error for Obvius request.', error);
+						res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send('Internal OED Server Error for Obvius request.');
+					}
 			}
 		});
 	}

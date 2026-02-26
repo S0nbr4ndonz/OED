@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
  // Functions to return a code and comment from an Express request.
+const { HTTP_CODE } = require('../util/readingsUtils');
 
 /**
  * Inform the client of a success (200 OK).
@@ -12,8 +13,8 @@
  *
  */
  function success(res, comment = '') {
-	res.status(200) // 200 OK
-	.send(comment);
+ 	res.status(HTTP_CODE.OK)
+ 	.send(comment);
 }
 
 /**
@@ -24,9 +25,9 @@
  * @param comment Any additional data to be returned to the client as a string
  *
  */
-function failure(res, code = 500, comment = '') {
-	res.status(code)
-	.send(comment);
+function failure(res, code = HTTP_CODE.INTERNAL_SERVER_ERROR, comment = '') {
+ 	res.status(code)
+ 	.send(comment);
 
 }
 
