@@ -234,18 +234,18 @@ export default function HeaderButtonsComponent() {
 								<FormattedMessage id='units' />
 							</DropdownItem>
 							<DropdownItem
-								style={state.adminViewableLinkStyle}
-								disabled={state.shouldVisualUnitMapButtonDisabled}
-								tag={Link}
-								to="/visual-unit">
-								<FormattedMessage id='visual.unit' />
-							</DropdownItem>
-							<DropdownItem
 								style = {state.adminViewableLinkStyle}
 								disabled = {state.shouldVisualGroupMapButtonDisabled}
 								tag = {Link}
 								to="/visual-group">
 								<FormattedMessage id='visual.group'/>
+							</DropdownItem>
+							<DropdownItem
+								style={state.adminViewableLinkStyle}
+								disabled={state.shouldVisualUnitMapButtonDisabled}
+								tag={Link}
+								to="/visual-unit">
+								<FormattedMessage id='visual.unit' />
 							</DropdownItem>
 							<DropdownItem divider style={state.adminViewableLinkStyle} />
 							<DropdownItem
