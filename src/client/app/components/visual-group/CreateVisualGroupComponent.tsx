@@ -12,6 +12,7 @@ import { MeterData } from '../../../../client/app/types/redux/meters'
 import { selectAllMeters } from '../../redux/api/metersApi';
 import { selectAllGroups, groupsApi } from '../../redux/api/groupsApi';
 import TooltipMarkerComponent from '../TooltipMarkerComponent';
+import TooltipHelpComponent from '../TooltipHelpComponent';
 import { FormattedMessage } from 'react-intl';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 
@@ -910,6 +911,8 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 	return (
 		<div>
+			<TooltipHelpComponent page='visual-group' />
+
 			<div className='container-fluid'>
 				<h1 style={titleStyle}>
 					<FormattedMessage id='visual.group'></FormattedMessage>
