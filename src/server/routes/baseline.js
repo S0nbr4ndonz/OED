@@ -56,12 +56,12 @@ router.post('/new', adminAuthMiddleware('create baselines'), async (req, res) =>
 			}
 		}
 	};
-	
+
 	if (!validate(req.body, validParams).valid) {
 		res.sendStatus(HTTP_CODE.BAD_REQUEST);
 		return;
 	}
-	
+
 	const conn = getConnection();
 	try {
 		const baseline = new Baseline(

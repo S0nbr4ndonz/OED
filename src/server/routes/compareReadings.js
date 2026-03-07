@@ -117,8 +117,8 @@ function createRouter() {
 	const router = express.Router();
 
 	router.get('/meters/:meter_ids', async (req, res) => {
-		    if (!(validateMeterCompareReadingsParams(req.params) && validateQueryParams(req.query))) {
-			    res.sendStatus(HTTP_CODE.BAD_REQUEST);
+		if (!(validateMeterCompareReadingsParams(req.params) && validateQueryParams(req.query))) {
+			res.sendStatus(HTTP_CODE.BAD_REQUEST);
 			return;
 		}
 		const meterIDs = req.params.meter_ids.split(',').map(id => parseInt(id));

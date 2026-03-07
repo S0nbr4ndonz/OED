@@ -159,24 +159,24 @@ function obviusUsernameAndPasswordAuthMiddleware(action) {
 					if (isUserAuthorized(user, User.role.OBVIUS)) {
 						next();
 					} else {
-							const message = `Got request to '${action}' with invalid authorization level. Obvius role is at least required to '${action}'.`;
-							log.warn(message);
-							res.status(HTTP_CODE.UNAUTHORIZED).send(message);
-							return;
-						}
-				} else {
-						const message = `Got request to '${action} with invalid credentials.`;
+						const message = `Got request to '${action}' with invalid authorization level. Obvius role is at least required to '${action}'.`;
 						log.warn(message);
-						res.status(HTTP_CODE.BAD_REQUEST).send(message);
+						res.status(HTTP_CODE.UNAUTHORIZED).send(message);
+						return;
+					}
+				} else {
+					const message = `Got request to '${action} with invalid credentials.`;
+					log.warn(message);
+					res.status(HTTP_CODE.BAD_REQUEST).send(message);
 					return;
 				}
 			} catch (error) {
-					if (error.message === 'No data returned from the query.') {
-						res.status(HTTP_CODE.BAD_REQUEST).send(`No user corresponding to the username: ${escapeHtml(req.body.username)} was found. Please make a request with a valid username.`);
-					} else {
-						log.error('Internal Server Error for Obvius request.', error);
-						res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send('Internal OED Server Error for Obvius request.');
-					}
+				if (error.message === 'No data returned from the query.') {
+					res.status(HTTP_CODE.BAD_REQUEST).send(`No user corresponding to the username: ${escapeHtml(req.body.username)} was found. Please make a request with a valid username.`);
+				} else {
+					log.error('Internal Server Error for Obvius request.', error);
+					res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send('Internal OED Server Error for Obvius request.');
+				}
 			}
 		});
 	}

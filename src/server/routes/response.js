@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
- // Functions to return a code and comment from an Express request.
+// Functions to return a code and comment from an Express request.
 const { HTTP_CODE } = require('../util/readingsUtils');
 
 /**
@@ -12,9 +12,9 @@ const { HTTP_CODE } = require('../util/readingsUtils');
  * @param comment Any additional data to be returned to the client as a string
  *
  */
- function success(res, comment = '') {
- 	res.status(HTTP_CODE.OK)
- 	.send(comment);
+function success(res, comment = '') {
+	res.status(HTTP_CODE.OK)
+		.send(comment);
 }
 
 /**
@@ -26,8 +26,8 @@ const { HTTP_CODE } = require('../util/readingsUtils');
  *
  */
 function failure(res, code = HTTP_CODE.INTERNAL_SERVER_ERROR, comment = '') {
- 	res.status(code)
- 	.send(comment);
+	res.status(code)
+		.send(comment);
 
 }
 

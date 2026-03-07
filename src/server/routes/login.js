@@ -40,8 +40,8 @@ router.post('/', credentialsRequestValidationMiddleware, async (req, res) => {
 		}
 	};
 
- 	if (!validate(req.body, validParams).valid) {
- 		res.sendStatus(HTTP_CODE.BAD_REQUEST);
+	if (!validate(req.body, validParams).valid) {
+		res.sendStatus(HTTP_CODE.BAD_REQUEST);
 	} else {
 		const conn = getConnection();
 		try {
@@ -53,19 +53,19 @@ router.post('/', credentialsRequestValidationMiddleware, async (req, res) => {
 			} else {
 				isValid = await bcrypt.compare(req.body.password, user.passwordHash);
 			}
- 			if (isValid) {
+			if (isValid) {
 				const token = jwt.sign({ data: user.id }, secretToken, { expiresIn: 86400 });
 				res.json({ token: token, username: user.username, role: user.role });
 			} else {
 				throw new Error('Unauthorized password');
 			}
 		} catch (err) {
- 			if (err.message === 'Unauthorized password' || err.message === 'No data returned from the query.') {
- 				res.status(HTTP_CODE.UNAUTHORIZED).send({ text: 'Not authorized' });
- 			} else {
- 				log.error(`Unable to check user password for ${req.body.username}`, err);
- 				res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send({ text: 'Internal Server Error' });
- 			}
+			if (err.message === 'Unauthorized password' || err.message === 'No data returned from the query.') {
+				res.status(HTTP_CODE.UNAUTHORIZED).send({ text: 'Not authorized' });
+			} else {
+				log.error(`Unable to check user password for ${req.body.username}`, err);
+				res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send({ text: 'Internal Server Error' });
+			}
 		}
 	}
 });

@@ -40,19 +40,19 @@ router.get('/token', optionalAuthMiddleware, async (req, res) => {
 		res.status(HTTP_CODE.FORBIDDEN).json({ message: 'No token provided or JSON was invalid.' });
 	} else if (token) {
 		jwt.verify(token, secretToken, async (err, decoded) => {
-				if (err) {
-					res.status(HTTP_CODE.UNAUTHORIZED).json({ message: 'Failed to authenticate token.' });
+			if (err) {
+				res.status(HTTP_CODE.UNAUTHORIZED).json({ message: 'Failed to authenticate token.' });
 			} else {
-					try {
+				try {
 					const conn = getConnection();
 					const userProfile = await User.getByID(decoded.data, conn);
-						res.status(HTTP_CODE.OK).json(
+					res.status(HTTP_CODE.OK).json(
 						{
 							username: userProfile.username,
 							role: userProfile.role
 						});
 				} catch (error) {
-						res.status(HTTP_CODE.UNAUTHORIZED).json({ message: 'User does not exist in database.' });
+					res.status(HTTP_CODE.UNAUTHORIZED).json({ message: 'User does not exist in database.' });
 				}
 			}
 		});
@@ -82,7 +82,7 @@ router.get('/:user_id', adminAuthMiddleware('get one user'), async (req, res) =>
 		try {
 			const rows = await User.getByID(req.params.user_id, conn);
 			res.json(rows);
-			} catch (err) {
+		} catch (err) {
 			log.error(`Error while performing GET specific user by id query: ${err}`, err);
 			res.sendStatus(HTTP_CODE.INTERNAL_SERVER_ERROR);
 		}
@@ -124,7 +124,7 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 			const conn = getConnection();
 			// Check if user already exists
 			const currentUser = await User.getByUsername(username, conn);
-				if (currentUser !== null) {
+			if (currentUser !== null) {
 				res.status(HTTP_CODE.BAD_REQUEST).send({ message: `user ${username} already exists so cannot create` });
 			} else {
 				const hashedPassword = await bcrypt.hash(password, 10);
@@ -134,7 +134,7 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 			}
 		} catch (error) {
 			log.error(`Error while performing POST request to create user: ${error}`, error);
-				res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error', error: error });
+			res.status(HTTP_CODE.INTERNAL_SERVER_ERROR).send({ message: 'Internal Server Error', error: error });
 		}
 	}
 });
@@ -191,7 +191,7 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 			// This protects the database so that there will always be at least one admin
 			if (userBeforeChanges.role === 'admin' && user.role !== 'admin') {
 				const numberOfAdmins = await User.getNumberOfAdmins(conn);
-					if (numberOfAdmins < 2) {
+				if (numberOfAdmins < 2) {
 					const errorMessage = 'There must be at least one admin remaining to avoid lockout!';
 					log.error(errorMessage);
 					return res.status(HTTP_CODE.BAD_REQUEST).json({

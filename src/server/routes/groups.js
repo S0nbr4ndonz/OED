@@ -139,7 +139,7 @@ router.get('/deep/groups/:group_id', optionalAuthMiddleware, async (req, res) =>
 		try {
 			const deepGroups = await Group.getDeepGroupsByGroupID(req.params.group_id, conn);
 			res.json({ deepGroups });
-			} catch (err) {
+		} catch (err) {
 			log.error(`Error while preforming GET on all deep child groups of specific group: ${err}`, err);
 			res.sendStatus(HTTP_CODE.INTERNAL_SERVER_ERROR);
 		}
@@ -168,7 +168,7 @@ router.get('/deep/meters/:group_id', optionalAuthMiddleware, async (req, res) =>
 		try {
 			const deepMeters = await Group.getDeepMetersByGroupID(req.params.group_id, conn);
 			res.json({ deepMeters });
-			} catch (err) {
+		} catch (err) {
 			log.error(`Error while preforming GET on all deep child meters of specific group: ${err}`, err);
 			res.sendStatus(HTTP_CODE.INTERNAL_SERVER_ERROR);
 		}
@@ -197,7 +197,7 @@ router.get('/parents/:group_id', optionalAuthMiddleware, async (req, res) => {
 		try {
 			const parentGroups = await Group.getParentsByGroupID(req.params.group_id, conn);
 			res.json(parentGroups);
-			} catch (err) {
+		} catch (err) {
 			log.error(`Error while preforming GET on all parents of specific group: ${err}`, err);
 			res.sendStatus(HTTP_CODE.INTERNAL_SERVER_ERROR);
 		}
@@ -294,7 +294,7 @@ router.post('/create', adminAuthMiddleware('create groups'), async (req, res) =>
 			});
 			success(res);
 		} catch (err) {
-				if (err.toString() === 'error: duplicate key value violates unique constraint "groups_name_key"') {
+			if (err.toString() === 'error: duplicate key value violates unique constraint "groups_name_key"') {
 				failure(res, HTTP_CODE.BAD_REQUEST, err.toString() + ' with detail ' + err['detail']);
 			} else {
 				log.error(`Error while inserting new group ${err}`, err);

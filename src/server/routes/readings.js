@@ -23,10 +23,10 @@ router.get('/line/count/meters/:meter_ids', optionalAuthMiddleware, async (req, 
 		maxProperties: 1,
 		required: ['meter_ids'],
 		properties: {
-		meter_ids: {
-			type: 'string',
-			maxLength: GENERAL_STRING_MAX_LENGTH
-		}
+			meter_ids: {
+				type: 'string',
+				maxLength: GENERAL_STRING_MAX_LENGTH
+			}
 		}
 	};
 	const validQueries = {
@@ -48,7 +48,7 @@ router.get('/line/count/meters/:meter_ids', optionalAuthMiddleware, async (req, 
 		let timeInterval;
 		try {
 			timeInterval = TimeInterval.fromString(req.query.timeInterval);
-			} catch (err) {
+		} catch (err) {
 			log.warn(`Invalid timeInterval supplied for readings count: ${req.query.timeInterval}`, err);
 			res.sendStatus(HTTP_CODE.BAD_REQUEST);
 			return;
@@ -113,7 +113,7 @@ router.get('/line/raw/meter/:meter_id', optionalAuthMiddleware, async (req, res)
 		let timeInterval;
 		try {
 			timeInterval = TimeInterval.fromString(req.query.timeInterval);
-			} catch (err) {
+		} catch (err) {
 			log.warn(`Invalid timeInterval supplied for raw readings: ${req.query.timeInterval}`, err);
 			res.sendStatus(HTTP_CODE.BAD_REQUEST);
 			return;
