@@ -244,8 +244,10 @@ mocha.describe('readings API', () => {
                     	note: 'MJ → BTU'
                 	}
                     await prepareTest(
-						unitDatakWh.concat([u3, u16]),       // adds u3 and u16 to u1, u2
-    					conversionDatakWh.concat([c2, c3]),  // adds c2 and c3 to c1
+						// adds u3 and u16 to u1, u2
+						unitDatakWh.concat([u3, u16]),
+						// adds c2 and c3 to c1
+    					conversionDatakWh.concat([c2, c3]),
                         meterDatakWhGroups,
                         groupDatakWh
                     );
