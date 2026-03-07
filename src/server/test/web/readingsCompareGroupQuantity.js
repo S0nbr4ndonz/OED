@@ -16,6 +16,7 @@ const { prepareTest,
 	conversionDatakWh,
 	meterDatakWhGroups,
 	groupDatakWh } = require('../../util/readingsUtils');
+const Group = require('../../models/Group');
 
 mocha.describe('readings API', () => {
 	mocha.describe('readings test, test if data returned by API is as expected', () => {
@@ -199,13 +200,27 @@ mocha.describe('readings API', () => {
 				});
 				
 				mocha.it('CG10: 1 day shift end 2022-10-31 17:00:00 for 15 minute reading intervals and quantity units & kWh as BTU', async () => {
-                    // Define unit u16 for BTU
+                    
+					// Define unit u3 for MJ (megajoules)
+					const u3 = {
+						name: 'MJ',
+						identifier: 'megaJoules',
+						unitRepresent: Unit.unitRepresentType.QUANTITY,
+						secInRate: 3600,
+						typeOfUnit: Unit.unitType.UNIT, 
+						suffix: '',
+						displayable: Unit.displayableType.ALL,
+						preferredDisplay: false,
+						note: 'MJ'
+					}
+					// Define unit u16 for BTU
                     const u16 = {
                     	name: 'BTU',
                     	identifier: '', 
                     	unitRepresent: Unit.unitRepresentType.QUANTITY,
                     	secInRate: 3600,
-                    	typeOfUnit: Unit.unitType.UNIT, suffix: '',
+                    	typeOfUnit: Unit.unitType.UNIT, 
+						suffix: '',
                     	displayable: Unit.displayableType.ALL,
                     	preferredDisplay: true,
                     	note: 'OED created standard unit'
@@ -220,8 +235,8 @@ mocha.describe('readings API', () => {
                     	note: 'MJ → BTU'
                 	}
                     await prepareTest(
-                        unitDatakWh.concat(u16), // Use units [u1, u2] + u16
-                        conversionDatakWh.concat(c3), // Use conversion [c1] + c3
+						unitDatakWh.concat([u3, u16]),       // adds u3 and u16 to u1, u2
+    					conversionDatakWh.concat([c2, c3]),  // adds c2 and c3 to c1
                         meterDatakWhGroups,
                         groupDatakWh
                     );
@@ -237,6 +252,7 @@ mocha.describe('readings API', () => {
                             shift: 'P1D',
                             graphicUnitId: unitId
                         });
+					console.log('CG10 response:', res.body, GROUP_ID); // Log the response for debugging
                     expectCompareToEqualExpected(res, expected, GROUP_ID);
                 });
 
