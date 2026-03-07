@@ -225,8 +225,17 @@ mocha.describe('readings API', () => {
                     	preferredDisplay: true,
                     	note: 'OED created standard unit'
                 	}
-                    // Define conversion c3 for MJ to BTU
-                    const c3 = {
+                    // Define conversion c2 for kWh to MJ
+					const c2 = {
+                    	sourceName: 'kWh',
+                    	destinationName: 'MJ',
+                    	bidirectional: true,
+                    	slope: 3.6,
+                    	intercept: 0,
+                    	note: 'kWh → MJ'
+                	}
+					// Define conversion c3 for MJ to BTU
+					const c3 = {
                     	sourceName: 'MJ',
                     	destinationName: 'BTU',
                     	bidirectional: true,
