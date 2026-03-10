@@ -538,7 +538,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			.attr('width', width)
 			.attr('height', height)
 			.attr('viewBox', [-width / 2, -height / 2, width, height])
-			.attr('style', 'max-width: 100%; height: 100%;');
+			.attr('style', 'max-width: 100%; height: 100%; overflow: visible');
 
 		const g = svg
 			.append('g');
@@ -926,7 +926,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				<button id="zoom-out">-</button>
 				<button id="reset">Reset</button>
 			</div>
-			<div id='sample' style={{ width: '100%', height: '100vh', overflowY: 'auto', overflowX: 'auto' }} />
+			<div id='sample' style={{ boxSizing: 'border-box', margin: '2rem', border: '2px solid black', maxWidth: '100%', height: '75vh', overflowY: 'auto', overflowX: 'auto' }} />
 		</div>
 
 	);
