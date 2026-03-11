@@ -40,7 +40,9 @@ type AllNodeType = GroupNodeType | MeterNodeType;
 export const CreateVisualGroupComponent: React.FC = () => {
 
 	const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-	const zoomTransformRef = useRef(d3.zoomIdentity);
+	const [snapBackEnabled, setSnapBackEnabled] = useState<boolean>(true);
+	const zoomTransformRef = useRef<d3.ZoomTransform>(d3.zoomIdentity);
+	const nodePositionsRef = useRef<Record<string, { x: number, y: number}>>({});
 
 	const intl = useIntl();
 
@@ -497,6 +499,17 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			node.originalY = node.y;
 		});
 
+		const saved = nodePositionsRef.current;
+		nodes.forEach(node => {
+			const pos = saved[node.id];
+			if (pos) {
+				node.x = pos.x;
+				node.y = pos.y;
+				node.fx = pos.x;
+				node.fy = pos.y;
+			}
+		})
+
 		// Calculate SVG dimensions immediately after positioning meter nodes
 		const calculateSvgDimensions = () => {
 			const node = g.node();
@@ -731,29 +744,35 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			if (!event.active) {
 				simulation.alphaTarget(0);
 			}
+			
+			if (snapBackEnabled) {
+				event.subject.fx = null;
+				event.subject.fy = null;
 
-			event.subject.fx = null;
-			event.subject.fy = null;
+				d3.select(event.subject)
+					.transition()
+					.duration(2000)
+					.ease(d3.easeLinear)
+					.tween('position', () => {
+						const startX = event.subject.x;
+						const startY = event.subject.y;
+						const endX = event.subject.originalX;
+						const endY = event.subject.originalY;
 
-			d3.select(event.subject)
-				.transition()
-				.duration(2000)
-				.ease(d3.easeLinear)
-				.tween('position', () => {
-					const startX = event.subject.x;
-					const startY = event.subject.y;
-					const endX = event.subject.originalX;
-					const endY = event.subject.originalY;
-
-					return (t: number) => {
-						event.subject.x = startX + (endX - startX) * t;
-						event.subject.y = startY + (endY - startY) * t
-					}
-				})
-				.on('end', () => {
-					event.subject.fx = event.subject.originalX;
-					event.subject.fy = event.subject.originalY;
-				});
+						return (t: number) => {
+							event.subject.x = startX + (endX - startX) * t;
+							event.subject.y = startY + (endY - startY) * t
+						}
+					})
+					.on('end', () => {
+						event.subject.fx = event.subject.originalX;
+						event.subject.fy = event.subject.originalY;
+					});
+			} else {
+				event.subject.fx = event.x;
+				event.subject.fy = event.y;
+				nodePositionsRef.current[event.subject.id] = { x: event.x, y: event.y };
+			}
 		}
 
 		function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
@@ -887,7 +906,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				existingSvg.remove();
 			}
 		};
-	}, [mergedGroups, allMeters, selectedGroupId]);
+	}, [mergedGroups, allMeters, selectedGroupId, snapBackEnabled]);
 
 	const onGroupSelect = (newSelectionId: string) => {
 		// remove "group_" prefix from id
@@ -925,6 +944,17 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				<button id="zoom-in">+</button>
 				<button id="zoom-out">-</button>
 				<button id="reset">Reset</button>
+				<label>
+					<input
+						type="checkbox"
+						checked={snapBackEnabled}
+						onChange={() => {
+							setSnapBackEnabled(prev => !prev);
+							nodePositionsRef.current = {};
+						}}
+					/>
+					Snap groups back after drag
+				</label>
 			</div>
 			<div id='sample' style={{ boxSizing: 'border-box', margin: '2rem', border: '2px solid black', maxWidth: '100%', height: '75vh', overflowY: 'auto', overflowX: 'auto' }} />
 		</div>
