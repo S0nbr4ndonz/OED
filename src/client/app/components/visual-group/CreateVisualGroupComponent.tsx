@@ -6,6 +6,7 @@ import * as React from 'react';
 import * as d3 from 'd3';
 import { useEffect, useState, useRef } from 'react';
 import { useIntl } from 'react-intl';
+import { Button, Input, Label } from 'reactstrap';
 import { useAppSelector } from '../../redux/reduxHooks';
 import { GroupData } from '../../../../client/app/types/redux/groups'
 import { MeterData } from '../../../../client/app/types/redux/meters'
@@ -568,9 +569,21 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			svg.transition().call(zoom.scaleBy, 0.8);
 		});
 
-		// Reset
-		d3.select("#reset").on("click", () => {
+		// Reset View (Zoom Level and Panning back to default)
+		d3.select("#reset-view").on("click", () => {
 			svg.transition().call(zoom.transform, d3.zoomIdentity);
+		});
+
+		// Reset Layout (group node positions back to default)
+		d3.select("#reset-layout").on("click", () => {
+			nodePositionsRef.current = {};
+			groupNodeData.forEach(n => {
+				n.x = n.originalX;
+				n.y = n.originalY;
+				n.fx = n.originalX;
+				n.fy = n.originalY;
+			});
+			simulation.alpha(0.3).restart();
 		});
 
 		// End arrow heads - create separate markers for each node type
@@ -940,23 +953,36 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					</div>
 				</h1>
 			</div>
-			<div style={{ display: 'flex', justifyContent: 'center' }}>
-				<button id="zoom-in">+</button>
-				<button id="zoom-out">-</button>
-				<button id="reset">Reset</button>
-				<label>
-					<input
-						type="checkbox"
-						checked={snapBackEnabled}
-						onChange={() => {
-							setSnapBackEnabled(prev => !prev);
-							nodePositionsRef.current = {};
-						}}
-					/>
-					Snap groups back after drag
-				</label>
+			
+			<div id='sample' style={{ position: 'relative', boxSizing: 'border-box', margin: '2rem', border: '2px solid black', maxWidth: '100%', height: '75vh', overflowY: 'auto', overflowX: 'auto' }}>
+				<div style={{ position: 'absolute', top: 0, left: 0, zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px', margin: '8px', borderRadius: '4px', alignItems: 'flex-start' }}>
+					<Label check style={{ marginBottom: 0 }}>
+						<Input
+							type="checkbox"
+							checked={snapBackEnabled}
+							onChange={() => {
+								setSnapBackEnabled(prev => !prev);
+								nodePositionsRef.current = {};
+							}}
+						/>
+						{' '}Snap groups back after drag
+					</Label>
+					<div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+						<Button id="reset-view" color="secondary" size="sm" style={{ width: 'auto' }}>
+							<FormattedMessage id="visual.group.button.reset.view" />
+						</Button>
+						{!snapBackEnabled && (
+							<Button id="reset-layout" color="secondary" size="sm" style={{ width: 'auto' }}>
+								<FormattedMessage id="visual.group.button.reset.layout" />
+							</Button>
+						)}
+					</div>
+					<div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
+						<Button id="zoom-in" color="secondary" size="sm" style={{ width: 'auto' }}>+</Button>
+						<Button id="zoom-out" color="secondary" size="sm" style={{ width: 'auto' }}>−</Button>
+					</div>
+				</div>	
 			</div>
-			<div id='sample' style={{ boxSizing: 'border-box', margin: '2rem', border: '2px solid black', maxWidth: '100%', height: '75vh', overflowY: 'auto', overflowX: 'auto' }} />
 		</div>
 
 	);
