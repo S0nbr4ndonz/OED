@@ -64,26 +64,36 @@ async function validateMinMaxRelation({ endpoint, basePayload }) {
  * @param minLength the minimum length allowed for the string (default: 1)
  * @param maxLength the maximum length allowed for the string (default: 255)
  * @param enumValues optional array of valid enum values to test against
+ * @param expectedStatus expected HTTP status code(s) (default: 400)
  */
-async function validateString({ field, endpoint, basePayload, required = true, minLength = 1, maxLength = 255, enumValues = null }) {
+async function validateString({
+	field,
+	endpoint,
+	basePayload,
+	required = true,
+	minLength = 1,
+	maxLength = 255,
+	enumValues = null,
+	expectedStatus = HTTP_CODE.BAD_REQUEST
+}) {
 
 	if (required) {
-		await testInvalidField({ field, invalidValue: undefined, endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: undefined, endpoint, basePayload, expectedStatus });
 	}
 
 	if (minLength > 0) {
-		await testInvalidField({ field, invalidValue: 'x'.repeat(minLength - 1), endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: 'x'.repeat(minLength - 1), endpoint, basePayload, expectedStatus });
 	}
 
-	await testInvalidField({ field, invalidValue: 'x'.repeat(maxLength + 1), endpoint, basePayload });
+	await testInvalidField({ field, invalidValue: 'x'.repeat(maxLength + 1), endpoint, basePayload, expectedStatus });
 
 	if (enumValues) {
-		await testInvalidField({ field, invalidValue: 'INVALID_ENUM', endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: 'INVALID_ENUM', endpoint, basePayload, expectedStatus });
 	}
 }
 
 /**
- * Validates an integer field by testing for presence (if required), 
+ * Validates an integer field by testing for presence (if required),
  * numeric bounds (min and max), and type correctness.
  *
  * @param field the name of the integer field to validate
@@ -92,22 +102,23 @@ async function validateString({ field, endpoint, basePayload, required = true, m
  * @param required whether the field is required (default: true)
  * @param min the minimum allowed integer value (optional)
  * @param max the maximum allowed integer value (optional)
+ * @param expectedStatus expected HTTP status code(s) (default: 400)
  */
-async function validateInt({ field, endpoint, basePayload, required = true, min = null, max = null }) {
+async function validateInt({ field, endpoint, basePayload, required = true, min = null, max = null, expectedStatus = HTTP_CODE.BAD_REQUEST }) {
 
 	if (required) {
-		await testInvalidField({ field, invalidValue: undefined, endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: undefined, endpoint, basePayload, expectedStatus });
 	}
 
 	if (typeof min === 'number') {
-		await testInvalidField({ field, invalidValue: min - 1, endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: min - 1, endpoint, basePayload, expectedStatus });
 	}
 
 	if (typeof max === 'number') {
-		await testInvalidField({ field, invalidValue: max + 1, endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: max + 1, endpoint, basePayload, expectedStatus });
 	}
 
-	await testInvalidField({ field, invalidValue: 'notAnInteger', endpoint, basePayload });
+	await testInvalidField({ field, invalidValue: 'notAnInteger', endpoint, basePayload, expectedStatus });
 }
 
 /**
@@ -118,13 +129,14 @@ async function validateInt({ field, endpoint, basePayload, required = true, min 
  * @param endpoint the API endpoint to test (e.g., /api/units/addUnit)
  * @param basePayload a valid base object used to construct requests
  * @param required whether the field is required (default: true)
+ * @param expectedStatus expected HTTP status code(s) (default: 400)
  */
-async function validateBool({ field, endpoint, basePayload, required = true }) {
+async function validateBool({ field, endpoint, basePayload, required = true, expectedStatus = HTTP_CODE.BAD_REQUEST }) {
 	if (required) {
-		await testInvalidField({ field, invalidValue: undefined, endpoint, basePayload });
+		await testInvalidField({ field, invalidValue: undefined, endpoint, basePayload, expectedStatus });
 	}
 
-	await testInvalidField({ field, invalidValue: 'notABool', endpoint, basePayload });
+	await testInvalidField({ field, invalidValue: 'notABool', endpoint, basePayload, expectedStatus });
 }
 
 /**
@@ -225,6 +237,93 @@ async function expectValidCommaSeparatedIds({
 }
 
 /**
+ * Validates that endpoints reject invalid single numeric IDs in path parameters.
+ * Convenience wrapper around validateCommaSeparatedIdPatterns for routes like
+ * /api/maps/:map_id or /api/groups/deep/groups/:group_id.
+ *
+ * @param baseEndpoint the base endpoint path before the id segment (e.g., '/api/maps')
+ * @param invalidValues array of invalid id strings to test
+ * @param query optional query parameters to include (for GET requests)
+ * @param method HTTP method (default 'get')
+ * @param expectedStatus expected status code (default 400)
+ */
+async function validateNumericIdInPath({
+	baseEndpoint,
+	invalidValues,
+	query = {},
+	method = 'get',
+	expectedStatus = HTTP_CODE.BAD_REQUEST
+}) {
+	for (const invalidValue of invalidValues) {
+		let request = chai.request(app)[method](`${baseEndpoint}/${invalidValue}`);
+
+		if (method.toLowerCase() === 'get') {
+			request = request.query(query);
+		} else {
+			request = request.send(query);
+		}
+
+		const res = await request;
+		const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+		expect(expectedStatuses).to.include(res.status);
+	}
+}
+
+/**
+ * Verifies that endpoints accept valid single numeric IDs in path parameters.
+ * Convenience wrapper around expectValidCommaSeparatedIds for routes like
+ * /api/maps/:map_id or /api/groups/deep/groups/:group_id.
+ *
+ * @param baseEndpoint the base endpoint path before the id segment
+ * @param validValues array of valid id strings to test
+ * @param query optional query parameters to include (for GET requests)
+ * @param method HTTP method (default 'get')
+ * @param expectedStatuses allowable response status codes (defaults to 200/404/500)
+ */
+async function expectValidNumericIdInPath({
+	baseEndpoint,
+	validValues,
+	query = {},
+	method = 'get',
+	expectedStatuses = [HTTP_CODE.OK, HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]
+}) {
+	return expectValidCommaSeparatedIds({ baseEndpoint, validValues, query, method, expectedStatuses });
+}
+
+/**
+ * Validates that GET endpoints require specified query parameters.
+ *
+ * @param endpoint the full endpoint URL including path (e.g., '/api/readings/line/count/meters/1')
+ * @param baseQuery object with all valid query parameters
+ * @param requiredParams array of param names that must be present
+ * @param method HTTP method (default 'get')
+ * @param expectedStatus expected status when param is missing (default 400)
+ */
+async function validateRequiredQueryParams({
+	endpoint,
+	baseQuery,
+	requiredParams,
+	method = 'get',
+	expectedStatus = HTTP_CODE.BAD_REQUEST
+}) {
+	for (const param of requiredParams) {
+		const incompleteQuery = { ...baseQuery };
+		delete incompleteQuery[param];
+
+		let request = chai.request(app)[method](endpoint);
+		if (method.toLowerCase() === 'get') {
+			request = request.query(incompleteQuery);
+		} else {
+			request = request.send(incompleteQuery);
+		}
+
+		const res = await request;
+		const expectedStatuses = Array.isArray(expectedStatus) ? expectedStatus : [expectedStatus];
+		expect(expectedStatuses).to.include(res.status);
+	}
+}
+
+/**
  * Validates that additional properties are rejected when payloads exceed
  * the defined schema.
  *
@@ -252,5 +351,8 @@ module.exports = {
 	validateToken,
 	validateCommaSeparatedIdPatterns,
 	expectValidCommaSeparatedIds,
+	validateNumericIdInPath,
+	expectValidNumericIdInPath,
+	validateRequiredQueryParams,
 	validateNoExtraFields
 };
