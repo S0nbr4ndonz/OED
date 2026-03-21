@@ -391,6 +391,47 @@ mocha.describe('readings API', () => {
                 // Add BG19 here
 
                 // Add BG20 here
+                
+                mocha.it('BG20: 75 day bars for 15 + 20 minute reading intervals and flow units with +-inf start/end time & kW as kW', async () => {
+                    const unitDatakW = [
+                        {
+                            // u4
+                            name: 'kW', 
+                            identifier: '', 
+                            unitRepresent: Unit.unitRepresentType.FLOW, 
+                            secInRate: 3600, 
+                            typeOfUnit: Unit.unitType.UNIT, 
+                            suffix: '', 
+                            displayable: Unit.displayableType.ALL, 
+                            preferredDisplay: true, 
+                            note: 'kilowatts'
+                        },
+                        {
+                            // u5
+                            name: 'Electric', 
+                            identifier: '', 
+                            unitRepresent: Unit.unitRepresentType.FLOW, 
+                            secInRate: 3600, 
+                            typeOfUnit: Unit.unitType.METER, 
+                            suffix: '', 
+                            displayable: Unit.displayableType.NONE, 
+                            preferredDisplay: false, 
+                            note: 'special unit' 
+                        }
+                    ];
+                    const conversionDatakW = [
+                        {
+                            // c4
+                            sourceName: 'Electric', 
+                            destinationName: 'kW', 
+                            bidirectional: false, 
+                            slope: 1, 
+                            intercept: 0, 
+                            note: 'Electric → kW' 
+                        }
+                    ];     
+   
+                })
 
                 mocha.it('BG21: 76 day bars (no values) for 15 + 20 minute reading intervals and flow units with +-inf start/end time & kW as kW', async () => {
                     const unitDatakW = [
