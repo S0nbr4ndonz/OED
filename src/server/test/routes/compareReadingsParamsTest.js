@@ -79,8 +79,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 				await validateRequiredQueryParams({
 					endpoint: `${BASE_METER_ENDPOINT}/1`,
 					baseQuery: validQuery,
-					requiredParams: ['curr_start', 'curr_end', 'shift', 'graphicUnitId'],
-					expectedStatus: HTTP_CODE.BAD_REQUEST
+					requiredParams: ['curr_start', 'curr_end', 'shift', 'graphicUnitId']
 				});
 			});
 
@@ -228,8 +227,7 @@ mocha.describe('Compare Readings Parameter Validation', () => {
 				await validateRequiredQueryParams({
 					endpoint: `${BASE_GROUP_ENDPOINT}/1`,
 					baseQuery: validQuery,
-					requiredParams: ['curr_start', 'curr_end', 'shift', 'graphicUnitId'],
-					expectedStatus: HTTP_CODE.BAD_REQUEST
+					requiredParams: ['curr_start', 'curr_end', 'shift', 'graphicUnitId']
 				});
 			});
 

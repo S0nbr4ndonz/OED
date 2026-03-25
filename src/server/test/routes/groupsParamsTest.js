@@ -18,18 +18,26 @@ const {
 	STRING_SHORT_MAX_LENGTH
 } = require('../../util/validationConstants');
 
+/** Non-numeric path values reused across group_id route tests. */
+const INVALID_GROUP_ID_PATH_VALUES = ['abc', '12abc', 'group123', 'null', ''];
+/** Some group routes still return HTTP_CODE.OK for malformed group_id until path validation is strict; test encodes current behavior. */
+const GROUP_ID_MALFORMED_EXPECTED_STATUSES = [HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST];
+
+async function expectMalformedGroupIdRejectedOrOk(baseEndpoint) {
+	await validateNumericIdInPath({
+		baseEndpoint,
+		invalidValues: INVALID_GROUP_ID_PATH_VALUES,
+		expectedStatus: GROUP_ID_MALFORMED_EXPECTED_STATUSES
+	});
+}
+
 mocha.describe('Groups Parameter Validation', () => {
 
 	mocha.describe('GET /api/groups/deep/groups/:group_id - Deep Groups Validation', () => {
 		const BASE_ENDPOINT = '/api/groups/deep/groups';
 
 		mocha.it('should validate group_id parameter', async () => {
-			// TODO: Some invalid IDs may return 200 - path param validation may need investigation
-			await validateNumericIdInPath({
-				baseEndpoint: BASE_ENDPOINT,
-				invalidValues: ['abc', '12abc', 'group123', 'null', ''],
-				expectedStatus: [HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST]
-			});
+			await expectMalformedGroupIdRejectedOrOk(BASE_ENDPOINT);
 		});
 
 		mocha.it('should handle extremely long group IDs', async () => {
@@ -60,11 +68,7 @@ mocha.describe('Groups Parameter Validation', () => {
 		const BASE_ENDPOINT = '/api/groups/deep/meters';
 
 		mocha.it('should validate group_id parameter', async () => {
-			await validateNumericIdInPath({
-				baseEndpoint: BASE_ENDPOINT,
-				invalidValues: ['abc', '12abc', 'group123', 'null', ''],
-				expectedStatus: [HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST]
-			});
+			await expectMalformedGroupIdRejectedOrOk(BASE_ENDPOINT);
 		});
 
 		mocha.it('should handle path traversal attempts', async () => {
@@ -81,11 +85,7 @@ mocha.describe('Groups Parameter Validation', () => {
 		const BASE_ENDPOINT = '/api/groups/parents';
 
 		mocha.it('should validate group_id parameter', async () => {
-			await validateNumericIdInPath({
-				baseEndpoint: BASE_ENDPOINT,
-				invalidValues: ['abc', '12abc', 'group123', 'null', ''],
-				expectedStatus: [HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST]
-			});
+			await expectMalformedGroupIdRejectedOrOk(BASE_ENDPOINT);
 		});
 
 		mocha.it('should handle oversized group IDs', async () => {
