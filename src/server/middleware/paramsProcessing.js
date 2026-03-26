@@ -13,6 +13,7 @@
  */
 function lowercaseAllParamNames(req, res, next) {
 
+	// Use null-prototype objects to prevent prototype pollution from user-controlled keys
     const newQuery = Object.create(null);
 
 	for (const [key, value] of Object.entries(req.query)) {
