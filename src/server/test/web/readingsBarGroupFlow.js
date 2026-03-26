@@ -390,8 +390,6 @@ mocha.describe('readings API', () => {
 
                 // Add BG19 here
 
-                // Add BG20 here
-                
                 mocha.it('BG20: 75 day bars for 15 + 20 minute reading intervals and flow units with +-inf start/end time & kW as kW', async () => {
                     const unitDatakW = [
                         {
