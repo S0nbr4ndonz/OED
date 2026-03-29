@@ -574,7 +574,6 @@ mocha.describe('readings API', () => {
 					expectReadingToEqualExpected(res, expected, GROUP_ID);
 				})
 
-				// Add BG22 here
 				mocha.it.only('BG22: 13 day bars (no values) for 15 + 20 minute reading intervals and flow units with reduced, partial days & kW as kW', async () => {
 					const unitDatakW = [
 						{ 
