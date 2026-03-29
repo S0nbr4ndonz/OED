@@ -575,7 +575,7 @@ mocha.describe('readings API', () => {
 				})
 
 				// Add BG22 here
-				mocha.it('BG22: 13 day bars (no values) for 15 + 20 minute reading intervals and flow units with reduced, partial days & kW as kW', async () => {
+				mocha.it.only('BG22: 13 day bars (no values) for 15 + 20 minute reading intervals and flow units with reduced, partial days & kW as kW', async () => {
 					const unitDatakW = [
 						{ 
 							// u4
@@ -656,7 +656,7 @@ mocha.describe('readings API', () => {
 					//get unit ID since the DB could use any value.
 					const unitId = await getUnitId('kW');
 					// Load the expected response data from the corresponding csv file
-					const expected = await parseExpectedCsv('src/server/test/web/readingsData/expected_bar_group_ri_15-20_mu_kW_gu_kW_st_2022-08-2013#18#28_bd_13.csv');
+					const expected = await parseExpectedCsv('src/server/test/web/readingsData/expected_bar_group_ri_15-20_mu_kW_gu_kW_st_2022-08-20%07#25#35_et_2022-10-28%13#18#28_bd_13.csv');
 					// Create a request to the API for unbounded reading times and save the response
 					const res = await chai.request(app).get(`/api/unitReadings/bar/groups/${GROUP_ID}`)
 						.query({ 
