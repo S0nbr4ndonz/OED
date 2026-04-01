@@ -16,7 +16,6 @@ const { prepareTest,
 	conversionDatakWh,
 	meterDatakWhGroups,
 	groupDatakWh } = require('../../util/readingsUtils');
-const Group = require('../../models/Group');
 
 mocha.describe('readings API', () => {
 	mocha.describe('readings test, test if data returned by API is as expected', () => {
@@ -263,7 +262,6 @@ mocha.describe('readings API', () => {
                             shift: 'P1D',
                             graphicUnitId: unitId
                         });
-					console.log('CG10 response:', res.body, GROUP_ID); // Log the response for debugging
                     expectCompareToEqualExpected(res, expected, GROUP_ID);
                 });
 
