@@ -430,7 +430,7 @@ mocha.describe('readings API', () => {
                     ];
                     const meterDatakWGroups = [
                         {
-                            name: 'meterDatakWGroups',
+                            name: 'meterDatakW',
                             unit: 'Electric',
                             defaultGraphicUnit: 'kW',
                             displayable: true,
@@ -454,20 +454,22 @@ mocha.describe('readings API', () => {
                             id: (METER_ID + 1)
                         }
                     ];
+                    // Note: In OED, meters have simple names, like 'meterDataKW', and groups have distinct names
+                    // childMeters must reference actual meter names, like 'meterDataKW', never the group name itself
                     const groupDatakW = [
                         {
                             id: GROUP_ID,
-                            name: 'meterDatakWGroups + meterDatakWOther',
+                            name: 'meterDatakW + meterDatakWOther',
                             displayable: true,
                             note: 'special group',
                             defaultGraphicUnit: 'kW',
-                            childMeters: ['meterDatakWGroups', 'meterDatakWOther'],
+                            childMeters: ['meterDatakW', 'meterDatakWOther'],
                             childGroups: [],
                         }
                     ];
                     // load data into database
                     await prepareTest(unitDatakW, conversionDatakW, meterDatakWGroups, groupDatakW);
-                    // get unit ID since the DB could use any value.
+                    // get unit ID since the DB could use any value
                     const unitId = await getUnitId('kW');
                     // Load the expected response data from the corresponding csv file
                     const expected = await parseExpectedCsv('src/server/test/web/readingsData/expected_bar_group_ri_15-20_mu_kW_gu_kW_st_-inf_et_inf_bd_75.csv');
