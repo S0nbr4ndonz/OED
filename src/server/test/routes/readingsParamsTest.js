@@ -5,7 +5,7 @@
  */
 
 const { chai, mocha, expect, app } = require('../common');
-const { HTTP_CODE } = require('../../util/readingsUtils');
+const { HTTP_CODES } = require('../../util/httpCodes');
 const { STRING_GENERAL_MAX_LENGTH } = require('../../util/validationConstants');
 
 mocha.describe('Readings Route Parameter Validation', () => {
@@ -22,7 +22,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 				// May return 200, 404, or 500 if meters/data don't exist
-				expect([HTTP_CODE.OK, HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.OK, HTTP_CODES.NOT_FOUND, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 
 			mocha.it('should reject extremely long meter_ids string (DoS prevention)', async () => {
@@ -31,7 +31,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${LINE_COUNT_BASE_ENDPOINT}/${hugeMeterIds}`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should accept single meter ID', async () => {
@@ -40,7 +40,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 				// May return 200, 404, or 500 if meters/data don't exist
-				expect([HTTP_CODE.OK, HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.OK, HTTP_CODES.NOT_FOUND, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 		});
 
@@ -49,7 +49,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 				const res = await chai.request(app)
 					.get(`${LINE_COUNT_BASE_ENDPOINT}/1`);
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should reject extremely long timeInterval string (DoS prevention)', async () => {
@@ -58,7 +58,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${LINE_COUNT_BASE_ENDPOINT}/1`)
 					.query({ timeInterval: hugeTimeInterval });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should accept valid timeInterval format', async () => {
@@ -67,7 +67,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 				// May return 200, 404, or 500 if meters/data don't exist
-				expect([HTTP_CODE.OK, HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.OK, HTTP_CODES.NOT_FOUND, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 
 			mocha.it('should reject extra query parameters (parameter injection)', async () => {
@@ -78,7 +78,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 						maliciousParam: 'injection_attempt'
 					});
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 		});
 
@@ -90,7 +90,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 				// Should not crash server, may return 200, 400 or 500
-				expect([HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.OK, HTTP_CODES.BAD_REQUEST, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 
 			mocha.it('should handle XSS attempts in timeInterval', async () => {
@@ -100,7 +100,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: xssAttempt });
 
 				// XSS attempt causes moment.js warning and 500 error
-				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.BAD_REQUEST, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 		});
 	});
@@ -114,7 +114,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 				// May return 400, 404, or 500 if meters/data don't exist
-				expect([HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST, HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.OK, HTTP_CODES.BAD_REQUEST, HTTP_CODES.NOT_FOUND, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 
 			mocha.it('should reject non-integer meter_id', async () => {
@@ -122,7 +122,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/not_a_number`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should reject meter_id below minimum (1)', async () => {
@@ -130,7 +130,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/0`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should reject meter_id above maximum (2147483647)', async () => {
@@ -138,7 +138,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/2147483648`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should reject negative meter_id', async () => {
@@ -146,7 +146,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/-1`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should reject floating point meter_id', async () => {
@@ -154,7 +154,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/1.5`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 		});
 
@@ -163,7 +163,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 				const res = await chai.request(app)
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/1`);
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should reject extremely long timeInterval string (DoS prevention)', async () => {
@@ -172,7 +172,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/1`)
 					.query({ timeInterval: hugeTimeInterval });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should accept valid timeInterval format', async () => {
@@ -181,7 +181,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 				// May return 400, 404, or 500 if meters/data don't exist
-				expect([HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST, HTTP_CODE.NOT_FOUND, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.OK, HTTP_CODES.BAD_REQUEST, HTTP_CODES.NOT_FOUND, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 
 			mocha.it('should reject extra query parameters (parameter injection)', async () => {
@@ -192,7 +192,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 						maliciousParam: 'injection_attempt'
 					});
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 		});
 
@@ -203,7 +203,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/${encodeURIComponent(sqlInjection)}`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should handle overflow attempts', async () => {
@@ -212,7 +212,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.get(`${RAW_READINGS_BASE_ENDPOINT}/${overflowAttempt}`)
 					.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
-				expect(res).to.have.status(HTTP_CODE.BAD_REQUEST);
+				expect(res).to.have.status(HTTP_CODES.BAD_REQUEST);
 			});
 
 			mocha.it('should handle special characters in timeInterval', async () => {
@@ -222,7 +222,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 					.query({ timeInterval: specialChars });
 
 				// Should be handled gracefully, not crash server
-				expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+				expect([HTTP_CODES.BAD_REQUEST, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 			});
 		});
 	});
@@ -234,7 +234,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 				.query({ timeInterval: '2020-01-01T00:00:00.000Z_2020-01-02T00:00:00.000Z' });
 
 			// Empty meter_ids may return 200 (empty result) or 404 depending on routing
-			expect([HTTP_CODE.OK, HTTP_CODE.NOT_FOUND]).to.include(res.status);
+			expect([HTTP_CODES.OK, HTTP_CODES.NOT_FOUND]).to.include(res.status);
 		});
 
 		mocha.it('should handle malformed timeInterval format', async () => {
@@ -243,7 +243,7 @@ mocha.describe('Readings Route Parameter Validation', () => {
 				.query({ timeInterval: 'invalid_format' });
 
 			// Should not crash - may return 400 or 500 depending on TimeInterval.fromString handling
-			expect([HTTP_CODE.BAD_REQUEST, HTTP_CODE.INTERNAL_SERVER_ERROR]).to.include(res.status);
+			expect([HTTP_CODES.BAD_REQUEST, HTTP_CODES.INTERNAL_SERVER_ERROR]).to.include(res.status);
 		});
 	});
 });

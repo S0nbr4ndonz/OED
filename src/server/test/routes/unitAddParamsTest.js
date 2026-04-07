@@ -6,7 +6,7 @@
 
 const { expect } = require('chai');
 const { chai, mocha, app } = require('../common');
-const { HTTP_CODE } = require('../../util/readingsUtils');
+const { HTTP_CODES } = require('../../util/httpCodes');
 const {
 	testInvalidField,
 	validateNoExtraFields
@@ -42,7 +42,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				.send(baseUnitData);
 
 			// Should require admin authentication
-			expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
+			expect(res.status).to.equal(HTTP_CODES.FORBIDDEN);
 		});
 
 		mocha.it('should validate all required fields for creation', async () => {
@@ -57,7 +57,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					.send(payloadMissingField);
 
 				// Should fail auth (auth runs before validation)
-				expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
+				expect(res.status).to.equal(HTTP_CODES.FORBIDDEN);
 			}
 		});
 
@@ -68,7 +68,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: '',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test identifier field length (minLength: 1)
@@ -77,7 +77,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: '',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test unitRepresent field length (minLength: 1)
@@ -86,7 +86,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: '',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test typeOfUnit field length (minLength: 1)
@@ -95,7 +95,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: '',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test displayable field length (minLength: 1)
@@ -104,7 +104,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: '',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test disableChecks field length (minLength: 1)
@@ -113,7 +113,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: '',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 		});
 
@@ -126,7 +126,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					invalidValue: invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseUnitData,
-					expectedStatus: HTTP_CODE.FORBIDDEN
+					expectedStatus: HTTP_CODES.FORBIDDEN
 				});
 			}
 
@@ -138,7 +138,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					invalidValue: invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseUnitData,
-					expectedStatus: HTTP_CODE.FORBIDDEN
+					expectedStatus: HTTP_CODES.FORBIDDEN
 				});
 			}
 
@@ -150,7 +150,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					invalidValue: invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseUnitData,
-					expectedStatus: HTTP_CODE.FORBIDDEN
+					expectedStatus: HTTP_CODES.FORBIDDEN
 				});
 			}
 
@@ -162,7 +162,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					invalidValue: invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseUnitData,
-					expectedStatus: HTTP_CODE.FORBIDDEN
+					expectedStatus: HTTP_CODES.FORBIDDEN
 				});
 			}
 		});
@@ -174,7 +174,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: 'not_a_number',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test minVal with non-numeric value
@@ -183,7 +183,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: 'invalid',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 
 			// Test maxVal with non-numeric value
@@ -192,7 +192,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 				invalidValue: 'invalid',
 				endpoint: ADD_ENDPOINT,
 				basePayload: baseUnitData,
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 		});
 
@@ -205,7 +205,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					invalidValue: invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseUnitData,
-					expectedStatus: HTTP_CODE.FORBIDDEN
+					expectedStatus: HTTP_CODES.FORBIDDEN
 				});
 			}
 		});
@@ -225,7 +225,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					.send(payloadWithNull);
 
 				// Should pass validation but fail auth
-				expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
+				expect(res.status).to.equal(HTTP_CODES.FORBIDDEN);
 			}
 		});
 
@@ -241,7 +241,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					deleteAll: true,
 					executeCommand: 'rm -rf /'
 				},
-				expectedStatus: HTTP_CODE.FORBIDDEN
+				expectedStatus: HTTP_CODES.FORBIDDEN
 			});
 		});
 
@@ -263,7 +263,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 						invalidValue: maliciousInput,
 						endpoint: ADD_ENDPOINT,
 						basePayload: baseUnitData,
-						expectedStatus: HTTP_CODE.FORBIDDEN
+						expectedStatus: HTTP_CODES.FORBIDDEN
 					});
 				}
 			}
@@ -284,7 +284,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 					invalidValue: test.invalidValue,
 					endpoint: ADD_ENDPOINT,
 					basePayload: baseUnitData,
-					expectedStatus: HTTP_CODE.FORBIDDEN
+					expectedStatus: HTTP_CODES.FORBIDDEN
 				});
 			}
 		});
@@ -294,19 +294,19 @@ mocha.describe('Units Add Parameter Validation', () => {
 			const res1 = await chai.request(app)
 				.post(ADD_ENDPOINT)
 				.send('not an object');
-			expect(res1.status).to.equal(HTTP_CODE.FORBIDDEN);
+			expect(res1.status).to.equal(HTTP_CODES.FORBIDDEN);
 
 			// Test array payload
 			const res2 = await chai.request(app)
 				.post(ADD_ENDPOINT)
 				.send(['array', 'payload']);
-			expect(res2.status).to.equal(HTTP_CODE.FORBIDDEN);
+			expect(res2.status).to.equal(HTTP_CODES.FORBIDDEN);
 
 			// Test null payload
 			const res3 = await chai.request(app)
 				.post(ADD_ENDPOINT)
 				.send(null);
-			expect(res3.status).to.equal(HTTP_CODE.FORBIDDEN);
+			expect(res3.status).to.equal(HTTP_CODES.FORBIDDEN);
 		});
 	});
 
@@ -336,7 +336,7 @@ mocha.describe('Units Add Parameter Validation', () => {
 
 			// All should fail with 403 (auth required)
 			results.forEach(res => {
-				expect(res.status).to.equal(HTTP_CODE.FORBIDDEN);
+				expect(res.status).to.equal(HTTP_CODES.FORBIDDEN);
 			});
 		});
 	});
