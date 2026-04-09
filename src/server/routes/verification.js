@@ -7,7 +7,7 @@ const jwt = require('jsonwebtoken');
 const secretToken = require('../config').secretToken;
 const validate = require('jsonschema').validate;
 const { TOKEN_MAX_LENGTH } = require('../util/validationConstants');
-const { HTTP_CODE } = require('../util/readingsUtils');
+const { HTTP_CODES } = require('../util/httpCodes');
 
 const router = express.Router();
 
@@ -28,14 +28,14 @@ router.post('/', (req, res) => {
 		}
 	};
 	if (!validate(req.body, validParams).valid) {
-		res.sendStatus(HTTP_CODE.BAD_REQUEST);
+		res.sendStatus(HTTP_CODES.BAD_REQUEST);
 	} else {
 		const token = req.body.token;
 		jwt.verify(token, secretToken, err => {
 			if (err) {
-				res.status(HTTP_CODE.UNAUTHORIZED).json({ success: false, message: 'Failed to authenticate token.' });
+				res.status(HTTP_CODES.UNAUTHORIZED).json({ success: false, message: 'Failed to authenticate token.' });
 			} else {
-				res.status(HTTP_CODE.OK).json({ success: true });
+				res.status(HTTP_CODES.OK).json({ success: true });
 			}
 		});
 	}

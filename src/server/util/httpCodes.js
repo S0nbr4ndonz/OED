@@ -19,4 +19,4 @@ const HTTP_CODES = {
 	SERVICE_UNAVAILABLE: 503
 };
 
-module.exports = HTTP_CODES;
+module.exports = { HTTP_CODES };

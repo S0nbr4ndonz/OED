@@ -8,7 +8,7 @@ const { redoCik } = require('../services/graph/redoCik');
 const { refreshAllReadingViews } = require('../services/refreshAllReadingViews');
 const validate = require('jsonschema').validate;
 const { adminAuthMiddleware } = require('./authenticator');
-const { HTTP_CODE } = require('../util/readingsUtils');
+const { HTTP_CODES } = require('../util/httpCodes');
 
 const router = express.Router();
 
@@ -30,7 +30,7 @@ router.post('/refresh', adminAuthMiddleware('conversion refresh system data'), a
 	};
 
 	if (!validate(req.body, validParams).valid) {
-		res.sendStatus(HTTP_CODE.BAD_REQUEST);
+		res.sendStatus(HTTP_CODES.BAD_REQUEST);
 		return;
 	}
 
@@ -43,7 +43,7 @@ router.post('/refresh', adminAuthMiddleware('conversion refresh system data'), a
 	if (req.body.refreshReadingViews) {
 		await refreshAllReadingViews();
 	}
-	res.sendStatus(HTTP_CODE.OK);
+	res.sendStatus(HTTP_CODES.OK);
 });
 
 module.exports = router;

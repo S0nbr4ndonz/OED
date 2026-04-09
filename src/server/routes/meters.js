@@ -18,7 +18,7 @@ const merge = require('lodash/merge');
 const { failure, success } = require('./response');
 const { updateNonNullExpression } = require('typescript');
 const { STRING_GENERAL_MAX_LENGTH, STRING_SHORT_MAX_LENGTH: SHORT_STRING_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
-const { HTTP_CODE } = require('../util/readingsUtils');
+const { HTTP_CODES } = require('../util/httpCodes');
 
 const router = express.Router();
 
@@ -139,7 +139,7 @@ router.get('/:meter_id', optionalAuthMiddleware, async (req, res) => {
 		}
 	};
 	if (!validate(req.params, validParams).valid) {
-		res.sendStatus(HTTP_CODE.BAD_REQUEST);
+		res.sendStatus(HTTP_CODES.BAD_REQUEST);
 	} else {
 		const conn = getConnection();
 		try {
@@ -149,11 +149,11 @@ router.get('/:meter_id', optionalAuthMiddleware, async (req, res) => {
 				// not displayable but the user is logged in, also fine.
 				res.json(formatMeterForResponse(meter, req.hasValidAuthToken));
 			} else {
-				res.sendStatus(HTTP_CODE.BAD_REQUEST);
+				res.sendStatus(HTTP_CODES.BAD_REQUEST);
 			}
 		} catch (err) {
 			log.error(`Error while performing GET specific meter by id query: ${err}`, err);
-			res.sendStatus(HTTP_CODE.INTERNAL_SERVER_ERROR);
+			res.sendStatus(HTTP_CODES.INTERNAL_SERVER_ERROR);
 		}
 	}
 });
@@ -266,7 +266,7 @@ router.post('/edit', adminAuthMiddleware('edit meters'), async (req, res) => {
 	const response = validateMeterParams(req.body)
 	if (!response.valid) {
 		log.warn(`Got request to edit a meter with invalid meter data, errors: ${response.errors}`);
-		failure(res, HTTP_CODE.BAD_REQUEST, 'validation failed with ' + response.errors.toString());
+		failure(res, HTTP_CODES.BAD_REQUEST, 'validation failed with ' + response.errors.toString());
 	} else {
 		const conn = getConnection();
 		try {
@@ -318,7 +318,7 @@ router.post('/edit', adminAuthMiddleware('edit meters'), async (req, res) => {
 			res.json(formatMeterForResponse(meter, true));
 		} catch (err) {
 			log.error(`Error while editing a meter with detail "${err['detail']}"`, err);
-			failure(res, HTTP_CODE.INTERNAL_SERVER_ERROR, err.toString() + ' with detail ' + err['detail']);
+			failure(res, HTTP_CODES.INTERNAL_SERVER_ERROR, err.toString() + ' with detail ' + err['detail']);
 		}
 	}
 });
@@ -330,7 +330,7 @@ router.post('/addMeter', adminAuthMiddleware('add meter'), async (req, res) => {
 	const response = validateMeterParams(req.body)
 	if (!response.valid) {
 		log.warn(`Got request to create a meter with invalid meter data, errors: ${response.errors}`);
-		failure(res, HTTP_CODE.BAD_REQUEST, 'validation failed with ' + response.errors.toString());
+		failure(res, HTTP_CODES.BAD_REQUEST, 'validation failed with ' + response.errors.toString());
 	} else {
 		const conn = getConnection();
 		try {
@@ -378,7 +378,7 @@ router.post('/addMeter', adminAuthMiddleware('add meter'), async (req, res) => {
 			res.json(formatMeterForResponse(newMeter, true));
 		} catch (err) {
 			log.error(`Error while inserting new meter with detail "${err['detail']}"`, err);
-			failure(res, HTTP_CODE.INTERNAL_SERVER_ERROR, err.toString() + ' with detail ' + err['detail']);
+			failure(res, HTTP_CODES.INTERNAL_SERVER_ERROR, err.toString() + ' with detail ' + err['detail']);
 		}
 	}
 });

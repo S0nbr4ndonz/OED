@@ -10,7 +10,7 @@ const moment = require('moment');
 const { getConnection } = require('../db');
 const Reading = require('../models/Reading');
 const { STRING_GENERAL_MAX_LENGTH, NUMERIC_ID_MAX_LENGTH } = require('../util/validationConstants');
-const { HTTP_CODE } = require('../util/readingsUtils');
+const { HTTP_CODES } = require('../util/httpCodes');
 
 const ISO_DURATION_REGEX = /^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(\d+H)?(\d+M)?(\d+(\.\d+)?S)?)?$/;
 
@@ -118,7 +118,7 @@ function createRouter() {
 
 	router.get('/meters/:meter_ids', async (req, res) => {
 		if (!(validateMeterCompareReadingsParams(req.params) && validateQueryParams(req.query))) {
-			res.sendStatus(HTTP_CODE.BAD_REQUEST);
+			res.sendStatus(HTTP_CODES.BAD_REQUEST);
 			return;
 		}
 		const meterIDs = req.params.meter_ids.split(',').map(id => parseInt(id));
@@ -128,7 +128,7 @@ function createRouter() {
 		const shiftRaw = req.query.shift;
 
 		if (!isValidIsoDateTime(currStartRaw) || !isValidIsoDateTime(currEndRaw) || !isValidIsoDuration(shiftRaw)) {
-			res.sendStatus(HTTP_CODE.BAD_REQUEST);
+			res.sendStatus(HTTP_CODES.BAD_REQUEST);
 			return;
 		}
 
@@ -141,7 +141,7 @@ function createRouter() {
 
 	router.get('/groups/:group_ids', async (req, res) => {
 		if (!(validateGroupCompareReadingsParams(req.params) && validateQueryParams(req.query))) {
-			res.sendStatus(HTTP_CODE.BAD_REQUEST);
+			res.sendStatus(HTTP_CODES.BAD_REQUEST);
 			return;
 		}
 		const groupIDs = req.params.group_ids.split(',').map(id => parseInt(id));
@@ -151,7 +151,7 @@ function createRouter() {
 		const shiftRaw = req.query.shift;
 
 		if (!isValidIsoDateTime(currStartRaw) || !isValidIsoDateTime(currEndRaw) || !isValidIsoDuration(shiftRaw)) {
-			res.sendStatus(HTTP_CODE.BAD_REQUEST);
+			res.sendStatus(HTTP_CODES.BAD_REQUEST);
 			return;
 		}
 
