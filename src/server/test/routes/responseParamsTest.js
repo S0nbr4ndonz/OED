@@ -107,7 +107,7 @@ mocha.describe('Response Utility Functions', () => {
 
 			failure(mockRes);
 
-			expect(mockRes.sentData).to.equal('');
+			expect(mockRes.sentData).to.equal('Internal Server Error');
 		});
 
 		mocha.it('should use provided status code', () => {
@@ -137,7 +137,8 @@ mocha.describe('Response Utility Functions', () => {
 				failure(freshMockRes, code, `Error ${code}`);
 
 				expect(freshMockRes.statusCode).to.equal(code);
-				expect(freshMockRes.sentData).to.equal(`Error ${code}`);
+				const expectedData = code >= 500 ? 'Internal Server Error' : `Error ${code}`;
+				expect(freshMockRes.sentData).to.equal(expectedData);
 			});
 		});
 
@@ -220,7 +221,7 @@ mocha.describe('Response Utility Functions', () => {
 			const mockRes2 = createMockResponse();
 			failure(mockRes2);
 			expect(mockRes2.statusCode).to.equal(HTTP_CODE.INTERNAL_SERVER_ERROR);
-			expect(mockRes2.sentData).to.equal('');
+			expect(mockRes2.sentData).to.equal('Internal Server Error');
 		});
 	});
 
@@ -262,7 +263,7 @@ mocha.describe('Response Utility Functions', () => {
 			failure(mockRes, HTTP_CODE.INTERNAL_SERVER_ERROR, jsonComment);
 
 			expect(mockRes.statusCode).to.equal(HTTP_CODE.INTERNAL_SERVER_ERROR);
-			expect(mockRes.sentData).to.equal(jsonComment);
+			expect(mockRes.sentData).to.equal('Internal Server Error');
 		});
 	});
 
