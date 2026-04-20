@@ -293,7 +293,7 @@ router.post('/create', adminAuthMiddleware('create groups'), async (req, res) =>
 			});
 			success(res);
 		} catch (err) {
-			// Map duplicate-name DB errors to a safe 400 response
+			// Group duplicate-name DB errors to a safe 400 response
 			if (err.toString() === 'error: duplicate key value violates unique constraint "groups_name_key"') {
 				failure(res, 400, 'Group name already exists');
 			} else {

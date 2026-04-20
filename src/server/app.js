@@ -154,7 +154,7 @@ const router = express.Router();
 router.get('*', (req, res) => {
 	fs.readFile(path.resolve(__dirname, '..', 'client', 'index.html'), (err, html) => {
 		if (err) {
-			log.error('Failed to read index.html for client router.', err);
+			log.error('Failed to read index.html for client router; logging caught err object.', err);
 			return res.status(500).send('Internal Server Error');
 		}
 
@@ -177,7 +177,9 @@ app.use((err, req, res, next) => {
 		return res.status(400).send('Bad Request');
 	}
 
-	log.error('Unhandled request error caught by global error handler.', err);
+	log.error('Unhandled request error caught by global error handler; logging forwarded err object.', err);
+	// If response headers are already sent, Express cannot safely change the response
+	// Forward to the default Express handler to finish error
 	if (res.headersSent) {
 		return next(err);
 	}
