@@ -12,11 +12,11 @@ FROM node:18.17.1
 RUN mkdir -p "/usr/src/app"
 WORKDIR "/usr/src/app"
 
-# Create custom non-root group and user
+# Create a dedicated non-root runtime user/group
 RUN addgroup --gid 10001 appgroup \
  && adduser --disabled-password --gecos "" --uid 10001 --gid 10001 appuser
 
-# Give the application directory to the non-root user
+# Ensure the application directory is owned by the runtime user
 RUN chown -R appuser:appgroup "/usr/src/app"
 
 # Mount the source code at this volume
