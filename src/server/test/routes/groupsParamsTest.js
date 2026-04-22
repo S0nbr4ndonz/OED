@@ -20,8 +20,8 @@ const {
 
 /** Non-numeric path values reused across group_id route tests. */
 const INVALID_GROUP_ID_PATH_VALUES = ['abc', '12abc', 'group123', 'null', ''];
-/** Some group routes still return HTTP_CODE.OK for malformed group_id until path validation is strict; test encodes current behavior. */
-const GROUP_ID_MALFORMED_EXPECTED_STATUSES = [HTTP_CODE.OK, HTTP_CODE.BAD_REQUEST];
+/** Some group routes still return HTTP_CODES.OK for malformed group_id until path validation is strict; test encodes current behavior. */
+const GROUP_ID_MALFORMED_EXPECTED_STATUSES = [HTTP_CODES.OK, HTTP_CODES.BAD_REQUEST];
 
 async function expectMalformedGroupIdRejectedOrOk(baseEndpoint) {
 	await validateNumericIdInPath({
