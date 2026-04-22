@@ -155,7 +155,7 @@ router.get('*', (req, res) => {
 	fs.readFile(path.resolve(__dirname, '..', 'client', 'index.html'), (err, html) => {
 		if (err) {
 			log.error('Failed to read index.html for client router; logging caught err object.', err);
-			return res.status(500).send('Internal Server Error');
+			return res.status(500).send('Internal Server Error. Site admins can check logs for details.');
 		}
 
 		const subdir = config.subdir || '/';
@@ -173,6 +173,9 @@ app.use((req, res) => {
 // Global error handler, errors will still be logged internally but keep client response generic
 app.use((err, req, res, next) => {
 	// Malformed JSON needs to return bad request for tests to pass
+	// err instanceof SyntaxError: body-parser throws SyntaxError when JSON cannot be parsed
+	// err.status === 400: confirms this parse failure maps to HTTP 400 Bad Request
+	// 'body' in err: indicates the error came from request body parsing and not an unrelated SyntaxError
 	if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
 		return res.status(400).send('Bad Request');
 	}
