@@ -155,7 +155,7 @@ router.get('*', (req, res) => {
 	fs.readFile(path.resolve(__dirname, '..', 'client', 'index.html'), (err, html) => {
 		if (err) {
 			log.error('Failed to read index.html for client router; logging caught err object.', err);
-			return res.status(500).send('Internal Server Error. Site admins can check logs for details.');
+			return res.status(500).send('Internal Server Error. Details are in the OED logs that are available to your site admin(s).');
 		}
 
 		const subdir = config.subdir || '/';
