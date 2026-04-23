@@ -132,8 +132,9 @@ router.post('/create', adminAuthMiddleware('create a user.'), async (req, res) =
 				res.sendStatus(200);
 			}
 		} catch (error) {
+			// Log the error internally and return a generic response
 			log.error(`Error while performing POST request to create user: ${error}`, error);
-			res.status(500).send({ message: 'Internal Server Error', error: error });
+			res.status(500).send({ message: 'Internal Server Error' });
 		}
 	}
 });
@@ -219,11 +220,9 @@ router.post('/edit', adminAuthMiddleware('edit a user'), async (req, res) => {
 			return res.sendStatus(200);
 
 		} catch (error) {
+			// Log internally and send a generic error response.
 			log.error('Error while performing edit user request.', error);
-			res.status(500).json({
-				message: 'Error while performing edit user request.',
-				error: error.message
-			});
+			res.status(500).json({ message: 'Internal Server Error' });
 		}
 	}
 });

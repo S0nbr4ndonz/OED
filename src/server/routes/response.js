@@ -25,8 +25,10 @@
  *
  */
 function failure(res, code = 500, comment = '') {
+	// Return a generic message for 500-level failures.
+	const responseBody = code >= 500 ? 'Internal Server Error. Details are in the OED logs that are available to your site admin(s).' : comment;
 	res.status(code)
-	.send(comment);
+	.send(responseBody);
 
 }
 
