@@ -13,7 +13,7 @@ services:
         environment:
             # Custom PGDATA per recommendations from official Docker page
             - PGDATA=/var/lib/postgresql/data/pgdata
-            - POSTGRES_PASSWORD=pleaseChange
+            - POSTGRES_PASSWORD=pleaseChange # default postgres password that should be changed for security.
         volumes:
             - ./postgres-data:/var/lib/postgresql/data/pgdata
         healthcheck:
@@ -54,7 +54,6 @@ services:
             # If in a subdirectory, set it here
             # - OED_SUBDIR=/subdir/
             # Set the correct build environment.
-            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-pleaseChange}
         build:
             context: ./
             dockerfile: ./containers/web/Dockerfile
