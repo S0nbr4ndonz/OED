@@ -156,7 +156,8 @@ router.get('*', (req, res) => {
 	fs.readFile(path.resolve(__dirname, '..', 'client', 'index.html'), (err, html) => {
 		if (err) {
 			log.error('Failed to read index.html for client router; logging caught err object.', err);
-			return res.status(500).send('Internal Server Error. Details are in the OED logs that are available to your site admin(s).');
+			return res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).
+				send('Internal Server Error. Details are in the OED logs that are available to your site admin(s).');
 		}
 
 		const subdir = config.subdir || '/';
@@ -177,8 +178,8 @@ app.use((err, req, res, next) => {
 	// err instanceof SyntaxError: body-parser throws SyntaxError when JSON cannot be parsed
 	// err.status === 400: confirms this parse failure maps to HTTP 400 Bad Request
 	// 'body' in err: indicates the error came from request body parsing and not an unrelated SyntaxError
-	if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-		return res.status(400).send('Bad Request');
+	if (err instanceof SyntaxError && err.status === HTTP_CODES.BAD_REQUEST && 'body' in err) {
+		return res.status(HTTP_CODES.BAD_REQUEST).send('Bad Request');
 	}
 
 	log.error('Unhandled request error caught by global error handler; logging forwarded err object.', err);
@@ -187,7 +188,7 @@ app.use((err, req, res, next) => {
 	if (res.headersSent) {
 		return next(err);
 	}
-	res.status(500).json({ message: 'Internal Server Error' });
+	res.status(HTTP_CODES.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
 });
 
 module.exports = app;
