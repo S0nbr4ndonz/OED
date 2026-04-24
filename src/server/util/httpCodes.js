@@ -1,9 +1,9 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
- 
+
 const HTTP_CODES = {
-    // Some common HTTP status response codes
+	// Some common HTTP status response codes
 	OK: 200,
 	FOUND: 302,
 	NOT_MODIFIED: 304,
