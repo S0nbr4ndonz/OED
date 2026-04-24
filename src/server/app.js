@@ -32,6 +32,7 @@ const conversionArray = require('./routes/conversionArray');
 const units = require('./routes/units');
 const conversions = require('./routes/conversions');
 const ciks = require('./routes/ciks');
+const { HTTP_CODES } = require('./util/httpCodes');
 
 // Detect test environment and use higher rate limits during tests.
 // Rate limiting is critical for security in production but interferes with automated testing.
@@ -162,7 +163,7 @@ router.get('*', (req, res) => {
 app.use(router);
 
 app.use((req, res) => {
-	res.status(404).send('<h1>404 Not Found</h1>');
+	res.status(HTTP_CODES.NOT_FOUND).send('<h1>404 Not Found</h1>');
 });
 
 module.exports = app;
