@@ -26,8 +26,10 @@ function success(res, comment = '') {
  *
  */
 function failure(res, code = HTTP_CODES.INTERNAL_SERVER_ERROR, comment = '') {
+	// Return a generic message for 500-level failures.
+	const responseBody = code >= HTTP_CODES.INTERNAL_SERVER_ERROR ? 'Internal Server Error. Details are in the OED logs that are available to your site admin(s).' : comment;
 	res.status(code)
-		.send(comment);
+	.send(responseBody);
 
 }
 
