@@ -2,7 +2,6 @@
 # * This Source Code Form is subject to the terms of the Mozilla Public
 # * License, v. 2.0. If a copy of the MPL was not distributed with this
 # * file, You can obtain one at http://mozilla.org/MPL/2.0/.
-# *
 
 # *****************************************************************
 # This is the default Docker configuration file that is used for
@@ -17,17 +16,20 @@ version: "3.8"
 services:
     # Database service. It's PostgreSQL, see the Dockerfile in ./database.
     database:
-        build: ./containers/database/
         environment:
-            # Custom PGDATA per recommendations from official Docker page
-            - PGDATA=/var/lib/postgresql/data/pgdata
             # Default postgres password that should be changed for security.
             # The OED install process will not allow this password and it will
-            # be replaced with a random, secure password if not changed here. That is fine as
-            # many sites do not need access to the database.
+            # be replaced with a random, secure password if not changed here.
+            # That is fine as many sites do not need regular access to the
+            # database so a password they created is not important. OED will
+            # provide the password created for future use.
             # If the password is changed then it is important to make it secure to
             # avoid unauthorized access.
             - POSTGRES_PASSWORD=pleaseChange
+            # Custom PGDATA per recommendations from official Docker page
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        # Location of database Docker configuration and startup files.
+        build: ./containers/database/
         volumes:
             # This maps the proper Docker database directory back to the local file
             # system. It is critical that the changes actually be written back to
@@ -41,11 +43,41 @@ services:
             interval: 10s
             timeout: 10s
             retries: 3
-        # Web service runs Node
+    # Web service runs Node
     web:
         # Configuration variables for the app.
         environment:
-            # OED_PRODUCTION should NEVER be changed here. If this is for an OED site then
+            # Default oed user postgres password that should be changed for security.
+            # The OED install process will not allow this password and it will
+            # be replaced with a random, secure password if not changed here.
+            # That is fine as many sites do not need regular access to the
+            # database so a password they created is not important. OED will
+            # provide the password created for future use.
+            # If the password is changed then it is important to make it secure to
+            # avoid unauthorized access.
+            - OED_DB_PASSWORD=opened
+            # Default web token that should be changed for security.
+            # The OED install process will not allow this token and it will
+            # be replaced with a random, secure token if not changed.
+            # That is fine as there is normally no usage outside of the OED app for this.
+            # OED will provide the token created for future use.
+            # If the taken is changed here then it is important to make it secure to
+            # avoid unauthorized access.
+            - OED_TOKEN_SECRET=?
+            # The OED_MAIL_... values are set to enable OED to send email about issues.
+            - OED_MAIL_METHOD=none # Method of sending mail. Supports "secure-smtp", "none". Case insensitive.
+            - OED_MAIL_SMTP=smtp.example.com # Edit this
+            - OED_MAIL_SMTP_PORT=465 # Edit this
+            - OED_MAIL_IDENT=someone@example.com # The user email that is used for sending emails (SMTP)
+            - OED_MAIL_CREDENTIAL=credential # Set the email password for sending email here
+            - OED_MAIL_FROM=mydomain@example.com # The email address that the email will come from
+            - OED_MAIL_TO=someone@example.com # Set the destination address here for where to send emails
+            - OED_MAIL_ORG=My Organization Name # Org name for mail that is included in the subject
+            # Changing this value does not impact what OED displays.
+            # What it will change is the date/time stamp on logs, notes and change dates that place the current date/time.
+            # It can also impact the interpretation of readings sent to OED such as Unix timestamps.
+            - TZ=Etc/UTC # Set the timezone of the Docker container where OED runs the web services.
+              # OED_PRODUCTION should NEVER be changed here. If this is for an OED site then
             # it is VERY important that it be yes for security reasons. If you are doing
             # development then you should be changing the other docker file as per the help
             # page for developers.
@@ -60,39 +92,14 @@ services:
             # This user is used when the standard OED testing is run. It is left in this Docker
             # config file in case sites want to run the test suite.
             - OED_DB_TEST_DATABASE=oed_testing
-            # Default oed user postgres password that should be changed for security.
-            # The OED install process will not allow this password and it will
-            # be replaced with a random, secure password if not changed here. That is fine as
-            # many sites do not need access to the database.
-            # If the password is changed then it is important to make it secure to
-            # avoid unauthorized access.
-            - OED_DB_PASSWORD=opened
             # Docker will set this hostname.
             - OED_DB_HOST=database
             # This is the standard postgres port. At a site this should not cause issues as it
             # is only used within the Docker container.
             - OED_DB_PORT=5432
-            # Default web token that should be changed for security.
-            # The OED install process will not allow this token and it will
-            # be replaced with a random, secure token if not changed. That is fine as
-            # there is normally no usage outside of the OED app for this.
-            # If the taken is changed here then it is important to make it secure to
-            # avoid unauthorized access.
-            - OED_TOKEN_SECRET=?
+            # This is the file where OED log messages are stored. It is now a backup location for
+            # messages since all should be logged to the database and available via an OED web page.
             - OED_LOG_FILE=log.txt
-            # The OED_MAIL_... values are set to enable OED to send email about issues.
-            - OED_MAIL_METHOD=none # Method of sending mail. Supports "secure-smtp", "none". Case insensitive.
-            - OED_MAIL_SMTP=smtp.example.com # Edit this
-            - OED_MAIL_SMTP_PORT=465 # Edit this
-            - OED_MAIL_IDENT=someone@example.com # The user email that is used for sending emails (SMTP)
-            - OED_MAIL_CREDENTIAL=credential # Set the email password for sending email here
-            - OED_MAIL_FROM=mydomain@example.com # The email address that the email will come from
-            - OED_MAIL_TO=someone@example.com # Set the destination address here for where to send emails
-            - OED_MAIL_ORG=My Organization Name # Org name for mail that is included in the subject
-            # Changing this value does not impact what OED displays.
-            # What it will change is the date/time stamp on logs, notes and change dates that place the current date/time.
-            # It can also impact the interpretation of readings sent to OED such as Unix timestamps.
-            - TZ=Etc/UTC # Set the timezone of the Docker container where OED runs the web services.
             # If in a subdirectory, set it here
             # - OED_SUBDIR=/subdir/
             # Set the correct build environment.

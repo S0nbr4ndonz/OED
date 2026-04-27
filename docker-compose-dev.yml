@@ -2,7 +2,6 @@
 # * This Source Code Form is subject to the terms of the Mozilla Public
 # * License, v. 2.0. If a copy of the MPL was not distributed with this
 # * file, You can obtain one at http://mozilla.org/MPL/2.0/.
-# *
 
 # *****************************************************************
 # This is the DEVELOPER Docker configuration file that is used for
@@ -21,7 +20,6 @@ services:
         # They can be commented out to close that port but it will stop that type of debugging.
         ports:
            - "5432:5432"
-
     web:
         environment:
             # Set this value to yes or no, other values wil result in a configuration error.
