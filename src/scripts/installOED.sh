@@ -82,7 +82,7 @@ if [ "$INSTALL_MODE" = "production" ] && [ "$OED_DOCKER_CONFIG_DEV" = "yes" ]; t
 elif [ "$INSTALL_MODE" = "development" ] && [ ! "$OED_DOCKER_CONFIG_DEV" = "yes" ]; then
 	printf "\n\n%s\n" "***************************************************************************************************"
 	printf "%s\n" "Warning: OED_PRODUCTION is set to 'no' but the Docker developer configuration file is NOT being used."
-	printf "\n%s\n\n" "    If you are installing OED for a site then you are doing something the is STRONGLY discouraged due to security risks."
+	printf "\n%s\n\n" "    If you are installing OED for a site then you are doing something that is STRONGLY discouraged due to security risks."
 	printf "%s\n" "    If you are an OED developer, an older method to install OED is being used that will stop working in the near future."
 	printf "%s\n" "    You should convert to the new way to use the docker-compose-dev.yml and use this command to start OED:"
 	printf "%s\n" "    docker compose -f docker-compose.yml -f docker-compose-dev.yml up"
