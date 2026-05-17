@@ -236,7 +236,7 @@ mocha.describe('readings API', () => {
                         const expected = await parseExpectedCsv('src/server/test/web/readingsData/expected_line_range_ri_15_mu_C_gu_F_st_2022-08-25%00#00#00_et_2022-10-24%00#00#00.csv');
                         //api call to get line chart readings from meter using METER_ID, convert to graphic unit defined above, then store in variable
                         const res = await chai.request(app).get(`/api/unitReadings/line/meters/${METER_ID}`)
-                            .query({ timeInterval: crreateTimeString('2022-08-25', '00:00:00', '2022-10-24', '00:00:00').toString(), graphicUnitId: graphicUnitIdF });
+                            .query({ timeInterval: createTimeString('2022-08-25', '00:00:00', '2022-10-24', '00:00:00').toString(), graphicUnitId: graphicUnitIdF });
                         //check if response from api call matches values in expected readings csv using expectRangeToEqualExpected()
                         expectRangeToEqualExpected(res, expected);
                     });
