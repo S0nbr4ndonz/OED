@@ -189,30 +189,62 @@ mocha.describe('readings API', () => {
                     mocha.it('LR22: range should have hourly points for middle readings of 15 minute for a 60 day period and raw units & C as F with intercept', async () => {
                         const unitData = [
                             {
-                                // Add u6 here
-                                
+                                // u6
+                                name: 'C',
+                                identifier: '',
+                                unitRepresent: Unit.unitRepresentType.RAW,
+                                secInRate: 3600,
+                                typeOfUnit: Unit.unitType.UNIT,
+                                suffix: '',
+                                displayable: Unit.displayableType.ALL,
+                                preferredDisplay: true,
+                                note: 'Celsius'
                             },
                             {
-                                // Add u7 here
-                                
+                                // u7
+                                name: 'Degrees',
+                                identifier: '',
+                                unitRepresent: Unit.unitRepresentType.RAW,
+                                secInRate: 3600,
+                                typeOfUnit: Unit.unitType.METER,
+                                suffix: '',
+                                displayable: Unit.displayableType.NONE,
+                                preferredDisplay: false,
+                                note: 'special unit'
                             },
                             {
-                                // Add u8 here
-                                
+                                // u8
+                                name: 'F',
+                                identifier: '',
+                                unitRepresent: Unit.unitRepresentType.RAW,
+                                secInRate: 3600,
+                                typeOfUnit: Unit.unitType.UNIT,
+                                suffix: '',
+                                displayable: Unit.displayableType.ALL,
+                                preferredDisplay: false,
+                                note: 'OED created standard unit'
                             }
-
                         ];
                         const conversionData = [
                             {
-                                // Add c5 here
-                                
+                                // c5
+                                sourceName: 'Degrees',
+                                destinationName: 'C',
+                                bidirectional: false,
+                                slope: 1,
+                                intercept: 0,
+                                note: 'Degrees → C'
                             },
                             {
-                                // Add c7 here
-                                
+                                // c7
+                                sourceName: 'C',
+                                destinationName: 'F',
+                                bidirectional: true,
+                                slope: 1.8,
+                                intercept: 32,
+                                note: 'Celsius → Fahrenheit'
                             }
                         ];
-
                         //const variable for meter metadata here
                         const meterDataDegrees = [
                             {
