@@ -186,6 +186,60 @@ mocha.describe('readings API', () => {
                     // Add LR17 here
 
                     // Add LR22 here
+                    mocha.it('LR22: range should have hourly points for middle readings of 15 minute for a 60 day period and raw units & C as F with intercept', async () => {
+                        const unitData = [
+                            {
+                                // Add u6 here
+                                
+                            },
+                            {
+                                // Add u7 here
+                                
+                            },
+                            {
+                                // Add u8 here
+                                
+                            }
+
+                        ];
+                        const conversionData = [
+                            {
+                                // Add c5 here
+                                
+                            },
+                            {
+                                // Add c7 here
+                                
+                            }
+                        ];
+
+                        //const variable for meter metadata here
+                        const meterDataDegrees = [
+                            {
+                                name: 'Temp Fahrenheit Meter',
+                                unit: 'Degrees',
+                                defaultGraphicUnit: 'F',
+                                displayable: true,
+                                gps: undefined,
+                                note: 'special meter for raw temp data',
+                                file: 'test/web/readingsData/readings_ri_15_days_75.csv',
+                                deleteFile: false,
+                                readingFrequency: '15 minutes',
+                                id: METER_ID
+                            }
+                        ];
+                        //fill emptied database with test units/data defined above using prepareTest()
+                        await prepareTest(unitData, conversionData, meterDataDegrees);
+                        //Get the graphic unit ID for 'F'
+                        const graphicUnitIdF = await getUnitId('F');
+                        //load expected readings into variable using parseExpectedCsv()
+                        const expected = await parseExpectedCsv('src/server/test/web/readingsData/expected_line_range_ri_15_mu_C_gu_F_st_2022-08-25%00#00#00_et_2022-10-24%00#00#00.csv');
+                        //api call to get line chart readings from meter using METER_ID, convert to graphic unit defined above, then store in variable
+                        const res = await chai.request(app).get(`/api/unitReadings/line/meters/${METER_ID}`)
+                            .query({ timeInterval: crreateTimeString('2022-08-25', '00:00:00', '2022-10-24', '00:00:00').toString(), graphicUnitId: graphicUnitIdF });
+                        //check if response from api call matches values in expected readings csv using expectRangeToEqualExpected()
+                        expectRangeToEqualExpected(res, expected);
+                    });
                 });
             });
         });
