@@ -185,7 +185,6 @@ mocha.describe('readings API', () => {
 
                     // Add LR17 here
 
-                    // Add LR22 here
                     mocha.it('LR22: range should have hourly points for middle readings of 15 minute for a 60 day period and raw units & C as F with intercept', async () => {
                         const unitData = [
                             {
