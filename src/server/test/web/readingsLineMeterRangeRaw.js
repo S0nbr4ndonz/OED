@@ -197,7 +197,7 @@ mocha.describe('readings API', () => {
                                 typeOfUnit: Unit.unitType.UNIT,
                                 suffix: '',
                                 displayable: Unit.displayableType.ALL,
-                                preferredDisplay: false,
+                                preferredDisplay: true,
                                 note: 'Celsius'
                             },
                             {
