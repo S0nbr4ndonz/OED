@@ -102,7 +102,7 @@ mocha.describe('readings API', () => {
                                 typeOfUnit: Unit.unitType.UNIT,
                                 suffix: '',
                                 displayable: Unit.displayableType.NONE,
-                                preferredDisplay: false,
+                                preferredDisplay: true,
                                 note: 'Celsius'
                             },
                             {
