@@ -974,4 +974,3 @@ function inZone(meterZone, timestamp) {
 }
 
 module.exports = processData;
-module.exports.logStatus = logStatus;

@@ -32,6 +32,17 @@ const CHAI_METERS_REQUEST_EMAIL = `chai.request(app).post('${UPLOAD_METERS_ROUTE
 // but all other keys are arrays of length number of uploads in test.
 // Note the use of double quotes for strings because some have single quotes within.
 
+function appendPipelineLogStatusValues(message, honorDst = false) {
+	return message.replace(
+		/; onlyEndTime (true|false)<br>/g,
+		`; onlyEndTime $1; honorDst ${honorDst}; relaxedParsing false; useMeterZone false; warnOnCumulativeReset false; useMeterFrequency false; useMeterFrequencyVariation 0<br>`
+	);
+}
+
+function requestUsesHonorDst(chaiRequest) {
+	return chaiRequest.includes(".field('honorDst', true)");
+}
+
 /**
  * description, what the tests aims to test
  * chaiRequest, makes a string of the parameters
@@ -525,6 +536,12 @@ const testCases = {
 		responseString: ['<h1>SUCCESS</h1><h2>It looks like the insert of the readings was a success.</h2>']
 	}
 }
+
+Object.values(testCases).forEach(testCase => {
+	testCase.responseString = testCase.responseString.map((message, index) =>
+		appendPipelineLogStatusValues(message, requestUsesHonorDst(testCase.chaiRequest[index]))
+	);
+});
 
 for (let fileKey in testCases) {
 	mocha.describe('Test CSV Pipeline', () => {
