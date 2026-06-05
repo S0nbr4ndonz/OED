@@ -32,13 +32,24 @@ const CHAI_METERS_REQUEST_EMAIL = `chai.request(app).post('${UPLOAD_METERS_ROUTE
 // but all other keys are arrays of length number of uploads in test.
 // Note the use of double quotes for strings because some have single quotes within.
 
-function appendPipelineLogStatusValues(message, honorDst = false) {
+/**
+ * Adds the expanded pipeline log status fields to expected response messages.
+ * @param {string} message The expected response message before the extra log status fields are added.
+ * @param {boolean} honorDst The expected honorDst log value. This is intentionally explicit so missing values do not silently default.
+ * @returns {string} The expected response message with the extra log status fields added.
+ */
+function appendPipelineLogStatusValues(message, honorDst) {
 	return message.replace(
 		/; onlyEndTime (true|false)<br>/g,
 		`; onlyEndTime $1; honorDst ${honorDst}; relaxedParsing false; useMeterZone false; warnOnCumulativeReset false; useMeterFrequency false; useMeterFrequencyVariation 0<br>`
 	);
 }
 
+/**
+ * Checks whether a readings upload request enables DST handling.
+ * @param {string} chaiRequest The Chai request construction string for the upload.
+ * @returns {boolean} true if the request sets honorDst to true.
+ */
 function requestUsesHonorDst(chaiRequest) {
 	return chaiRequest.includes(".field('honorDst', true)");
 }
