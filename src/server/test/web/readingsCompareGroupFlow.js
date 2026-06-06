@@ -311,6 +311,9 @@ mocha.describe('readings API', () => {
                 // Add CG18 here
 
                 // Add CG19 here
+                mocha.it('CG19: 7 day shift end 2022-11-01 15:00:00 (beyond data) for 15 minute reading intervals and flow units & kW as kW', async () => {
+
+                })
 
                 mocha.it('CG20: 28 day shift end 2022-10-31 17:12:34 (partial hour) for 15 minute reading intervals and flow units & kW as kW', async () => {
 
