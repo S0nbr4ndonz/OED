@@ -340,15 +340,15 @@ mocha.describe('readings API', () => {
                         },
                     ];
                     // conversion data
-                    const conversionDatakW = [
+                    const conversionDataC = [
                         { 
-                            // c4
-                            sourceName: 'Electric', 
-                            destinationName: 'kW', 
+                            // c5
+                            sourceName: 'Degrees', 
+                            destinationName: 'C', 
                             bidirectional: false, 
                             slope: 1, 
                             intercept: 0, 
-                            note: 'Electric → kW' 
+                            note: 'Degrees → C' 
                         }
                     ];
                     // meter groups
