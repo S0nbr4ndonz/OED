@@ -342,7 +342,7 @@ mocha.describe('readings API', () => {
                     // conversion data
                     const conversionDatakW = [
                         { 
-                            // c5
+                            // c4
                             sourceName: 'Electric', 
                             destinationName: 'kW', 
                             bidirectional: false, 
