@@ -394,12 +394,12 @@ mocha.describe('readings API', () => {
                     await prepareTest(unitDatakW, conversionDatakW, meterDatakWGroups, groupDatakW);
                     //get unit ID since the DB could use any value.
                     const unitId = await getUnitId('kW');
-					const expected = [4008.97545574702, 4182.62793481036];
+					const expected = [4629.44909652886, 6766.9039865054];
 					//for compare, need the unitID, currentStart, currentEnd, shift
 					const res = await chai.request(app).get(`/api/compareReadings/groups/${GROUP_ID}`)
 						.query({
 							curr_start: '2022-10-30 00:00:00',
-							curr_end: '2022-10-31 17:00:00',
+							curr_end: '2022-11-01 15:00:00',
 							shift: 'P7D',
 							graphicUnitId: unitId,
 						});
