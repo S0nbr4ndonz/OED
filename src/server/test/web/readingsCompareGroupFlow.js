@@ -310,7 +310,6 @@ mocha.describe('readings API', () => {
 
                 // Add CG18 here
 
-                // Add CG19 here
                 mocha.it('CG19: 7 day shift end 2022-11-01 15:00:00 (beyond data) for 15 minute reading intervals and flow units & kW as kW', async () => {
                     // unit data
 					const unitDatakW = [
@@ -394,18 +393,17 @@ mocha.describe('readings API', () => {
                     await prepareTest(unitDatakW, conversionDatakW, meterDatakWGroups, groupDatakW);
                     //get unit ID since the DB could use any value.
                     const unitId = await getUnitId('kW');
-					const expected = [4008.97545574702, 4182.62793481036];
+					const expected = [4629.44909652886, 6574.63881119201];
 					//for compare, need the unitID, currentStart, currentEnd, shift
 					const res = await chai.request(app).get(`/api/compareReadings/groups/${GROUP_ID}`)
 						.query({
 							curr_start: '2022-10-30 00:00:00',
-							curr_end: '2022-10-31 17:00:00',
+							curr_end: '2022-11-01 15:00:00',
 							shift: 'P7D',
 							graphicUnitId: unitId,
 						});
 					expectCompareToEqualExpected(res, expected, GROUP_ID);
                 });
-                // end of CG19
 
                 mocha.it('CG20: 28 day shift end 2022-10-31 17:12:34 (partial hour) for 15 minute reading intervals and flow units & kW as kW', async () => {
 
