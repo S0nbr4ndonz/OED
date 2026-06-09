@@ -76,48 +76,48 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 	// Sort meters to minimize distance between meters that share groups
 	const sortMetersByGroupRelationships = (meters: MeterData[]): MeterData[] => {
+		let sortedMeters: MeterData[] = [];
 		if (meters.length <= 1) {
-			return meters;
-		}
+			return sortedMeters = meters;
+		} else {
+			const usedMeterIds = new Set<number>();
 
-		const sortedMeters: MeterData[] = [];
-		const usedMeterIds = new Set<number>();
+			// Start with the first meter
+			sortedMeters.push(meters[0]);
+			usedMeterIds.add(meters[0].id);
 
-		// Start with the first meter
-		sortedMeters.push(meters[0]);
-		usedMeterIds.add(meters[0].id);
+			// Greedy algorithm: always pick the meter that shares the most groups with the last placed meter
+			while (sortedMeters.length < meters.length) {
+				const lastMeter = sortedMeters[sortedMeters.length - 1];
+				let bestNextMeter: MeterData | null = null;
+				let maxSharedGroups = -1;
 
-		// Greedy algorithm: always pick the meter that shares the most groups with the last placed meter
-		while (sortedMeters.length < meters.length) {
-			const lastMeter = sortedMeters[sortedMeters.length - 1];
-			let bestNextMeter: MeterData | null = null;
-			let maxSharedGroups = -1;
+				// Find the meter that shares the most groups with the last placed meter
+				for (const meter of meters) {
+					if (usedMeterIds.has(meter.id)) {
+						continue;
+					}
 
-			// Find the meter that shares the most groups with the last placed meter
-			for (const meter of meters) {
-				if (usedMeterIds.has(meter.id)) {
-					continue;
+					// Count shared groups between lastMeter and current meter
+					const sharedGroups = mergedGroups.filter(group =>
+						group.deepMeters.includes(lastMeter.id) &&
+						group.deepMeters.includes(meter.id)
+					).length;
+
+					if (sharedGroups > maxSharedGroups) {
+						maxSharedGroups = sharedGroups;
+						bestNextMeter = meter;
+					}
 				}
 
-				// Count shared groups between lastMeter and current meter
-				const sharedGroups = mergedGroups.filter(group =>
-					group.deepMeters.includes(lastMeter.id) &&
-					group.deepMeters.includes(meter.id)
-				).length;
-
-				if (sharedGroups > maxSharedGroups) {
-					maxSharedGroups = sharedGroups;
-					bestNextMeter = meter;
+				// If no shared groups, pick the first unused meter
+				if (bestNextMeter === null) {
+					bestNextMeter = meters.find(m => !usedMeterIds.has(m.id))!;
 				}
-			}
 
-			// If no shared groups, pick the first unused meter
-			if (bestNextMeter === null) {
-				bestNextMeter = meters.find(m => !usedMeterIds.has(m.id))!;
+				sortedMeters.push(bestNextMeter);
+				usedMeterIds.add(bestNextMeter.id);
 			}
-
-			sortedMeters.push(bestNextMeter);
-			usedMeterIds.add(bestNextMeter.id);
 		}
 
 		return sortedMeters;
