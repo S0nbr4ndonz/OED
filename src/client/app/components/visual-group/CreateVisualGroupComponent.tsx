@@ -43,7 +43,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 	const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 	const [snapBackEnabled, setSnapBackEnabled] = useState<boolean>(true);
 	const zoomTransformRef = useRef<d3.ZoomTransform>(d3.zoomIdentity);
-	const nodePositionsRef = useRef<Record<string, { x: number, y: number}>>({});
+	const nodePositionsRef = useRef<Record<string, { x: number, y: number }>>({});
 
 	const intl = useIntl();
 
@@ -738,7 +738,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			if (!event.active) {
 				simulation.alphaTarget(0);
 			}
-			
+
 			if (snapBackEnabled) {
 				event.subject.fx = null;
 				event.subject.fy = null;
@@ -885,12 +885,11 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			requestAnimationFrame(() => {
 				// restore opacity now that graphic is built
 				d3.select('#sample').style('opacity', '1');
-			}); 
+			});
 		}, 0);
 
 		// Cleanup function - runs when component unmounts or dependencies change
 		return () => {
-			console.log("Cleaning up D3 visualization");
 			const existingSvg = d3.select('#sample svg');
 			if (!existingSvg.empty()) {
 				const node = existingSvg.node();
@@ -934,9 +933,15 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					</div>
 				</h1>
 			</div>
-			
-			<div id='sample' style={{ position: 'relative', boxSizing: 'border-box', margin: '2rem', border: '2px solid black', maxWidth: '100%', height: '75vh', overflowY: 'auto', overflowX: 'auto' }}>
-				<div style={{ position: 'absolute', top: 0, left: 0, zIndex: 10, display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px', margin: '8px', borderRadius: '4px', alignItems: 'flex-start' }}>
+
+			<div id='sample' style={{
+				position: 'relative', boxSizing: 'border-box', margin: '2rem',
+				border: '2px solid black', maxWidth: '100%', height: '75vh', overflowY: 'auto', overflowX: 'auto'
+			}}>
+				<div style={{
+					position: 'absolute', top: 0, left: 0, zIndex: 10, display: 'flex', flexDirection: 'column',
+					gap: '4px', padding: '8px', margin: '8px', borderRadius: '4px', alignItems: 'flex-start'
+				}}>
 					<Label check style={{ marginBottom: 0 }}>
 						<Input
 							type="checkbox"
@@ -962,7 +967,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 						<Button id="zoom-in" color="secondary" size="sm" style={{ width: 'auto' }}>+</Button>
 						<Button id="zoom-out" color="secondary" size="sm" style={{ width: 'auto' }}>−</Button>
 					</div>
-				</div>	
+				</div>
 			</div>
 		</div>
 
