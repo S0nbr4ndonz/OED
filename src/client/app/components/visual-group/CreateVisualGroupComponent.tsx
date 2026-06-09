@@ -9,8 +9,8 @@ import { useTranslate } from '../../redux/componentHooks';
 import { FormattedMessage } from 'react-intl';
 import { Button, Input, Label } from 'reactstrap';
 import { useAppSelector } from '../../redux/reduxHooks';
-import { GroupData } from '../../../../client/app/types/redux/groups'
-import { MeterData } from '../../../../client/app/types/redux/meters'
+import { GroupData } from '../../../../client/app/types/redux/groups';
+import { MeterData } from '../../../../client/app/types/redux/meters';
 import { selectAllMeters } from '../../redux/api/metersApi';
 import { selectAllGroups, groupsApi } from '../../redux/api/groupsApi';
 import TooltipMarkerComponent from '../TooltipMarkerComponent';
@@ -165,7 +165,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 		//Add meters to data container
 		sortedGroupedMeters.map(value => {
-			let nodeType: MeterNodeType = MeterNodeType.meter
+			let nodeType: MeterNodeType = MeterNodeType.meter;
 
 			if (selectedGroup) {
 				if (selectedGroup.childMeters.includes(value.id)) {
@@ -182,7 +182,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				'id': `meter_${value.id}`,
 				'meterType': value.meterType,
 				'type': nodeType
-			})
+			});
 		});
 
 		//Add groups to data container
@@ -246,8 +246,8 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					'source': `meter_${meter}`,
 					'type': 'meter-to-group',
 					'sourceType': childMeterType
-				})
-			})
+				});
+			});
 		});
 
 		// Uses Topological Sorting to sort groups into columns based on their depth
@@ -495,7 +495,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					node.fx = pos.x;
 					node.fy = pos.y;
 				}
-			})
+			});
 
 			// Calculate SVG dimensions immediately after positioning meter nodes
 			const calculateSvgDimensions = () => {
@@ -530,7 +530,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 			const zoom = d3.zoom()
 				.scaleExtent([0.5, 32])
-				.on("zoom", zoomed);
+				.on('zoom', zoomed);
 
 			const svg = d3.select('#sample')
 				.append('svg')
@@ -545,22 +545,22 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			svg.call(zoom).call(zoom.transform, zoomTransformRef.current);
 
 			// Zoom in
-			d3.select("#zoom-in").on("click", () => {
+			d3.select('#zoom-in').on('click', () => {
 				svg.transition().call(zoom.scaleBy, 1.2);
 			});
 
 			// Zoom out
-			d3.select("#zoom-out").on("click", () => {
+			d3.select('#zoom-out').on('click', () => {
 				svg.transition().call(zoom.scaleBy, 0.8);
 			});
 
 			// Reset View (Zoom Level and Panning back to default)
-			d3.select("#reset-view").on("click", () => {
+			d3.select('#reset-view').on('click', () => {
 				svg.transition().call(zoom.transform, d3.zoomIdentity);
 			});
 
 			// Reset Layout (group node positions back to default)
-			d3.select("#reset-layout").on("click", () => {
+			d3.select('#reset-layout').on('click', () => {
 				nodePositionsRef.current = {};
 				groupNodeData.forEach(n => {
 					n.x = n.originalX;
@@ -591,7 +591,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					.append('svg:path')
 					.attr('d', 'M0,-5L10,0L0,5')
 					.attr('fill', strokeStyle.color)
-					.attr('stroke', strokeStyle.color)
+					.attr('stroke', strokeStyle.color);
 			});
 
 			// Link Style
@@ -629,7 +629,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				.attr('fill-opacity', d => (d.type === MeterNodeType.childMeter || d.type === MeterNodeType.deepMeter) ? 1 : 0)
 				.attr('stroke', d => strokeSchema(d.type).color)
 				.attr('stroke-width', d => strokeSchema(d.type).width)
-				.attr("stroke-dasharray", d => strokeSchema(d.type).dasharray)
+				.attr('stroke-dasharray', d => strokeSchema(d.type).dasharray)
 				.attr('stroke-opacity', d => strokeSchema(d.type).opacity)
 				//Center the rectangle
 				.attr('x', d => d.x - 30)
@@ -646,7 +646,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				.data(nodes)
 				.enter()
 				.append('text')
-				.text(function (d) { return d.name })
+				.text(function (d) { return d.name; })
 				.attr('text-anchor', 'middle')
 				.attr('fill', '#000')
 				.attr('font-family', 'Arial')
@@ -757,7 +757,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 							return (t: number) => {
 								event.subject.x = startX + (endX - startX) * t;
-								event.subject.y = startY + (endY - startY) * t
+								event.subject.y = startY + (endY - startY) * t;
 							};
 						})
 						.on('end', () => {
@@ -853,7 +853,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 						.attr('fill', colorSchema(item))
 						.attr('fill-opacity', 0.5)
 						.attr('stroke', 'black')
-						.attr('stroke-width', 1)
+						.attr('stroke-width', 1);
 				}
 				else if (item == GroupNodeType.deepGroup) {
 					legendEntry.append('circle')
@@ -865,7 +865,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 						.attr('fill', colorSchema(item))
 						.attr('fill-opacity', 0.5)
 						.attr('stroke', 'black')
-						.attr('stroke-width', 1)
+						.attr('stroke-width', 1);
 				}
 
 				// Text label
