@@ -28,7 +28,6 @@ export interface GroupData {
 	areaUnit: AreaUnitType;
 }
 
-
 // TODO this duplicates two fields in ones above so decide if should somehow merge.
 export interface GroupChildren {
 	// Which group id this applies to

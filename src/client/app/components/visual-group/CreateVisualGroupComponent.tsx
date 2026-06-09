@@ -81,16 +81,12 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			return meters;
 		}
 
-
 		const sortedMeters: MeterData[] = [];
 		const usedMeterIds = new Set<number>();
-
 
 		// Start with the first meter
 		sortedMeters.push(meters[0]);
 		usedMeterIds.add(meters[0].id);
-
-
 
 		// Greedy algorithm: always pick the meter that shares the most groups with the last placed meter
 		while (sortedMeters.length < meters.length) {
@@ -98,13 +94,11 @@ export const CreateVisualGroupComponent: React.FC = () => {
 			let bestNextMeter: MeterData | null = null;
 			let maxSharedGroups = -1;
 
-
 			// Find the meter that shares the most groups with the last placed meter
 			for (const meter of meters) {
 				if (usedMeterIds.has(meter.id)) {
 					continue;
 				}
-
 
 				// Count shared groups between lastMeter and current meter
 				const sharedGroups = mergedGroups.filter(group =>
@@ -112,14 +106,11 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					group.deepMeters.includes(meter.id)
 				).length;
 
-
 				if (sharedGroups > maxSharedGroups) {
 					maxSharedGroups = sharedGroups;
 					bestNextMeter = meter;
 				}
 			}
-
-
 
 			// If no shared groups, pick the first unused meter
 			if (bestNextMeter === null) {
@@ -382,7 +373,6 @@ export const CreateVisualGroupComponent: React.FC = () => {
 							continue;
 						}
 
-
 						currentSortedColumn.push(parent);
 					}
 				}
@@ -391,10 +381,8 @@ export const CreateVisualGroupComponent: React.FC = () => {
 
 				const previousColumn: GroupData[] = columns[columnIndex - 1];
 
-
 				for (const currentGroup of previousColumn) {
 					const parentGroups = mergedGroups.filter(group => group.childGroups.includes(currentGroup.id) && column.includes(group));
-
 
 					if (parentGroups.length === 0) {
 						continue;
@@ -416,14 +404,10 @@ export const CreateVisualGroupComponent: React.FC = () => {
 							continue;
 						}
 
-
 						currentSortedColumn.push(parent);
 					}
 
 				}
-
-
-
 			}
 
 			sortedGroups.push(currentSortedColumn);
@@ -545,7 +529,6 @@ export const CreateVisualGroupComponent: React.FC = () => {
 		const zoom = d3.zoom()
 			.scaleExtent([0.5, 32])
 			.on("zoom", zoomed);
-
 
 		const svg = d3.select('#sample')
 			.append('svg')
@@ -677,7 +660,6 @@ export const CreateVisualGroupComponent: React.FC = () => {
 					// if link starts from a meter
 					if (d.type == 'meter-to-group') {
 
-
 						// take half of the width of the meter's rectangle element
 						const halfWidth = 30;
 
@@ -734,7 +716,6 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				.attr('x', d => d.fx || d.x)
 				.attr('y', d => (d.fy || d.y) - 25);
 		});
-
 
 		// eslint-disable-next-line jsdoc/require-jsdoc
 		function dragstart(event: any) {

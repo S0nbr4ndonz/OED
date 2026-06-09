@@ -80,7 +80,6 @@ export default function HeaderButtonsComponent() {
 	// hard-coded for the time being. Rework w/admin pages
 	const unsavedChangesState = false;
 
-
 	// Must update in case the version was not set when the page was loaded.
 	useEffect(() => {
 		setState(prevState => ({

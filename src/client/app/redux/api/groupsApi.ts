@@ -103,7 +103,6 @@ export const {
 	selectEntities: selectGroupDataById
 } = groupsAdapter.getSelectors((state: RootState) => selectGroupDataResult(state).data ?? groupsInitialState);
 
-
 export const selectGroupNameWithID = (state: RootState, groupId: number) => {
 	const groupInfo = selectGroupById(state, groupId);
 	return groupInfo ? groupInfo.name : '';
