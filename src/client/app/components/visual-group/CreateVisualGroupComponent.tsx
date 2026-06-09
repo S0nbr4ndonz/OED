@@ -5,7 +5,8 @@
 import * as React from 'react';
 import * as d3 from 'd3';
 import { useEffect, useState, useRef } from 'react';
-import { useIntl } from 'react-intl';
+import { useTranslate } from '../../redux/componentHooks';
+import { FormattedMessage } from 'react-intl';
 import { Button, Input, Label } from 'reactstrap';
 import { useAppSelector } from '../../redux/reduxHooks';
 import { GroupData } from '../../../../client/app/types/redux/groups'
@@ -14,7 +15,6 @@ import { selectAllMeters } from '../../redux/api/metersApi';
 import { selectAllGroups, groupsApi } from '../../redux/api/groupsApi';
 import TooltipMarkerComponent from '../TooltipMarkerComponent';
 import TooltipHelpComponent from '../TooltipHelpComponent';
-import { FormattedMessage } from 'react-intl';
 import { titleStyle, tooltipBaseStyle } from '../../styles/modalStyle';
 
 // Declare node types for groups and meters, will determine every node's design schema on the graphic
@@ -39,13 +39,12 @@ type AllNodeType = GroupNodeType | MeterNodeType;
  * @returns D3 force graph visual
  */
 export const CreateVisualGroupComponent: React.FC = () => {
+	const translate = useTranslate();
 
 	const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
 	const [snapBackEnabled, setSnapBackEnabled] = useState<boolean>(true);
 	const zoomTransformRef = useRef<d3.ZoomTransform>(d3.zoomIdentity);
 	const nodePositionsRef = useRef<Record<string, { x: number, y: number }>>({});
-
-	const intl = useIntl();
 
 	// Get Meter data from redux
 	const allMeters: MeterData[] = useAppSelector(selectAllMeters);
@@ -876,7 +875,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				.style('font-size', '12px')
 				.style('alignment-middle', 'middle')
 				// internationalizing color legend text
-				.text(intl.formatMessage({ id: `legend.graph.text.${item}` }));
+				.text(translate(`legend.graph.text.${item}`));
 		});
 
 		// Calculate SVG dimensions after all elements are created
