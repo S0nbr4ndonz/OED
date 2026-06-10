@@ -421,6 +421,8 @@ export const CreateVisualGroupComponent: React.FC = () => {
 		const sortedFinally = sortGroupsByChildren(columns, sortedGroupedMeters);
 
 		// visuals start here
+
+		// This useEffect is needed to sync up with D3 and work correctly.
 		useEffect(() => {
 			// Hiding visual flash
 			d3.select('#sample').style('opacity', '0');
@@ -771,6 +773,10 @@ export const CreateVisualGroupComponent: React.FC = () => {
 				}
 			}
 
+			/**
+			 * TODO
+			 * @param event TODO
+			 */
 			function zoomed(event: d3.D3ZoomEvent<SVGSVGElement, unknown>) {
 				zoomTransformRef.current = event.transform;
 				g.attr('transform', event.transform.toString());
