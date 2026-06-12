@@ -64,8 +64,8 @@ const router = createBrowserRouter([
 					{ path: 'users', element: <UsersDetailComponent /> },
 					{ path: 'logmsg', element: <LogMsgComponent /> },
 					{ path: 'users', element: <UsersDetailComponent /> },
-					{ path: 'visual-unit', element: <VisualUnitDetailComponent/> },
-					{ path: 'visual-group', element: <CreateVisualGroupComponent/> }
+					{ path: 'visual-unit', element: <VisualUnitDetailComponent /> },
+					{ path: 'visual-group', element: <CreateVisualGroupComponent /> }
 				]
 			},
 			{
