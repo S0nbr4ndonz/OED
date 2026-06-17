@@ -960,7 +960,7 @@ export const CreateVisualGroupComponent: React.FC = () => {
 									nodePositionsRef.current = {};
 								}}
 							/>
-							{' '}Snap groups back after drag
+							{' ' + translate('visual.group.snap')}
 						</Label>
 						<div style={{ display: 'flex', flexDirection: 'row', gap: '5px' }}>
 							<Button id="reset-view" color="secondary" size="sm" style={{ width: 'auto' }}>
